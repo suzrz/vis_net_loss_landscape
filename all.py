@@ -57,10 +57,8 @@ class Net(nn.Module):
 
 
 
-def train(model, train_loader, optimizer, device):
+def train(model, train_loader, optimizer, scheduler, device):
     model.train()
-    iterations = []
-    train_loss = []
     for batch_idx, (data, target) in enumerate(train_loader):
         data, target = data.to(device), target.to(device)
         optimizer.zero_grad()
@@ -72,13 +70,12 @@ def train(model, train_loader, optimizer, device):
 
 def test(model, test_loader, device):
     model.eval()
-    # correct = 0
     test_loss = 0
     with torch.no_grad():
         for data, target in test_loader:
             data, target = data.to(device), target.to(device)
             output = model.forward(data)
-            test_loss += f.nll_loss(output, target, reduction="sum").item()
+            test_loss += f.nll_loss(output, target, reduction="sum", size_average=False).item()
             # pred = output.argmax(dim=1, keepdim=True)
             # correct += pred.eq(target.view_as(pred).sum().item())
 
@@ -90,10 +87,13 @@ def test(model, test_loader, device):
 device = torch.device("cpu")
 
 model = Net().to(device)
+model.share_memory()
 
 if not os.path.isfile("init_state.pt"):
     torch.save(model.state_dict(), "init_state.pt")
     print("New init state saved.")
+
+torch.manual_seed(1)
 
 """DATA PREPROCESSING
     Prepare data transformations
@@ -116,7 +116,7 @@ test_set = datasets.MNIST("../data", train=False, download=True,
                           transform=transform)
 
 train_loader = utils.data.DataLoader(train_set, 64, shuffle=True)
-test_loader = utils.data.DataLoader(test_set, 64, shuffle=False)
+test_loader = utils.data.DataLoader(test_set, 1000, shuffle=False)
 
 
 model.load_state_dict(torch.load("init_state.pt"))
@@ -124,12 +124,13 @@ theta_i = copy.deepcopy(model.state_dict())
 theta_0 = copy.deepcopy(model.state_dict())
 test(model, test_loader, device)  # ok
 
-optimizer = optim.Adadelta(model.parameters(), lr=1.0)
+optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.5)
+#optimizer = optim.Adadelta(model.parameters(), lr=1.0)
 scheduler = StepLR(optimizer, step_size=1, gamma=0.7)
 
 if not os.path.isfile("final_state.pt"):
-    for epoch in range(1, 2):
-        train(model, train_loader, optimizer, device)
+    for epoch in range(1, 4):
+        train(model, train_loader, optimizer, scheduler, device)
         scheduler.step()
         print("Finished epoch no. ", epoch)
 

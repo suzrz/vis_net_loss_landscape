@@ -1,3 +1,10 @@
+"""
+TODO
+    - val loss < train loss ?
+    - two params
+    - jeden skalar z tensoru parametru
+
+"""
 import os
 import torch
 import copy
@@ -158,7 +165,7 @@ def main():
 
     # If model was not trained yet, it will train. Else skip.
     if not os.path.isfile("final_state.pt"):
-        for epoch in range(1, 2):  # here can be set number of epochs
+        for epoch in range(1, 14):  # here can be set number of epochs
             train(model, train_loader, optimizer, device, epoch)
             scheduler.step()
             print("Finished epoch no. ", epoch)
@@ -185,7 +192,7 @@ def main():
 
         if not model.load_state_dict(theta):
             print("Something went wrong.")  # loading parameters in model failed
-        train_loss = train(model, test_loader, optimizer, device, 0)
+        train_loss = train(model, train_loader, optimizer, device, 0)
         train_loss_list.append(train_loss)
         val_loss = test(model, test_loader, device)  # get loss with new parameters
         val_loss_list.append(val_loss)  # save obtained loss into list

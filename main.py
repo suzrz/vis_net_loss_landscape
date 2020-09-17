@@ -88,10 +88,10 @@ def train(model, train_loader, optimizer, device, epoch):
         train_loss += f.nll_loss(output, target, reduction="sum").item()
         loss.backward()
         optimizer.step()
-        #if batch_idx % 10 == 0:
-        #    print("Train epoch: {} [{}/{} ({:.0f} %)]\tLoss: {.6f}".format(
-        #        epoch, batch_idx*len(data), len(train_loader.dataset),
-        #        100. * batch_idx / len(train_loader), loss.item()))
+        if batch_idx % 10 == 0:
+            print("Train epoch: {} [{}/{} ({:.0f} %)]\tLoss: {:.6f}".format(
+                epoch, batch_idx*len(data), len(train_loader.dataset),
+                100. * batch_idx / len(train_loader), loss.item()))
 
     train_loss /= len(train_loader.dataset)
     return train_loss
@@ -135,8 +135,15 @@ def process_data():
     test_set = datasets.MNIST("../data", train=False, download=True,
                               transform=transform)
 
+    tr = list(range(0, len(train_set), 6))
+    te = list(range(0, len(test_set), 10))
+    train_set = torch.utils.data.Subset(train_set, tr)
+    test_set = torch.utils.data.Subset(test_set, te)
+
     train_loader = utils.data.DataLoader(train_set, 64, shuffle=True)
     test_loader = utils.data.DataLoader(test_set, 1000, shuffle=False)
+    print(len(train_loader.dataset))
+    print(len(test_loader.dataset))
 
     return train_set, test_set, train_loader, test_loader
 
@@ -165,7 +172,8 @@ def main():
 
     # If model was not trained yet, it will train. Else skip.
     if not os.path.isfile("final_state.pt"):
-        for epoch in range(1, 14):  # here can be set number of epochs
+        print("Final state not found - beginning training")
+        for epoch in range(1, 2):  # here can be set number of epochs
             train(model, train_loader, optimizer, device, epoch)
             scheduler.step()
             print("Finished epoch no. ", epoch)
@@ -192,8 +200,10 @@ def main():
 
         if not model.load_state_dict(theta):
             print("Something went wrong.")  # loading parameters in model failed
+        print("Getting train_loss")
         train_loss = train(model, train_loader, optimizer, device, 0)
         train_loss_list.append(train_loss)
+        print("Getting val loss")
         val_loss = test(model, test_loader, device)  # get loss with new parameters
         val_loss_list.append(val_loss)  # save obtained loss into list
 

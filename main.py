@@ -1,6 +1,5 @@
 """
 TODO
-    - val loss < train loss ?
     - two params
     - jeden skalar z tensoru parametru
 

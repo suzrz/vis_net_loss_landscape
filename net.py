@@ -1,6 +1,11 @@
+import os
+import copy
 import torch
+import data_load
 import torch.nn.functional as f
+from torch import optim as optim
 from torch import nn as nn
+from torch.optim.lr_scheduler import StepLR
 
 
 class Net(nn.Module):
@@ -97,3 +102,39 @@ def test(model, test_loader, device):
 
     test_loss /= len(test_loader.dataset)  # compute validation loss of neural network
     return test_loss
+
+
+device = torch.device("cuda")  # set device which will script work on
+                              # TODO implement GPU
+
+model = Net().to(device)  # create instance of neural network class
+#model.share_memory()
+
+# If initialized state does not exist, create new one. Else skip.
+if not os.path.isfile("init_state.pt"):
+    torch.save(model.state_dict(), "init_state.pt")
+    print("New init state saved.")
+
+model.load_state_dict(torch.load("init_state.pt"))  # load initialized state from file
+theta_i = copy.deepcopy(model.state_dict())  # save model parameters into dict which should remain unchanged
+theta_0 = copy.deepcopy(model.state_dict())  # save model parameters into dict which will be changed
+
+torch.manual_seed(1)  # set seed
+
+
+
+optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.5)  # set optimizer
+scheduler = StepLR(optimizer, step_size=1, gamma=0.7)  # set scheduler
+
+# If model was not trained yet, it will train. Else skip.
+if not os.path.isfile("final_state.pt"):
+    print("Final state not found - beginning training")
+    for epoch in range(1, 2):  # here can be set number of epochs
+        train(model, data_load.train_loader, optimizer, device, epoch)
+        scheduler.step()
+        print("Finished epoch no. ", epoch)
+
+    torch.save(model.state_dict(), "final_state.pt")  # save final parameters of model
+
+theta_f = copy.deepcopy(torch.load("final_state.pt"))  # save final parameters into thetas (same as theta_i, theta_0)
+theta_1 = copy.deepcopy(torch.load("final_state.pt"))

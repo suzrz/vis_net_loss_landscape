@@ -84,6 +84,23 @@ def train(model, train_loader, optimizer, device, epoch):
     train_loss /= len(train_loader.dataset)
     return train_loss
 
+def train_vis(model, train_loader, optimizer, device):
+
+    model.train()
+    train_loss = 0
+    with torch.no_grad():
+        for batch_idx, (data, target) in enumerate(train_loader):
+            data, target = data.to(device), target.to(device)  # load data
+            optimizer.zero_grad()  # zero all gradients
+            output = model.forward(data)  # feed data through net
+
+            #loss = f.nll_loss(output, target)  # compute train loss
+            train_loss += f.nll_loss(output, target, reduction="sum").item()
+
+    train_loss /= len(train_loader.dataset)
+    return train_loss
+
+
 
 def test(model, test_loader, device):
     """ Validates the neural network.

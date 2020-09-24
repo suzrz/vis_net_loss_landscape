@@ -1,6 +1,7 @@
 import os
 import copy
 import torch
+import argparse
 import data_load
 import torch.nn.functional as f
 from torch import optim as optim
@@ -104,8 +105,13 @@ def test(model, test_loader, device):
     return test_loss
 
 
-device = torch.device("cuda")  # set device which will script work on
-                              # TODO implement GPU
+parser = argparse.ArgumentParser()
+parser.add_argument('--no-cuda', action='store_true', default=False,
+                        help='disables CUDA training')
+args = parser.parse_args()
+
+use_cuda = not args.no_cuda and torch.cuda.is_available()
+device = torch.device("cuda" if use_cuda else "cpu")
 
 model = Net().to(device)  # create instance of neural network class
 #model.share_memory()

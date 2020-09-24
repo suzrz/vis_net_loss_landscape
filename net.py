@@ -121,7 +121,7 @@ def test(model, test_loader, device):
     return test_loss
 
 
-device = torch.device("cuda")  # set device which will script work on
+device = torch.device("cpu")  # set device which will script work on
                               # TODO implement GPU
 
 model = Net().to(device)  # create instance of neural network class

@@ -86,7 +86,8 @@ def train(model, train_loader, optimizer, device, epoch):
 
 def train_vis(model, train_loader, optimizer, device):
 
-    model.train()
+    #model.train()
+    model.eval()
     train_loss = 0
     with torch.no_grad():
         for batch_idx, (data, target) in enumerate(train_loader):
@@ -146,7 +147,7 @@ scheduler = StepLR(optimizer, step_size=1, gamma=0.7)  # set scheduler
 # If model was not trained yet, it will train. Else skip.
 if not os.path.isfile("final_state.pt"):
     print("Final state not found - beginning training")
-    for epoch in range(1, 2):  # here can be set number of epochs
+    for epoch in range(1, 10):  # here can be set number of epochs
         train(model, data_load.train_loader, optimizer, device, epoch)
         scheduler.step()
         print("Finished epoch no. ", epoch)

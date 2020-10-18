@@ -1,4 +1,5 @@
 import net
+import pickle
 import data_load
 import torch
 import numpy as np
@@ -29,3 +30,9 @@ for alpha_act in alpha:  # interpolate
     print("Getting val loss")
     val_loss = net.test(net.model, data_load.test_loader, net.device)  # get loss with new parameters
     val_loss_list.append(val_loss)  # save obtained loss into list
+
+with open("v_loss_list.txt", "wb") as fd:
+    pickle.dump(val_loss_list, fd)
+
+with open("t_loss_list.txt", "wb") as fd:
+    pickle.dump(train_loss_list, fd)

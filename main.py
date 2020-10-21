@@ -1,3 +1,4 @@
+"""https://github.com/okn-yu/Visualizing-the-Loss-Landscape-of-Neural-Nets"""
 import os
 import net
 import plot
@@ -39,7 +40,7 @@ def main():
     # check if exists trained model params
     if not os.path.isfile("final_state.pt"):
         print("Final state not found - beginning training")
-        for epoch in range(1, 2):  # here can be set number of epochs
+        for epoch in range(1, 14):  # here can be set number of epochs
             net.train(model, data_load.train_loader, optimizer, device, epoch)
             net.test(model, data_load.test_loader, device)
             scheduler.step()

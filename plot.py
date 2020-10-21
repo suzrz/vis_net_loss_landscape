@@ -2,6 +2,7 @@ import h5py
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
+from matplotlib import cm
 from mpl_toolkits.mplot3d import Axes3D
 
 
@@ -30,10 +31,13 @@ def vis():
         ax.set_xlabel("x")
         ax.set_ylabel("y")
         ax.set_zlabel("f(x, y)")
-        ax.plot_surface(X, Y, Z, linewidth=0, antialiased=False)
+        surf = ax.plot_surface(X, Y, Z, linewidth=0, antialiased=False, cmap=cm.jet)
+        fig.colorbar(surf, shrink=0.5, aspect=5)
         plt.show()
 
+
         """COUNTOURS"""
+        """
         fig = plt.figure()
         CS = plt.contour(X, Y, Z, cmap="summer",
                          levels=np.arange(vmin, vmax, vlevel))
@@ -41,8 +45,10 @@ def vis():
         #plt.savefig(result_base + '_' + surf_name + "_2D_contour" + ".pdf",
         #            dpi=300, bbox_inches="tight", format="pdf")
         plt.show()
+        """
 
         """HEAT MAP"""
+        """
         fig = plt.figure()
         sns_plot = sns.heatmap(Z, cmap="viridis", cbar=True, vmin=vmin,
                                vmax=vmax, xticklabels=False, yticklabels=False)
@@ -50,9 +56,12 @@ def vis():
         #sns_plot.get_figure().savefig(result_base + '_' + surf_name + "_2D_heat.pdf",
         #                              dpi=300, bbox_inches="tight", format="pdf")
         plt.show()
+        """
         """SAVE 3D"""
+        """
         plt.figure()
         ax = Axes3D(fig)
         ax.plot_surface(X, Y, Z, linewidth=0, antialiased=True)
         #fig.savefig(result_base + '_' + surf_name + "_3D_surface.pdf",
         #            dpi=300, bbox_inches="tight", format="pdf")
+        """

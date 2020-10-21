@@ -22,7 +22,8 @@ def set_surf_file(filename):
         fd["ycoordinates"] = ycoord
 
         shape = (len(xcoord), len(ycoord))
-        losses = np.ones(shape=shape)
+        # print(shape)
+        losses = -np.ones(shape=shape)
 
         fd["val_loss"] = losses
 
@@ -31,7 +32,11 @@ def set_surf_file(filename):
 
 def get_indices(vals, xcoords, ycoords):
     inds = np.array(range(vals.size))
+    print(type(inds))
+    print(inds)  # 0 ... 2600
     inds = inds[vals.ravel() <= 0]
+    print(vals.ravel())
+    print(inds)
 
     xcoord_mesh, ycoord_mesh = np.meshgrid(xcoords, ycoords)
     s1 = xcoord_mesh.ravel()[inds]
@@ -59,12 +64,14 @@ def calculate_loss(model, directions, device):
         xcoords = fd["xcoordinates"][:]
         ycoords = fd["ycoordinates"][:]
         losses = fd["val_loss"][:]
+        # print(losses, xcoords, ycoords)  # losses = ones, x, y ... ok
 
         inds, coords = get_indices(losses, xcoords, ycoords)
 
+        print(inds, coords)  # [] [] HERE TODO
         for count, ind in enumerate(inds):
             coord = coords[count]
-            print(coord[0])
+            print("COORD: ", coord)
             overwrite_weights(model, init_weights, directions, coord, device)
 
             loss = net.test(model, data_load.test_loader, device)

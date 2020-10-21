@@ -3,7 +3,6 @@ import torch
 
 def random_dir(model):
     weights = [p.data for p in model.parameters()]
-    print(weights)
     direction = [torch.randn(w.size()) for w in weights]
 
     # normalize

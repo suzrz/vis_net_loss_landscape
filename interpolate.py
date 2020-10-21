@@ -46,19 +46,9 @@ model_f.load_state_dict(net.theta_f)
 model = net.Net().to(net.device)
 model.load_state_dict(net.theta_f) # can change.. depends on what I want to change
 
-param = copy.copy(model.conv2.weight[0][0][0][0])
 theta = copy.deepcopy(model.state_dict())
 #print(theta["conv2.weight"][0][0][0][0])
 for alpha_act in alpha:
-    #for param_name0, param_name1 in zip(net.theta_i, net.theta_f):
-    #    net.theta_0[param_name0] = torch.mul(net.theta_i[param_name0],
-    #                                         (1.0 - alpha_act))
-    #    net.theta_1[param_name1] = torch.mul(net.theta_f[param_name1],
-    #                                         alpha_act)
-    #    theta[param_name0] = torch.add(net.theta_0[param_name0],
-    #                                   net.theta_1[param_name1])
-
-    #model.load_state_dict(theta)
     theta["conv2.weight"][4][0][0][0] = copy.copy(torch.add(model_i.conv2.weight[4][0][0][0] * (1.0 - alpha_act), (model_f.conv2.weight[4][0][0][0] * alpha_act)))
 
     model.load_state_dict(theta)

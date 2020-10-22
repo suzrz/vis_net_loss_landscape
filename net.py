@@ -123,7 +123,6 @@ if not os.path.isfile("init_state.pt"):
 
 model.load_state_dict(torch.load("init_state.pt"))  # load initialized state from file
 theta_i = copy.deepcopy(model.state_dict())  # save model parameters into dict which should remain unchanged
-theta_0 = copy.deepcopy(model.state_dict())  # save model parameters into dict which will be changed
 
 torch.manual_seed(1)  # set seed
 
@@ -143,4 +142,4 @@ if not os.path.isfile("final_state.pt"):
     torch.save(model.state_dict(), "final_state.pt")  # save final parameters of model
 
 theta_f = copy.deepcopy(torch.load("final_state.pt"))  # save final parameters into thetas (same as theta_i, theta_0)
-theta_1 = copy.deepcopy(torch.load("final_state.pt"))
+

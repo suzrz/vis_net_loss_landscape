@@ -4,9 +4,9 @@ import net
 import plot
 import torch
 import argparse
-import calc_loss
 import data_load
 import directions
+import calculate_loss
 from torch import optim as optim
 from torch.optim.lr_scheduler import StepLR
 
@@ -49,10 +49,17 @@ def main():
         torch.save(model.state_dict(), "final_state.pt")  # save final parameters of model
 
     model.load_state_dict(torch.load("init_state.pt"))
-    dirs = directions.random_directions(model)  # get random directions
-    calc_loss.calculate_loss(model, dirs, device)  # calculate val loss and save it to surface file
 
-    plot.vis()
+    # prepare files for 2D plot
+    calculate_loss.single(model, device, 13, optimizer)
+    # plot
+    plot.line2D_single_parameter()
+
+    # prepare files for 3D plot
+    dirs = directions.random_directions(model)  # get random directions
+    calculate_loss.double(model, dirs, device)  # calculate val loss and save it to surface file
+    # plot
+    plot.surface3D_rand_dirs()
 
 
 if __name__ == "__main__":

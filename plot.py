@@ -1,47 +1,55 @@
 import h5py
+import pickle
 import numpy as np
-import seaborn as sns
+# import seaborn as sns
 import matplotlib.pyplot as plt
 from matplotlib import cm
 from mpl_toolkits.mplot3d import Axes3D
 
-with open("v_loss_list.txt", "rb") as fd:
-    val_loss_list = pickle.load(fd)
 
-with open("t_loss_list.txt", "rb") as fd:
-    train_loss_list = pickle.load(fd)
 
-with open("trained_net_loss.txt", "rb") as fd:
-    trained = pickle.load(fd)
 
-alpha = np.linspace(-0.25, 1.5, 13)
 
-# plot
-fig, axe = plt.subplots()
-axe.plot(alpha, val_loss_list, "x-", label="validation loss")
-axe.plot(alpha, train_loss_list, "o-", color="orange", label="train loss")  # not normalized! should be lower than validation loss but because it is measured on more samples, it looks worse
-axe.plot(alpha, trained, "-", color="green", label="loss of trained net")
-axe.spines['right'].set_visible(False)
-axe.spines['top'].set_visible(False)
-plt.legend()
-plt.xlabel("alpha")
-plt.ylabel("loss")
-plt.tight_layout()
-plt.show()
+def line2D_single_parameter():
+    with open("v_loss_list.txt", "rb") as fd:
+        val_loss_list = pickle.load(fd)
 
-def vis():
+    with open("t_loss_list.txt", "rb") as fd:
+        train_loss_list = pickle.load(fd)
 
-    vmin = 0
-    vmax = 100
+    with open("trained_net_loss.txt", "rb") as fd:
+        trained = pickle.load(fd)
 
-    vlevel = 0.5
+    alpha = np.linspace(-0.25, 1.5, 13)
+
+    fig, axe = plt.subplots()
+
+    axe.plot(alpha, val_loss_list, "x-", label="validation loss")
+    axe.plot(alpha, train_loss_list, "o-", color="orange", label="train loss")  # not normalized! should be lower than validation loss but because it is measured on more samples, it looks worse
+    axe.plot(alpha, trained, "-", color="green", label="loss of trained net")
+
+    axe.spines['right'].set_visible(False)
+    axe.spines['top'].set_visible(False)
+
+    plt.legend()
+    plt.xlabel("alpha")
+    plt.ylabel("loss")
+
+    plt.tight_layout()
+
+    plt.show()
+
+def surface3D_rand_dirs():
+    # vmin = 0
+    # vmax = 100
+
+    # vlevel = 0.5
+
     filename = "3D_surf.h5"
     result_base = "./results/res_3D_surf"
     surf_name = "val_loss"
 
     with h5py.File(filename, 'r') as fd:
-        Z_LIMIT = 10
-
         x = np.array(fd["xcoordinates"][:])
         y = np.array(fd["ycoordinates"][:])
 

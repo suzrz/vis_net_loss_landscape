@@ -7,9 +7,6 @@ from matplotlib import cm
 from mpl_toolkits.mplot3d import Axes3D
 
 
-
-
-
 def line2D_single_parameter():
     with open("v_loss_list.txt", "rb") as fd:
         val_loss_list = pickle.load(fd)
@@ -17,19 +14,29 @@ def line2D_single_parameter():
     with open("t_loss_list.txt", "rb") as fd:
         train_loss_list = pickle.load(fd)
 
+    with open("accuracy_list.txt", "rb") as fd:
+        accuracy = pickle.load(fd)
+
     with open("trained_net_loss.txt", "rb") as fd:
         trained = pickle.load(fd)
 
+    with open("trained_accuracy.txt","rb") as fd:
+        trained_acc = pickle.load(fd)
+
     alpha = np.linspace(-0.25, 1.5, 13)
 
-    fig, axe = plt.subplots()
+    fig, (ax1, ax2) = plt.subplots(1, 2)
 
-    axe.plot(alpha, val_loss_list, "x-", label="validation loss")
-    axe.plot(alpha, train_loss_list, "o-", color="orange", label="train loss")  # not normalized! should be lower than validation loss but because it is measured on more samples, it looks worse
-    axe.plot(alpha, trained, "-", color="green", label="loss of trained net")
+    ax1.plot(alpha, val_loss_list, "x-", label="validation loss")
+    ax1.plot(alpha, train_loss_list, "o-", color="orange", label="train loss")  # not normalized! should be lower than validation loss but because it is measured on more samples, it looks worse
+    ax1.plot(alpha, trained, "-", color="green", label="loss of trained net")
+    ax2.plot(alpha, accuracy, "*-", color="purple", label="accuracy")
+    ax2.plot(alpha, trained_acc, "-", color="orange", label="trained accuracy")
 
-    axe.spines['right'].set_visible(False)
-    axe.spines['top'].set_visible(False)
+    ax1.spines['right'].set_visible(False)
+    ax1.spines['top'].set_visible(False)
+    ax2.spines['right'].set_visible(False)
+    ax2.spines['top'].set_visible(False)
 
     plt.legend()
     plt.xlabel("alpha")

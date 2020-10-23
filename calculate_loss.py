@@ -21,16 +21,22 @@ def single(model, device, samples, optimizer):
     alpha = np.linspace(-0.25, 1.5, samples)  # set interpolation coefficient
     train_loss_list = []  # prepare clean list for train losses
     val_loss_list = []  # prepare clean list for validation losses
+    accuracy_list = []
 
-    if not os.path.isfile("trained_net_loss.txt"):
+    if not os.path.isfile("trained_net_loss.txt") or not os.path.isfile("trained_accuracy.txt"):
         print("No fil ")
         model.load_state_dict(torch.load("final_state.pt"))
-        trained_loss = net.test(model, data_load.test_loader, device)
+        trained_loss, trained_accuracy = net.test(model, data_load.test_loader, device)
         trained_loss = np.broadcast_to(trained_loss, alpha.shape)
+        trained_accuracy = np.broadcast_to(trained_accuracy, alpha.shape)
+
         with open("trained_net_loss.txt", "wb") as fd:
             pickle.dump(trained_loss, fd)
 
-    if not os.path.isfile("v_loss_list.txt") or not os.path.isfile("t_loss_list.txt"):
+        with open("trained_accuracy.txt", "wb") as fd:
+            pickle.dump(trained_accuracy, fd)
+
+    if not os.path.isfile("v_loss_list.txt") or not os.path.isfile("t_loss_list.txt") or not os.path.isfile("accuracy_list.txt"):
         theta = copy.deepcopy(torch.load("final_state.pt"))
         theta_f = copy.deepcopy(torch.load("final_state.pt"))
         theta_i = copy.deepcopy(torch.load("init_state.pt"))
@@ -48,14 +54,18 @@ def single(model, device, samples, optimizer):
             train_loss_list.append(train_loss)
 
             print("Getting val loss")
-            val_loss = net.test(model, data_load.test_loader, device)  # get loss with new parameters
+            val_loss, accuracy = net.test(model, data_load.test_loader, device)  # get loss with new parameters
             val_loss_list.append(val_loss)  # save obtained loss into list
+            accuracy_list.append(accuracy)
 
         with open("v_loss_list.txt", "wb") as fd:
             pickle.dump(val_loss_list, fd)
 
         with open("t_loss_list.txt", "wb") as fd:
             pickle.dump(train_loss_list, fd)
+
+        with open("accuracy_list.txt", "wb") as fd:
+            pickle.dump(accuracy_list, fd)
 
 
 def set_surf_file(filename):

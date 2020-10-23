@@ -89,11 +89,15 @@ def test(model, test_loader, device):
     """
     model.eval()  # put model in evaluation mode
     test_loss = 0  # validation loss
+    correct = 0
     with torch.no_grad():
         for data, target in test_loader:
             data, target = data.to(device), target.to(device)
             output = model.forward(data)
             test_loss += f.nll_loss(output, target, reduction="sum").item()
+            pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
+            correct += pred.eq(target.view_as(pred)).sum().item()
 
     test_loss /= len(test_loader.dataset)  # compute validation loss of neural network
-    return test_loss
+    accuracy =  100. * correct / len(test_loader.dataset)
+    return test_loss, accuracy

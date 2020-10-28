@@ -6,10 +6,43 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 from mpl_toolkits.mplot3d import Axes3D
 
+
+def plot_subset_hist():
+    #n_tr_samples = [60000, 50000, 40000, 30000, 20000, 10000]
+    n_tr_samples = [10000, 20000, 30000, 40000, 50000, 60000]
+    with open("results/subset_losses", "rb") as fd:
+        losses = pickle.load(fd)
+    with open("results/subset_accs", "rb") as fd:
+        accs = pickle.load(fd)
+
+    print(losses)
+    print(accs)
+
+    """
+    fig = plt.figure()
+    ax = fig.add_subplot()
+    ax.bar(n_tr_samples, losses, width=0.7, bottom=0, color="C3")
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.spines["bottom"].set_position("zero")
+    ax.margins(0.05)
+    plt.show()
+    """
+    """
+    loss = plt.bar(n_tr_samples, losses, label="loss")
+    plt.tight_layout()
+    plt.show()
+
+    acc = plt.bar(n_tr_samples, accs, label="accuracy")
+    plt.tight_layout()
+    plt.show()
+    """
+
+
 def plot_accuracy(samples):
-    with open("accuracy_list.txt", "rb") as fd:
+    with open("results/accuracy_list.txt", "rb") as fd:
         acc = pickle.load(fd)
-    with open("trained_accuracy.txt","rb") as fd:
+    with open("results/trained_accuracy.txt", "rb") as fd:
         trained_acc = pickle.load(fd)
 
     alpha = np.linspace(-0.25, 1.5, samples)
@@ -22,9 +55,9 @@ def plot_accuracy(samples):
     plt.show()
 
 def plot_2D_loss(samples):
-    with open("v_loss_list.txt", "rb") as fd:
+    with open("results/v_loss_list.txt", "rb") as fd:
         val_loss_list = pickle.load(fd)
-    with open("trained_net_loss.txt", "rb") as fd:
+    with open("results/trained_net_loss.txt", "rb") as fd:
         trained = pickle.load(fd)
 
     alpha = np.linspace(-0.25, 1.5, samples)
@@ -38,19 +71,19 @@ def plot_2D_loss(samples):
 
 
 def line2D_single_parameter():
-    with open("v_loss_list.txt", "rb") as fd:
+    with open("results/v_loss_list.txt", "rb") as fd:
         val_loss_list = pickle.load(fd)
 
-    with open("t_loss_list.txt", "rb") as fd:
+    with open("results/t_loss_list.txt", "rb") as fd:
         train_loss_list = pickle.load(fd)
 
-    with open("accuracy_list.txt", "rb") as fd:
+    with open("results/accuracy_list.txt", "rb") as fd:
         accuracy = pickle.load(fd)
 
-    with open("trained_net_loss.txt", "rb") as fd:
+    with open("results/trained_net_loss.txt", "rb") as fd:
         trained = pickle.load(fd)
 
-    with open("trained_accuracy.txt","rb") as fd:
+    with open("results/trained_accuracy.txt", "rb") as fd:
         trained_acc = pickle.load(fd)
 
     alpha = np.linspace(-0.25, 1.5, 13)

@@ -16,10 +16,12 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--no-cuda', action='store_true', default=False,
                         help='disables CUDA training')
+    parser.add_argument("--interpolation-samples", type=int, default=13, help="Set number of interpolation samples (default = 13)")
     args = parser.parse_args()
 
     use_cuda = not args.no_cuda and torch.cuda.is_available()
     device = torch.device("cuda" if use_cuda else "cpu")
+    print(device)
 
     """CREATE INSTANCE OF NEURAL NETWORK"""
     model = net.Net().to(device)

@@ -53,9 +53,11 @@ def main():
     model.load_state_dict(torch.load("init_state.pt"))
 
     # prepare files for 2D plot
-    calculate_loss.single(model, device, 13, optimizer)
+    calculate_loss.single(model, device, args.interpolation_samples, optimizer)
     # plot
-    plot.line2D_single_parameter()
+    #plot.line2D_single_parameter()
+    plot.plot_accuracy(args.interpolation_samples)
+    plot.plot_2D_loss(args.interpolation_samples)
 
     # prepare files for 3D plot
     dirs = directions.random_directions(model)  # get random directions

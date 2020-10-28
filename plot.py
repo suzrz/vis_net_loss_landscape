@@ -6,6 +6,36 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 from mpl_toolkits.mplot3d import Axes3D
 
+def plot_accuracy(samples):
+    with open("accuracy_list.txt", "rb") as fd:
+        acc = pickle.load(fd)
+    with open("trained_accuracy.txt","rb") as fd:
+        trained_acc = pickle.load(fd)
+
+    alpha = np.linspace(-0.25, 1.5, samples)
+
+    plt.plot(alpha, acc, "x-", color="purple", label="Accuracy with interpolated parameters")
+    plt.plot(alpha, trained_acc, "-", color="orange", label="Accuracy with trained parameters")
+    plt.legend()
+    plt.xlabel("alpha")
+    plt.ylabel("accuracy")
+    plt.show()
+
+def plot_2D_loss(samples):
+    with open("v_loss_list.txt", "rb") as fd:
+        val_loss_list = pickle.load(fd)
+    with open("trained_net_loss.txt", "rb") as fd:
+        trained = pickle.load(fd)
+
+    alpha = np.linspace(-0.25, 1.5, samples)
+
+    plt.plot(alpha, val_loss_list, "x-", color="blue", label="Loss with one param modified")
+    plt.plot(alpha, trained, "-", color="orange", label="Trained net loss")
+    plt.legend()
+    plt.xlabel("alpha")
+    plt.ylabel("loss")
+    plt.show()
+
 
 def line2D_single_parameter():
     with open("v_loss_list.txt", "rb") as fd:

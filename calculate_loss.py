@@ -7,15 +7,18 @@ import pickle
 import data_load
 import numpy as np
 
-def diff_len_data(model, optimizer, scheduler, device):
+
+def get_diff_in_success_for_subsets(model, optimizer, scheduler, device, directory, epochs=14):
     n_tr_samples = [60000, 50000, 40000, 30000, 20000, 10000]
     loss_list = []
     acc_list = []
+    subset_losses_path = os.path.join(directory, "subset_losses")
+    subset_accuracies_path = os.path.join(directory, "subset_accs")
 
-    if not os.path.isfile("results/subset_losses") or not os.path.isfile("results/subset_accs"):
+    if not os.path.isfile(subset_losses_path) or not os.path.isfile(subset_accuracies_path):
         for samples in n_tr_samples:
             train_loader, test_loader = data_load.data_load(train_samples=samples)
-            for epoch in range(1, 2):
+            for epoch in range(1, epochs):
                 net.train(model, train_loader, optimizer, device, epoch)
                 net.test(model, test_loader, device)
                 scheduler.step()
@@ -24,18 +27,21 @@ def diff_len_data(model, optimizer, scheduler, device):
             loss_list.append(loss)
             acc_list.append(acc)
 
-        print(loss_list)
-        print(acc_list)
-        with open("results/subset_losses", "wb") as fd:
+        with open(subset_losses_path, "wb") as fd:
             pickle.dump(loss_list, fd)
-        with open("results/subset_accs", "wb") as fd:
+        with open(subset_accuracies_path, "wb") as fd:
             pickle.dump(acc_list, fd)
 
 
-def single(model, train_loader, test_loader, device, samples, optimizer):
+def single(model, train_loader, test_loader, device, samples, optimizer, directory, final_state_path, init_state_path):
     """
     Calculate losses for one interpolation coefficient and one scalar parameter of network.
 
+    :param test_loader:
+    :param train_loader:
+    :param init_state_path:
+    :param final_state_path:
+    :param directory:
     :param model:
     :param device:
     :param samples:
@@ -47,49 +53,56 @@ def single(model, train_loader, test_loader, device, samples, optimizer):
     val_loss_list = []  # prepare clean list for validation losses
     accuracy_list = []
 
-    if not os.path.isfile("results/trained_net_loss.txt") or not os.path.isfile("results/trained_accuracy.txt"):
-        print("No fil ")
-        model.load_state_dict(torch.load("final_state.pt"))
-        trained_loss, trained_accuracy = net.test(model, test_loader, device)
+    trained_loss_path = os.path.join(directory, "trained_loss")
+    trained_accuracy_path = os.path.join(directory, "trained_accuracy")
+    validation_loss_path = os.path.join(directory, "val_loss")
+    training_loss_path = os.path.join(directory, "training_loss")
+    accuracy_path = os.path.join(directory, "accuracy")
+
+    if not os.path.isfile(trained_loss_path) or not os.path.isfile(trained_accuracy_path):
+        print("No trained loss and accuracy files found.\nGetting loss and accuracy...")
+        model.load_state_dict(torch.load(final_state_path))  # load final state of model
+        trained_loss, trained_accuracy = net.test(model, test_loader, device)  # get trained model loss and accuracy
+        # broadcast to list for easier plotting
         trained_loss = np.broadcast_to(trained_loss, alpha.shape)
         trained_accuracy = np.broadcast_to(trained_accuracy, alpha.shape)
 
-        with open("results/trained_net_loss.txt", "wb") as fd:
+        with open(trained_loss_path, "wb") as fd:
             pickle.dump(trained_loss, fd)
 
-        with open("results/trained_accuracy.txt", "wb") as fd:
+        with open(trained_accuracy_path, "wb") as fd:
             pickle.dump(trained_accuracy, fd)
 
-    if not os.path.isfile("results/v_loss_list.txt") or not os.path.isfile("results/t_loss_list.txt") or not os.path.isfile(
-            "results/accuracy_list.txt"):
-        theta = copy.deepcopy(torch.load("final_state.pt"))
-        theta_f = copy.deepcopy(torch.load("final_state.pt"))
-        theta_i = copy.deepcopy(torch.load("init_state.pt"))
+    if not os.path.isfile(validation_loss_path) or not os.path.isfile(training_loss_path) or \
+            not os.path.isfile(accuracy_path):
+        theta = copy.deepcopy(torch.load(final_state_path))
+        theta_f = copy.deepcopy(torch.load(final_state_path))
+        theta_i = copy.deepcopy(torch.load(init_state_path))
 
-        for alpha_act in alpha:  # interpolate
+        """INTERPOLATION"""
+        for alpha_act in alpha:
             theta["conv2.weight"][4][0][0][0] = copy.copy(torch.add(
                 theta_i["conv2.weight"][4][0][0][0] * (1.0 - alpha_act),
                 theta_f["conv2.weight"][4][0][0][0] * alpha_act))
             if not model.load_state_dict(theta):
-                print("Something went wrong.")  # loading parameters in model failed
+                print("Loading parameters to model failed.")  # loading parameters in model failed
 
-            print("ALPHA: ", alpha_act)
-            print("Getting train loss")
+            print("Getting train loss for alpha: ", alpha_act)
             train_loss = net.train(model, train_loader, optimizer, device, 0)
             train_loss_list.append(train_loss)
 
-            print("Getting val loss")
+            print("Getting validation loss for alpha: ", alpha_act)
             val_loss, accuracy = net.test(model, test_loader, device)  # get loss with new parameters
             val_loss_list.append(val_loss)  # save obtained loss into list
             accuracy_list.append(accuracy)
 
-        with open("results/v_loss_list.txt", "wb") as fd:
+        with open(validation_loss_path, "wb") as fd:
             pickle.dump(val_loss_list, fd)
 
-        with open("results/t_loss_list.txt", "wb") as fd:
+        with open(training_loss_path, "wb") as fd:
             pickle.dump(train_loss_list, fd)
 
-        with open("results/accuracy_list.txt", "wb") as fd:
+        with open(accuracy_path, "wb") as fd:
             pickle.dump(accuracy_list, fd)
 
 
@@ -100,6 +113,7 @@ def set_surf_file(filename):
     :param filename:
     :return:
     """
+    print(filename)
     xmin, xmax, xnum = -1, 1, 51
     ymin, ymax, ynum = -1, 1, 51
 
@@ -164,21 +178,25 @@ def overwrite_weights(model, init_weights, directions, step, device):
         p.data = w.to(device) + torch.Tensor(d).to(device)
 
 
-def double(model, test_loader, directions, device):
+def double(model, test_loader, directions, device, directory):
     """
     Calculate loss for two interpolation coefficients and whole set of network parameters
 
+    :param directory:
+    :param test_loader:
     :param model:
     :param directions:
     :param device:
     :return:
     """
+
     filename = "3D_surf.h5"
-    set_surf_file(filename)
+    file = os.path.join(directory, filename)
+    set_surf_file(file)
     init_weights = [p.data for p in model.parameters()]
 
-    if not os.path.isfile(filename):
-        with h5py.File(filename, "r+") as fd:
+    if not os.path.isfile(file):
+        with h5py.File(file, "r+") as fd:
             xcoords = fd["xcoordinates"][:]
             ycoords = fd["ycoordinates"][:]
             losses = fd["val_loss"][:]

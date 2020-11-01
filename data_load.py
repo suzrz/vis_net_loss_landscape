@@ -35,7 +35,3 @@ def data_load(train_samples=60000, test_samples=10000):
     test_loader = utils.data.DataLoader(test_set, 1000, shuffle=False)
 
     return train_loader, test_loader
-    #print(len(train_loader.dataset))
-    #print(len(test_loader.dataset))
-
-

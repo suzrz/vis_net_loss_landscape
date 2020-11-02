@@ -51,7 +51,7 @@ def single(model, train_loader, test_loader, device, samples, optimizer, directo
     alpha = np.linspace(-0.25, 1.5, samples)  # set interpolation coefficient
     train_loss_list = []  # prepare clean list for train losses
     val_loss_list = []  # prepare clean list for validation losses
-    accuracy_list = []
+    accuracy_list = []  # prepare clean list for accuracy
 
     trained_loss_path = os.path.join(directory, "trained_loss")
     trained_accuracy_path = os.path.join(directory, "trained_accuracy")
@@ -98,6 +98,7 @@ def single(model, train_loader, test_loader, device, samples, optimizer, directo
 
         with open(validation_loss_path, "wb") as fd:
             pickle.dump(val_loss_list, fd)
+
 
         with open(training_loss_path, "wb") as fd:
             pickle.dump(train_loss_list, fd)

@@ -95,6 +95,7 @@ def test(model, test_loader, device):
             data, target = data.to(device), target.to(device)
             output = model.forward(data)
             test_loss += f.nll_loss(output, target, reduction="sum").item()
+
             pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
             correct += pred.eq(target.view_as(pred)).sum().item()
 

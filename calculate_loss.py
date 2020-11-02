@@ -61,7 +61,8 @@ def single(model, train_loader, test_loader, device, samples, optimizer, directo
 
     if not os.path.isfile(trained_loss_path) or not os.path.isfile(trained_accuracy_path):
         print("No trained loss and accuracy files found.\nGetting loss and accuracy...")
-        model.load_state_dict(torch.load(final_state_path))  # load final state of model
+        if not model.load_state_dict(torch.load(final_state_path)):  # load final state of model
+             print("[single: get trained loss and acc] Model parameters loading failed.")
         trained_loss, trained_accuracy = net.test(model, test_loader, device)  # get trained model loss and accuracy
         # broadcast to list for easier plotting
         trained_loss = np.broadcast_to(trained_loss, alpha.shape)
@@ -84,6 +85,7 @@ def single(model, train_loader, test_loader, device, samples, optimizer, directo
             theta["conv2.weight"][4][0][0][0] = copy.copy(torch.add(
                 theta_i["conv2.weight"][4][0][0][0] * (1.0 - alpha_act),
                 theta_f["conv2.weight"][4][0][0][0] * alpha_act))
+
             if not model.load_state_dict(theta):
                 print("Loading parameters to model failed.")  # loading parameters in model failed
 
@@ -98,7 +100,6 @@ def single(model, train_loader, test_loader, device, samples, optimizer, directo
 
         with open(validation_loss_path, "wb") as fd:
             pickle.dump(val_loss_list, fd)
-
 
         with open(training_loss_path, "wb") as fd:
             pickle.dump(train_loss_list, fd)

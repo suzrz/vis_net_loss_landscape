@@ -64,6 +64,7 @@ def main():
 
     # Get train and test data loader
     train_loader, test_loader = data_load.data_load()
+
     """TRAIN MODEL"""
     # check if exists trained model params
     if not os.path.isfile(final_state):
@@ -76,7 +77,7 @@ def main():
 
         torch.save(model.state_dict(), final_state)  # save final parameters of model
 
-    model.load_state_dict(torch.load(init_state))
+    model.load_state_dict(torch.load(final_state))
 
     """PREPARE FOR PLOT"""
     if not args.two_params_only:

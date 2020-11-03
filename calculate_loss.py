@@ -48,7 +48,7 @@ def single(model, train_loader, test_loader, device, samples, optimizer, directo
     :param optimizer:
     :return:
     """
-    alpha = np.linspace(-0.25, 1.5, samples)  # set interpolation coefficient
+    alpha = np.linspace(0, 1, samples)  # set interpolation coefficient
     train_loss_list = []  # prepare clean list for train losses
     val_loss_list = []  # prepare clean list for validation losses
     accuracy_list = []  # prepare clean list for accuracy

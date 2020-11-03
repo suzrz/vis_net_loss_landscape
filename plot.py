@@ -60,7 +60,7 @@ def plot_accuracy(samples, directory):
     with open(trained_accuracy_path, "rb") as fd:
         trained_acc = pickle.load(fd)
 
-    alpha = np.linspace(-0.25, 1.5, samples)
+    alpha = np.linspace(0, 1, samples)
 
     plt.plot(alpha, acc, "x-", color="purple", label="Accuracy with interpolated parameters")
     plt.plot(alpha, trained_acc, "-", color="orange", label="Accuracy with trained parameters")
@@ -79,7 +79,7 @@ def plot_2d_loss(samples, directory):
     with open(trained_loss_path, "rb") as fd:
         trained = pickle.load(fd)
 
-    alpha = np.linspace(-0.25, 1.5, samples)
+    alpha = np.linspace(0, 1, samples)
 
     plt.plot(alpha, val_loss_list, "x-", color="blue", label="Loss with one param modified")
     plt.plot(alpha, trained, "-", color="orange", label="Trained net loss")
@@ -90,7 +90,6 @@ def plot_2d_loss(samples, directory):
 
 
 def line2d_single_parameter(directory):
-
     trained_loss_path = os.path.join(directory, "trained_loss")
     trained_accuracy_path = os.path.join(directory, "trained_accuracy")
     validation_loss_path = os.path.join(directory, "val_loss")

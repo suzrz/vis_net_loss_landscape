@@ -140,7 +140,7 @@ def surface3d_rand_dirs(directory):
     # vmax = 100
 
     # vlevel = 0.5
-    filename = "3D_surf.h5"
+    filename = "surf_3d.h5"
     file = os.path.join(directory, filename)
     surf_name = "val_loss"
 

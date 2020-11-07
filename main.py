@@ -7,6 +7,7 @@ import argparse
 import data_load
 import directions
 import calculate_loss
+from pathlib import Path
 from torch import optim as optim
 from torch.optim.lr_scheduler import StepLR
 
@@ -33,8 +34,8 @@ def main():
     use_cuda = not args.no_cuda and torch.cuda.is_available()
     device = torch.device("cuda" if use_cuda else "cpu")
 
-    init_state = os.path.join(args.results_dir, "init_state.pt")
-    final_state = os.path.join(args.results_dir, "final_state.pt")
+    init_state = Path(os.path.join(args.results_dir, "init_state.pt"))
+    final_state = Path(os.path.join(args.results_dir, "final_state.pt"))
 
     """CREATE INSTANCE OF NEURAL NETWORK"""
     model = net.Net().to(device)
@@ -44,7 +45,7 @@ def main():
     if not os.path.isdir(args.results_dir):
         os.makedirs(args.results_dir)
     # If initialized state does not exist, create new one. Else skip.
-    if not os.path.isfile(init_state):
+    if not init_state.exists():
         torch.save(model.state_dict(), init_state)
         print("New initial state saved.")
 
@@ -67,7 +68,7 @@ def main():
 
     """TRAIN MODEL"""
     # check if exists trained model params
-    if not os.path.isfile(final_state):
+    if not final_state.exists():
         print("Final state not found - beginning training")
         for epoch in range(1, args.epochs):
             net.train(model, train_loader, optimizer, device, epoch)

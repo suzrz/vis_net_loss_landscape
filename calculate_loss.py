@@ -6,7 +6,7 @@ import torch
 import pickle
 import data_load
 import numpy as np
-
+from pathlib import Path
 
 def get_diff_in_success_for_subsets(model, optimizer, scheduler, device, directory, epochs=14):
     n_tr_samples = [60000, 50000, 40000, 30000, 20000, 10000]
@@ -192,12 +192,14 @@ def double(model, test_loader, directions, device, directory):
     :return:
     """
 
-    filename = "3D_surf.h5"
-    file = os.path.join(directory, filename)
+    filename = "surf_3d.h5"
+    file = Path(os.path.join(directory, filename))
+    print("FUNC DOUBLE: ", file)
     set_surf_file(file)
     init_weights = [p.data for p in model.parameters()]
 
-    if not os.path.isfile(file):
+    if file.exists():
+        print("FUNC DOUBLE: in if")
         with h5py.File(file, "r+") as fd:
             xcoords = fd["xcoordinates"][:]
             ycoords = fd["ycoordinates"][:]
@@ -209,13 +211,16 @@ def double(model, test_loader, directions, device, directory):
             print(inds, coords)  # [] [] HERE TODO
             for count, ind in enumerate(inds):
                 coord = coords[count]
-                print("COORD: ", coord)
+
                 overwrite_weights(model, init_weights, directions, coord, device)
 
-                loss = net.test(model, test_loader, device)
+                loss, _ = net.test(model, test_loader, device)
+                print("COORD: ", coord, loss)
 
                 losses.ravel()[ind] = loss
 
                 fd["val_loss"][:] = losses
 
                 fd.flush()
+    else:
+        print("H5 file doesn't exist")

@@ -100,5 +100,5 @@ def test(model, test_loader, device):
             correct += pred.eq(target.view_as(pred)).sum().item()
 
     test_loss /= len(test_loader.dataset)  # compute validation loss of neural network
-    acurracy =  100. * correct / len(test_loader.dataset)
-    return test_loss, acurracy
+    accuracy =  100. * correct / len(test_loader.dataset)
+    return test_loss, accuracy

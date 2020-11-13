@@ -26,7 +26,7 @@ def main():
                         help="Only two parameters will be interpolated")
     parser.add_argument("--results-dir", type=str, default="results",
                         help="Set directory to which will be saved trained model and computed "
-                             "loss/accuracy (default = \"results\")")
+                             "loss/acurracy (default = \"results\")")
     parser.add_argument("--epochs", type=int, default=14, help="Set number of training epochs (default = 14)")
 
     args = parser.parse_args()
@@ -57,7 +57,7 @@ def main():
     optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.5)  # set optimizer
     scheduler = StepLR(optimizer, step_size=1, gamma=0.7)  # set scheduler
 
-    # Get differences in loss and accuracy between different sizes of train subset
+    # Get differences in loss and acurracy between different sizes of train subset
     if args.hist:
         calculate_loss.get_diff_in_success_for_subsets(model, optimizer, scheduler, device,
                                                        args.results_dir, args.epochs)
@@ -87,7 +87,7 @@ def main():
                               optimizer, args.results_dir, final_state, init_state)
 
         """PLOT"""
-        plot.plot_accuracy(args.interpolation_samples, args.results_dir)
+        plot.plot_acurracy(args.interpolation_samples, args.results_dir)
         plot.plot_2d_loss(args.interpolation_samples, args.results_dir)
 
     if not args.single_param_only:

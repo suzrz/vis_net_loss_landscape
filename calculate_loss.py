@@ -51,31 +51,31 @@ def single(model, train_loader, test_loader, device, samples, optimizer, directo
     alpha = np.linspace(0, 1, samples)  # set interpolation coefficient
     train_loss_list = []  # prepare clean list for train losses
     val_loss_list = []  # prepare clean list for validation losses
-    accuracy_list = []  # prepare clean list for accuracy
+    acurracy_list = []  # prepare clean list for acurracy
 
     trained_loss_path = os.path.join(directory, "trained_loss")
-    trained_accuracy_path = os.path.join(directory, "trained_accuracy")
+    trained_acurracy_path = os.path.join(directory, "trained_acurracy")
     validation_loss_path = os.path.join(directory, "val_loss")
     training_loss_path = os.path.join(directory, "training_loss")
-    accuracy_path = os.path.join(directory, "accuracy")
+    acurracy_path = os.path.join(directory, "acurracy")
 
-    if not os.path.isfile(trained_loss_path) or not os.path.isfile(trained_accuracy_path):
-        print("No trained loss and accuracy files found.\nGetting loss and accuracy...")
+    if not os.path.isfile(trained_loss_path) or not os.path.isfile(trained_acurracy_path):
+        print("No trained loss and acurracy files found.\nGetting loss and acurracy...")
         if not model.load_state_dict(torch.load(final_state_path)):  # load final state of model
              print("[single: get trained loss and acc] Model parameters loading failed.")
-        trained_loss, trained_accuracy = net.test(model, test_loader, device)  # get trained model loss and accuracy
+        trained_loss, trained_acurracy = net.test(model, test_loader, device)  # get trained model loss and acurracy
         # broadcast to list for easier plotting
         trained_loss = np.broadcast_to(trained_loss, alpha.shape)
-        trained_accuracy = np.broadcast_to(trained_accuracy, alpha.shape)
+        trained_acurracy = np.broadcast_to(trained_acurracy, alpha.shape)
 
         with open(trained_loss_path, "wb") as fd:
             pickle.dump(trained_loss, fd)
 
-        with open(trained_accuracy_path, "wb") as fd:
-            pickle.dump(trained_accuracy, fd)
+        with open(trained_acurracy_path, "wb") as fd:
+            pickle.dump(trained_acurracy, fd)
 
     if not os.path.isfile(validation_loss_path) or not os.path.isfile(training_loss_path) or \
-            not os.path.isfile(accuracy_path):
+            not os.path.isfile(acurracy_path):
         theta = copy.deepcopy(torch.load(final_state_path))
         theta_f = copy.deepcopy(torch.load(final_state_path))
         theta_i = copy.deepcopy(torch.load(init_state_path))
@@ -94,9 +94,9 @@ def single(model, train_loader, test_loader, device, samples, optimizer, directo
             train_loss_list.append(train_loss)
 
             print("Getting validation loss for alpha: ", alpha_act)
-            val_loss, accuracy = net.test(model, test_loader, device)  # get loss with new parameters
+            val_loss, acurracy = net.test(model, test_loader, device)  # get loss with new parameters
             val_loss_list.append(val_loss)  # save obtained loss into list
-            accuracy_list.append(accuracy)
+            acurracy_list.append(acurracy)
 
         with open(validation_loss_path, "wb") as fd:
             pickle.dump(val_loss_list, fd)
@@ -104,8 +104,8 @@ def single(model, train_loader, test_loader, device, samples, optimizer, directo
         with open(training_loss_path, "wb") as fd:
             pickle.dump(train_loss_list, fd)
 
-        with open(accuracy_path, "wb") as fd:
-            pickle.dump(accuracy_list, fd)
+        with open(acurracy_path, "wb") as fd:
+            pickle.dump(acurracy_list, fd)
 
 
 def set_surf_file(filename):

@@ -22,7 +22,7 @@ def plot_subset_hist():
     fig, (ax1, ax2) = plt.subplots(1, 2)
     fig.set_size_inches(12, 6)
     loss = ax1.bar(ind-width/2, losses, width, color="orange", label="validation loss")
-    acc = ax2.bar(ind + width/2, accs, width, color="purple", label="accuracy")
+    acc = ax2.bar(ind + width/2, accs, width, color="purple", label="acurracy")
 
     ax1.set_ylabel("validation loss")
     ax1.set_xlabel("number of samples")
@@ -31,7 +31,7 @@ def plot_subset_hist():
     ax1.legend(bbox_to_anchor=(0, 1.02, 1, 0.2), loc="lower left",
                borderaxespad=0, ncol=3)
 
-    ax2.set_ylabel("accuracy")
+    ax2.set_ylabel("acurracy")
     ax2.set_xlabel("number of samples")
     ax2.set_xticks(ind)
     ax2.set_xticklabels(n_tr_samples)
@@ -51,22 +51,22 @@ def plot_subset_hist():
     plt.show()
 
 
-def plot_accuracy(samples, directory):
-    trained_accuracy_path = os.path.join(directory, "trained_accuracy")
-    accuracy_path = os.path.join(directory, "accuracy")
+def plot_acurracy(samples, directory):
+    trained_acurracy_path = os.path.join(directory, "trained_acurracy")
+    acurracy_path = os.path.join(directory, "acurracy")
 
-    with open(accuracy_path, "rb") as fd:
+    with open(acurracy_path, "rb") as fd:
         acc = pickle.load(fd)
-    with open(trained_accuracy_path, "rb") as fd:
+    with open(trained_acurracy_path, "rb") as fd:
         trained_acc = pickle.load(fd)
 
     alpha = np.linspace(0, 1, samples)
 
-    plt.plot(alpha, acc, "x-", color="purple", label="Accuracy with interpolated parameters")
-    plt.plot(alpha, trained_acc, "-", color="orange", label="Accuracy with trained parameters")
+    plt.plot(alpha, acc, "x-", color="purple", label="acurracy with interpolated parameters")
+    plt.plot(alpha, trained_acc, "-", color="orange", label="acurracy with trained parameters")
     plt.legend()
     plt.xlabel("alpha")
-    plt.ylabel("accuracy")
+    plt.ylabel("acurracy")
     plt.show()
 
 
@@ -91,10 +91,10 @@ def plot_2d_loss(samples, directory):
 
 def line2d_single_parameter(directory):
     trained_loss_path = os.path.join(directory, "trained_loss")
-    trained_accuracy_path = os.path.join(directory, "trained_accuracy")
+    trained_acurracy_path = os.path.join(directory, "trained_acurracy")
     validation_loss_path = os.path.join(directory, "val_loss")
     training_loss_path = os.path.join(directory, "training_loss")
-    accuracy_path = os.path.join(directory, "accuracy")
+    acurracy_path = os.path.join(directory, "acurracy")
 
     with open(validation_loss_path, "rb") as fd:
         val_loss_list = pickle.load(fd)
@@ -102,13 +102,13 @@ def line2d_single_parameter(directory):
     with open(training_loss_path, "rb") as fd:
         train_loss_list = pickle.load(fd)
 
-    with open(accuracy_path, "rb") as fd:
-        accuracy = pickle.load(fd)
+    with open(acurracy_path, "rb") as fd:
+        acurracy = pickle.load(fd)
 
     with open(trained_loss_path, "rb") as fd:
         trained = pickle.load(fd)
 
-    with open(trained_accuracy_path, "rb") as fd:
+    with open(trained_acurracy_path, "rb") as fd:
         trained_acc = pickle.load(fd)
 
     alpha = np.linspace(-0.25, 1.5, 13)
@@ -118,8 +118,8 @@ def line2d_single_parameter(directory):
     ax1.plot(alpha, val_loss_list, "x-", label="validation loss")
     ax1.plot(alpha, train_loss_list, "o-", color="orange", label="train loss")
     ax1.plot(alpha, trained, "-", color="green", label="loss of trained net")
-    ax2.plot(alpha, accuracy, "*-", color="purple", label="accuracy")
-    ax2.plot(alpha, trained_acc, "-", color="orange", label="trained accuracy")
+    ax2.plot(alpha, acurracy, "*-", color="purple", label="acurracy")
+    ax2.plot(alpha, trained_acc, "-", color="orange", label="trained acurracy")
 
     ax1.spines['right'].set_visible(False)
     ax1.spines['top'].set_visible(False)

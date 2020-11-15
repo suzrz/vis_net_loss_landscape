@@ -8,6 +8,7 @@ import data_load
 import numpy as np
 from pathlib import Path
 
+
 def get_diff_in_success_for_subsets(model, optimizer, scheduler, device, directory, epochs=14):
     n_tr_samples = [60000, 50000, 40000, 30000, 20000, 10000]
     loss_list = []
@@ -33,7 +34,7 @@ def get_diff_in_success_for_subsets(model, optimizer, scheduler, device, directo
             pickle.dump(acc_list, fd)
 
 
-def single(model, train_loader, test_loader, device, samples, optimizer, directory, final_state_path, init_state_path):
+def single(model, train_loader, test_loader, device, alpha, optimizer, directory, final_state_path, init_state_path):
     """
     Calculate losses for one interpolation coefficient and one scalar parameter of network.
 
@@ -48,7 +49,6 @@ def single(model, train_loader, test_loader, device, samples, optimizer, directo
     :param optimizer:
     :return:
     """
-    alpha = np.linspace(0, 1, samples)  # set interpolation coefficient
     train_loss_list = []  # prepare clean list for train losses
     val_loss_list = []  # prepare clean list for validation losses
     accuracy_list = []  # prepare clean list for accuracy
@@ -208,7 +208,7 @@ def double(model, test_loader, directions, device, directory):
 
             inds, coords = get_indices(losses, xcoords, ycoords)
 
-            print(inds, coords)  # [] [] HERE TODO
+            print(inds, coords)
             for count, ind in enumerate(inds):
                 coord = coords[count]
 

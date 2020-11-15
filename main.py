@@ -7,6 +7,7 @@ import argparse
 import data_load
 import directions
 import calculate_loss
+import numpy as np
 from pathlib import Path
 from torch import optim as optim
 from torch.optim.lr_scheduler import StepLR
@@ -28,6 +29,9 @@ def main():
                         help="Set directory to which will be saved trained model and computed "
                              "loss/accuracy (default = \"results\")")
     parser.add_argument("--epochs", type=int, default=14, help="Set number of training epochs (default = 14)")
+    parser.add_argument("--start", type=float, default=-1., help="Starting position of interpolation (default = -1)")
+    parser.add_argument("--end", type=float, default=1.25, help="Ending position of interpolation (default = 1.25)")
+    parser.add_argument("--steps", type=int, default=13, help="Number of interpolation steps (default = 13)")
 
     args = parser.parse_args()
 
@@ -79,20 +83,21 @@ def main():
         torch.save(model.state_dict(), final_state)  # save final parameters of model
 
     model.load_state_dict(torch.load(final_state))
+    alpha = np.linspace(args.start, args.end, args.steps)
 
     """PREPARE FOR PLOT"""
     if not args.two_params_only:
         # prepare files for 2D plot
-        calculate_loss.single(model, train_loader, test_loader, device, args.interpolation_samples,
+        calculate_loss.single(model, train_loader, test_loader, device, alpha,
                               optimizer, args.results_dir, final_state, init_state)
 
         """PLOT"""
-        plot.plot_accuracy(args.interpolation_samples, args.results_dir)
-        plot.plot_2d_loss(args.interpolation_samples, args.results_dir)
+        plot.plot_accuracy(alpha, args.results_dir)
+        plot.plot_2d_loss(alpha, args.results_dir)
 
     if not args.single_param_only:
         # prepare files for 3D plot
-        dirs = directions.random_directions(model)  # get random directions
+        dirs = directions.random_directions(model, device)  # get random directions
         calculate_loss.double(model, test_loader, dirs, device, args.results_dir)  # calculate validation loss
         # plot
         plot.surface3d_rand_dirs(args.results_dir)

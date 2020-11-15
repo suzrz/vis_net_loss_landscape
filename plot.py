@@ -51,7 +51,7 @@ def plot_subset_hist():
     plt.show()
 
 
-def plot_accuracy(samples, directory):
+def plot_accuracy(alpha, directory):
     trained_accuracy_path = os.path.join(directory, "trained_accuracy")
     accuracy_path = os.path.join(directory, "accuracy")
 
@@ -59,8 +59,6 @@ def plot_accuracy(samples, directory):
         acc = pickle.load(fd)
     with open(trained_accuracy_path, "rb") as fd:
         trained_acc = pickle.load(fd)
-
-    alpha = np.linspace(0, 1, samples)
 
     plt.plot(alpha, acc, "x-", color="purple", label="Accuracy with interpolated parameters")
     plt.plot(alpha, trained_acc, "-", color="orange", label="Accuracy with trained parameters")
@@ -70,7 +68,7 @@ def plot_accuracy(samples, directory):
     plt.show()
 
 
-def plot_2d_loss(samples, directory):
+def plot_2d_loss(alpha, directory):
     trained_loss_path = os.path.join(directory, "trained_loss")
     validation_loss_path = os.path.join(directory, "val_loss")
 
@@ -78,8 +76,6 @@ def plot_2d_loss(samples, directory):
         val_loss_list = pickle.load(fd)
     with open(trained_loss_path, "rb") as fd:
         trained = pickle.load(fd)
-
-    alpha = np.linspace(0, 1, samples)
 
     plt.plot(alpha, val_loss_list, "x-", color="blue", label="Loss with one param modified")
     plt.plot(alpha, trained, "-", color="orange", label="Trained net loss")
@@ -89,7 +85,7 @@ def plot_2d_loss(samples, directory):
     plt.show()
 
 
-def line2d_single_parameter(directory):
+def line2d_single_parameter(directory, alpha):
     trained_loss_path = os.path.join(directory, "trained_loss")
     trained_accuracy_path = os.path.join(directory, "trained_accuracy")
     validation_loss_path = os.path.join(directory, "val_loss")
@@ -110,8 +106,6 @@ def line2d_single_parameter(directory):
 
     with open(trained_accuracy_path, "rb") as fd:
         trained_acc = pickle.load(fd)
-
-    alpha = np.linspace(-0.25, 1.5, 13)
 
     fig, (ax1, ax2) = plt.subplots(1, 2)
 

@@ -1,9 +1,9 @@
 import torch
 
 
-def random_dir(model):
+def random_dir(model, device):
     weights = [p.data for p in model.parameters()]
-    direction = [torch.randn(w.size()) for w in weights]
+    direction = [torch.randn(w.size(), device=device) for w in weights]
 
     # normalize
     assert (len(direction) == len(weights))
@@ -17,8 +17,8 @@ def random_dir(model):
     return direction
 
 
-def random_directions(model):
-    x_dir = random_dir(model)
-    y_dir = random_dir(model)
+def random_directions(model, device):
+    x_dir = random_dir(model, device)
+    y_dir = random_dir(model, device)
 
     return [x_dir, y_dir]

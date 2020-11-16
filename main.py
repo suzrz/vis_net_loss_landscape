@@ -7,6 +7,7 @@ import argparse
 import data_load
 import directions
 import calculate_loss
+import numpy as np
 from pathlib import Path
 from torch import optim as optim
 from torch.optim.lr_scheduler import StepLR
@@ -17,8 +18,9 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--no-cuda', action='store_true', default=False,
                         help='disables CUDA training')
-    parser.add_argument("--interpolation-samples", type=int, default=13,
-                        help="Set number of interpolation samples (default = 13)")
+    parser.add_argument("--alpha-start", type=float, default=-1., help="Set starting point of interpolation (float, default = -1.0)")
+    parser.add_argument("--alpha-end", type=float, default=1., help="Set ending point of interpolation (float, default = 1.0)")
+    parser.add_argument("--alpha-steps", type=int, default=20, help="Set number of interpolation steps (int, default = 20)")
     parser.add_argument("--hist", action="store_true")
     parser.add_argument("--single-param-only", action="store_true",
                         help="Only one single parameter will be interpolated")
@@ -80,15 +82,16 @@ def main():
 
     model.load_state_dict(torch.load(final_state))
 
+    alpha = np.linspace(args.alpha_start, args.alpha_end, args.alpha_steps)
     """PREPARE FOR PLOT"""
     if not args.two_params_only:
         # prepare files for 2D plot
-        calculate_loss.single(model, train_loader, test_loader, device, args.interpolation_samples,
-                              optimizer, args.results_dir, final_state, init_state)
+        calculate_loss.single(model, train_loader, test_loader, device, alpha,
+                              optimizer, final_state, init_state)
 
         """PLOT"""
-        plot.plot_accuracy(args.interpolation_samples, args.results_dir)
-        plot.plot_2d_loss(args.interpolation_samples, args.results_dir)
+        plot.plot_accuracy(alpha)
+        plot.plot_2d_loss(alpha)
 
     if not args.single_param_only:
         # prepare files for 3D plot

@@ -3,19 +3,25 @@ import net
 import copy
 import h5py
 import torch
-import pickle
 import data_load
 import numpy as np
 from pathlib import Path
+
+directory = "results"
+trained_loss_path = Path(os.path.join(directory, "trained_loss"))
+trained_accuracy_path = Path(os.path.join(directory, "trained_accuracy"))
+validation_loss_path = Path(os.path.join(directory, "val_loss"))
+training_loss_path = Path(os.path.join(directory, "training_loss"))
+accuracy_path = Path(os.path.join(directory, "accuracy"))
 
 def get_diff_in_success_for_subsets(model, optimizer, scheduler, device, directory, epochs=14):
     n_tr_samples = [60000, 50000, 40000, 30000, 20000, 10000]
     loss_list = []
     acc_list = []
-    subset_losses_path = os.path.join(directory, "subset_losses")
-    subset_accuracies_path = os.path.join(directory, "subset_accs")
+    subset_losses_path = Path(os.path.join(directory, "subset_losses"))
+    subset_accuracies_path = Path(os.path.join(directory, "subset_accs"))
 
-    if not os.path.isfile(subset_losses_path) or not os.path.isfile(subset_accuracies_path):
+    if not subset_losses_path.exists() or not subset_accuracies_path.exists():
         for samples in n_tr_samples:
             train_loader, test_loader = data_load.data_load(train_samples=samples)
             for epoch in range(1, epochs):
@@ -27,13 +33,14 @@ def get_diff_in_success_for_subsets(model, optimizer, scheduler, device, directo
             loss_list.append(loss)
             acc_list.append(acc)
 
-        with open(subset_losses_path, "wb") as fd:
-            pickle.dump(loss_list, fd)
-        with open(subset_accuracies_path, "wb") as fd:
-            pickle.dump(acc_list, fd)
+        loss_list = np.array(loss_list, dtype=float)
+        acc_list = np.array(acc_list, dtype=float)
+
+        np.savetxt(subset_losses_path, loss_list)
+        np.savetxt(subset_accuracies_path, acc_list)
 
 
-def single(model, train_loader, test_loader, device, samples, optimizer, directory, final_state_path, init_state_path):
+def single(model, train_loader, test_loader, device, alpha, optimizer, final_state_path, init_state_path):
     """
     Calculate losses for one interpolation coefficient and one scalar parameter of network.
 
@@ -48,18 +55,13 @@ def single(model, train_loader, test_loader, device, samples, optimizer, directo
     :param optimizer:
     :return:
     """
-    alpha = np.linspace(0, 1, samples)  # set interpolation coefficient
     train_loss_list = []  # prepare clean list for train losses
     val_loss_list = []  # prepare clean list for validation losses
     accuracy_list = []  # prepare clean list for accuracy
 
-    trained_loss_path = os.path.join(directory, "trained_loss")
-    trained_accuracy_path = os.path.join(directory, "trained_accuracy")
-    validation_loss_path = os.path.join(directory, "val_loss")
-    training_loss_path = os.path.join(directory, "training_loss")
-    accuracy_path = os.path.join(directory, "accuracy")
 
-    if not os.path.isfile(trained_loss_path) or not os.path.isfile(trained_accuracy_path):
+
+    if not trained_loss_path.exists() or not trained_accuracy_path.exists():
         print("No trained loss and accuracy files found.\nGetting loss and accuracy...")
         if not model.load_state_dict(torch.load(final_state_path)):  # load final state of model
              print("[single: get trained loss and acc] Model parameters loading failed.")
@@ -68,14 +70,14 @@ def single(model, train_loader, test_loader, device, samples, optimizer, directo
         trained_loss = np.broadcast_to(trained_loss, alpha.shape)
         trained_accuracy = np.broadcast_to(trained_accuracy, alpha.shape)
 
-        with open(trained_loss_path, "wb") as fd:
-            pickle.dump(trained_loss, fd)
+        trained_loss = np.array(trained_loss, dtype=float)
+        trained_accuracy = np.array(trained_accuracy, dtype=float)
 
-        with open(trained_accuracy_path, "wb") as fd:
-            pickle.dump(trained_accuracy, fd)
+        np.savetxt(trained_loss_path, trained_loss)
+        np.savetxt(trained_accuracy_path, trained_accuracy)
 
-    if not os.path.isfile(validation_loss_path) or not os.path.isfile(training_loss_path) or \
-            not os.path.isfile(accuracy_path):
+    if not validation_loss_path.exists() or not training_loss_path.exists() or \
+            not accuracy_path.exists():
         theta = copy.deepcopy(torch.load(final_state_path))
         theta_f = copy.deepcopy(torch.load(final_state_path))
         theta_i = copy.deepcopy(torch.load(init_state_path))
@@ -98,14 +100,13 @@ def single(model, train_loader, test_loader, device, samples, optimizer, directo
             val_loss_list.append(val_loss)  # save obtained loss into list
             accuracy_list.append(accuracy)
 
-        with open(validation_loss_path, "wb") as fd:
-            pickle.dump(val_loss_list, fd)
+        val_loss_list = np.array(val_loss_list, dtype=float)
+        train_loss_list = np.array(train_loss_list, dtype=float)
+        accuracy_list = np.array(accuracy_list, dtype=float)
 
-        with open(training_loss_path, "wb") as fd:
-            pickle.dump(train_loss_list, fd)
-
-        with open(accuracy_path, "wb") as fd:
-            pickle.dump(accuracy_list, fd)
+        np.savetxt(validation_loss_path, val_loss_list)
+        np.savetxt(training_loss_path, train_loss_list)
+        np.savetxt(accuracy_path, accuracy_list)
 
 
 def set_surf_file(filename):

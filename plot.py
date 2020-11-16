@@ -4,17 +4,25 @@ import pickle
 import numpy as np
 # import seaborn as sns
 import matplotlib.pyplot as plt
+from pathlib import Path
 from matplotlib import cm
 from mpl_toolkits.mplot3d import Axes3D
 
 
+directory = "results"
+trained_loss_path = Path(os.path.join(directory, "trained_loss"))
+trained_accuracy_path = Path(os.path.join(directory, "trained_accuracy"))
+validation_loss_path = Path(os.path.join(directory, "val_loss"))
+training_loss_path = Path(os.path.join(directory, "training_loss"))
+accuracy_path = Path(os.path.join(directory, "accuracy"))
+
 def plot_subset_hist():
     n_tr_samples = [10000, 20000, 30000, 40000, 50000, 60000]
+    subset_losses_path = Path(os.path.join(directory, "subset_losses"))
+    subset_accuracies_path = Path(os.path.join(directory, "subset_accs"))
 
-    with open("results/subset_losses", "rb") as fd:
-        losses = pickle.load(fd)
-    with open("results/subset_accs", "rb") as fd:
-        accs = pickle.load(fd)
+    losses = np.loadtxt(subset_losses_path)
+    accs = np.loadtxt(subset_accuracies_path)
 
     ind = np.arange(len(losses))
     width = 0.35
@@ -51,16 +59,9 @@ def plot_subset_hist():
     plt.show()
 
 
-def plot_accuracy(samples, directory):
-    trained_accuracy_path = os.path.join(directory, "trained_accuracy")
-    accuracy_path = os.path.join(directory, "accuracy")
-
-    with open(accuracy_path, "rb") as fd:
-        acc = pickle.load(fd)
-    with open(trained_accuracy_path, "rb") as fd:
-        trained_acc = pickle.load(fd)
-
-    alpha = np.linspace(0, 1, samples)
+def plot_accuracy(alpha):
+    acc = np.loadtxt(accuracy_path)
+    trained_acc = np.loadtxt(trained_accuracy_path)
 
     plt.plot(alpha, acc, "x-", color="purple", label="Accuracy with interpolated parameters")
     plt.plot(alpha, trained_acc, "-", color="orange", label="Accuracy with trained parameters")
@@ -70,16 +71,9 @@ def plot_accuracy(samples, directory):
     plt.show()
 
 
-def plot_2d_loss(samples, directory):
-    trained_loss_path = os.path.join(directory, "trained_loss")
-    validation_loss_path = os.path.join(directory, "val_loss")
-
-    with open(validation_loss_path, "rb") as fd:
-        val_loss_list = pickle.load(fd)
-    with open(trained_loss_path, "rb") as fd:
-        trained = pickle.load(fd)
-
-    alpha = np.linspace(0, 1, samples)
+def plot_2d_loss(alpha):
+    val_loss_list = np.loadtxt(validation_loss_path)
+    trained = np.loadtxt(trained_loss_path)
 
     plt.plot(alpha, val_loss_list, "x-", color="blue", label="Loss with one param modified")
     plt.plot(alpha, trained, "-", color="orange", label="Trained net loss")
@@ -89,29 +83,12 @@ def plot_2d_loss(samples, directory):
     plt.show()
 
 
-def line2d_single_parameter(directory):
-    trained_loss_path = os.path.join(directory, "trained_loss")
-    trained_accuracy_path = os.path.join(directory, "trained_accuracy")
-    validation_loss_path = os.path.join(directory, "val_loss")
-    training_loss_path = os.path.join(directory, "training_loss")
-    accuracy_path = os.path.join(directory, "accuracy")
-
-    with open(validation_loss_path, "rb") as fd:
-        val_loss_list = pickle.load(fd)
-
-    with open(training_loss_path, "rb") as fd:
-        train_loss_list = pickle.load(fd)
-
-    with open(accuracy_path, "rb") as fd:
-        accuracy = pickle.load(fd)
-
-    with open(trained_loss_path, "rb") as fd:
-        trained = pickle.load(fd)
-
-    with open(trained_accuracy_path, "rb") as fd:
-        trained_acc = pickle.load(fd)
-
-    alpha = np.linspace(-0.25, 1.5, 13)
+def line2d_single_parameter(alpha):
+    val_loss_list = np.loadtxt(validation_loss_path)
+    train_loss_list = np.loadtxt(training_loss_path)
+    accuracy = np.loadtxt(accuracy_path)
+    trained = np.loadtxt(trained_loss_path)
+    trained_acc = np.loadtxt(trained_accuracy_path)
 
     fig, (ax1, ax2) = plt.subplots(1, 2)
 

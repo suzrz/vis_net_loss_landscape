@@ -84,9 +84,9 @@ def single(model, train_loader, test_loader, device, alpha, optimizer, final_sta
 
         """INTERPOLATION"""
         for alpha_act in alpha:
-            theta["conv2.weight"][4][0][0][0] = copy.copy(torch.add(
+            theta["conv2.weight"][4][0][0][0] = torch.add(
                 theta_i["conv2.weight"][4][0][0][0] * (1.0 - alpha_act),
-                theta_f["conv2.weight"][4][0][0][0] * alpha_act))
+                theta_f["conv2.weight"][4][0][0][0] * alpha_act)
 
             if not model.load_state_dict(theta):
                 print("Loading parameters to model failed.")  # loading parameters in model failed

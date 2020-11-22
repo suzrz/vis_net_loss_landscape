@@ -2,11 +2,12 @@ import os
 import net
 import copy
 import torch
+import data_load
 import numpy as np
 from pathlib import Path
 import data_load  # only for testing, delete after program validation
 from torch import optim as optim  # only for testing, delete after program validation
-from paths import directory, sf_loss_path, sf_acc_path, svloss_path, stloss_path, sacc_path, vvloss_path, vtloss_path, vacc_path
+from paths import *
 
 class Interpolator():
     def __init__(self, model, device, alpha, final_state_path, init_state_path):
@@ -169,9 +170,7 @@ class Interpolator():
         return t_loss_list
 
     def get_final_loss(self, test_loader):
-        if not self.model.load_state_dict(self.theta_f):
-            print("[interpolator] - get_final_loss: loading final state parameters has failed")
-            return None
+        self.model.load_state_dict(self.theta_f)
 
         loss, _ = net.test(self.model, test_loader, self.device)
         loss = np.broadcast_to(loss, self.alpha.shape)
@@ -179,13 +178,13 @@ class Interpolator():
         return loss
 
     def get_final_acc(self, test_loader):
-        if not self.model.load_state_dict(self.theta_f):
-            print("[interpolator] - get_final_acc: loading final state parameters has failed")
-            return None
+        self.model.load_state_dict(self.theta_f)
 
         _, acc = net.test(self.model, test_loader, self.device)
         acc = np.broadcast_to(acc, self.alpha.shape)
+
         np.savetxt(sf_acc_path, acc)
+
         return acc
 
     def get_final_loss_acc(self, test_loader):
@@ -196,9 +195,46 @@ class Interpolator():
         loss, acc = net.test(self.model, test_loader, self.device)
         loss = np.broadcast_to(loss, self.alpha.shape)
         acc = np.broadcast_to(acc, self.alpha.shape)
+
         np.savetxt(sf_loss_path, loss)
         np.savetxt(sf_acc_path, acc)
+
         return loss, acc
+
+    def get_subset_perf(self, subset_list, epochs, optimizer, scheduler, test_loader):
+        loss_list = []
+        acc_list = []
+        for n_samples in subset_list:
+            self.model.load_state_dict(self.theta_i)
+            for epoch in range(1, epochs):
+                train_loader, test_loader = data_load.data_load(train_samples=n_samples)
+                net.train(self.model, train_loader, optimizer, self.device, epoch)
+                net.test(self.model, test_loader, self.device)
+                scheduler.step()
+                print("[interpolator] - get_subset_perf : Finished epoch", epoch, "for training set of size:", n_samples)
+            loss, acc = net.test(self.model, test_loader, self.device)
+            loss_list.append(loss)
+            acc_list.append(acc)
+
+        np.savetxt(subs_loss, loss_list)
+        np.savetxt(subs_acc, acc_list)
+        self.model.load_state_dict(self.theta_f)
+
+    def get_stability(self, subset_list):
+        loss_list = []
+        acc_list = []
+
+        self.model.load_state_dict(self.theta_f)
+        for n_samples in subset_list:
+            _, test_loader = data_load.data_load(test_samples=n_samples)
+            loss, acc = net.test(self.model, test_loader, self.device)
+            loss_list.append(loss)
+            acc_list.append(acc)
+            print("[interpolator] - get_stability : subset", n_samples, "| loss", loss, "| acc", acc )
+
+        np.savetxt(stab_loss, loss_list)
+        np.savetxt(stab_acc, acc_list)
+
 
 """
 init_state = Path(os.path.join(directory, "init_state.pt"))

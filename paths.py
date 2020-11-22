@@ -23,3 +23,9 @@ sacc_path = Path(os.path.join(directory, "sacc"))
 vvloss_path = Path(os.path.join(directory, "vvloss"))
 vtloss_path = Path(os.path.join(directory, "vtloss"))
 vacc_path = Path(os.path.join(directory, "vacc"))
+
+subs_loss = Path(os.path.join(directory, "subs_loss"))
+subs_acc = Path(os.path.join(directory, "subs_acc"))
+
+stab_loss = Path(os.path.join(directory, "stab_loss"))
+stab_acc = Path(os.path.join(directory, "stab_acc"))

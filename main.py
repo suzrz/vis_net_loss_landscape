@@ -83,10 +83,10 @@ def main():
         torch.save(model.state_dict(), final_state)  # save final parameters of model
 
     model.load_state_dict(torch.load(final_state))
-
     alpha = np.linspace(args.alpha_start, args.alpha_end, args.alpha_steps)
-
     interpolate = Interpolator(model, device, alpha, final_state, init_state)
+
+
     if not sf_loss_path.exists() or not sf_acc_path.exists():
         interpolate.get_final_loss_acc(test_loader)
     if not svloss_path.exists() or not sacc_path.exists():
@@ -95,16 +95,16 @@ def main():
     plot.plot_accuracy(alpha)
     plot.plot_2d_loss(alpha)
 
+    subs = [60000, 50000, 40000, 30000, 20000, 10000, 7000, 5000, 3000, 1000]
+    interpolate.get_subset_perf(subs, args.epochs, optimizer, scheduler, test_loader)
+    plot.plot_subset_hist(subs)
+
+    subs_test = [10000, 9000, 8000, 7000, 6000, 5000, 4000, 3000, 2000, 1000]
+    interpolate.get_stability(subs_test)
+    plot.plot_stability(subs_test)
+
     """PREPARE FOR PLOT"""
     """
-    if not args.two_params_only:
-        # prepare files for 2D plot
-        calculate_loss.single(model, train_loader, test_loader, device, alpha,
-                              optimizer, final_state, init_state)
-
-        plot.plot_accuracy(alpha)
-        plot.plot_2d_loss(alpha)
-
     if not args.single_param_only:
         # prepare files for 3D plot
         dirs = directions.random_directions(model, device)  # get random directions

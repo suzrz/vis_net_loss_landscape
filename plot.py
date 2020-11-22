@@ -17,13 +17,49 @@ validation_loss_path = Path(os.path.join(directory, "val_loss"))
 training_loss_path = Path(os.path.join(directory, "training_loss"))
 accuracy_path = Path(os.path.join(directory, "accuracy"))
 
-def plot_subset_hist():
-    n_tr_samples = [10000, 20000, 30000, 40000, 50000, 60000]
-    subset_losses_path = Path(os.path.join(directory, "subset_losses"))
-    subset_accuracies_path = Path(os.path.join(directory, "subset_accs"))
 
-    losses = np.loadtxt(subset_losses_path)
-    accs = np.loadtxt(subset_accuracies_path)
+def plot_stability(subsets):
+    losses = np.loadtxt(stab_loss)
+    accs = np.loadtxt(stab_acc)
+
+    ind = np.arange(len(losses))
+    width = 0.35
+
+    fig, (ax1, ax2) = plt.subplots(1, 2)
+    fig.set_size_inches(12, 6)
+    loss = ax1.bar(ind-width/2, losses, width, color="orange", label="validation loss")
+    acc = ax2.bar(ind + width/2, accs, width, color="purple", label="accuracy")
+
+    ax1.set_ylabel("validation loss")
+    ax1.set_xlabel("number of samples")
+    ax1.set_xticks(ind)
+    ax1.set_xticklabels(subsets)
+    ax1.legend(bbox_to_anchor=(0, 1.02, 1, 0.2), loc="lower left",
+               borderaxespad=0, ncol=3)
+
+    ax2.set_ylabel("accuracy")
+    ax2.set_xlabel("number of samples")
+    ax2.set_xticks(ind)
+    ax2.set_xticklabels(subsets)
+    ax2.legend(bbox_to_anchor=(0, 1.02, 1, 0.2), loc="lower left",
+               borderaxespad=0, ncol=3)
+
+    for rect in loss:
+        height = rect.get_height()
+        ax1.text(rect.get_x() + rect.get_width() * 0.5, 1.01 * height, '{:.3f}'.format(height),
+                 ha="center", va="bottom")
+
+    for rect in acc:
+        height = rect.get_height()
+        ax2.text(rect.get_x() + rect.get_width() * 0.5, 1.01 * height, '{:.2f}'.format(height),
+                 ha="center", va="bottom")
+
+    plt.show()
+
+def plot_subset_hist(n_tr_samples):
+
+    losses = np.loadtxt(subs_loss)
+    accs = np.loadtxt(subs_acc)
 
     ind = np.arange(len(losses))
     width = 0.35

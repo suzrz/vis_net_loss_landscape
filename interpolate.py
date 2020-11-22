@@ -6,12 +6,13 @@ import numpy as np
 from pathlib import Path
 import data_load  # only for testing, delete after program validation
 from torch import optim as optim  # only for testing, delete after program validation
-from calculate_loss import directory, trained_loss_path, trained_accuracy_path, validation_loss_path, training_loss_path, accuracy_path
+from paths import directory, sf_loss_path, sf_acc_path, svloss_path, stloss_path, sacc_path, vvloss_path, vtloss_path, vacc_path
 
 class Interpolator():
-    def __init__(self, model, device,  final_state_path, init_state_path):
+    def __init__(self, model, device, alpha, final_state_path, init_state_path):
         self.model = model
         self.device = device
+        self.alpha = alpha
         self.theta = copy.deepcopy(torch.load(final_state_path))
         self.theta_f = copy.deepcopy(torch.load(final_state_path))
         self.theta_i = copy.deepcopy(torch.load(init_state_path))
@@ -20,17 +21,15 @@ class Interpolator():
         self.theta[layer][idxs] = (self.theta_i[layer][idxs] * (1.0 - alpha)) + (
                     self.theta_f[layer][idxs] * (alpha))
 
-
     def calc_theta_vec(self, layer, alpha):
         self.theta[layer] = torch.add((torch.mul(self.theta_i[layer], (1.0 - alpha))), 
                                       torch.mul(self.theta_f[layer], alpha))
 
-
-    def single_vloss(self, test_loader, alpha, layer, idxs):
+    def single_vloss(self, test_loader, layer, idxs):
         v_loss_list = []
 
-        if not validation_loss_path.exists():
-            for alpha_act in alpha:
+        if not svloss_path.exists():
+            for alpha_act in self.alpha:
                 self.calc_theta_single(layer + ".weight", idxs, alpha_act)
 
                 if not (self.model.load_state_dict(self.theta)):
@@ -42,15 +41,16 @@ class Interpolator():
                 print(val_loss)
                 v_loss_list.append(val_loss)
 
-            np.savetxt(validation_loss_path, v_loss_list)
+            np.savetxt(svloss_path, v_loss_list)
+
+        self.model.load_state_dict(self.theta_f)
         return v_loss_list
 
-
-    def single_acc(self, test_loader, alpha, layer, idxs):
+    def single_acc(self, test_loader, layer, idxs):
         acc_list = []
 
-        if not accuracy_path.exists():
-            for alpha_act in alpha:
+        if not sacc_path.exists():
+            for alpha_act in self.alpha:
                 self.calc_theta_single(layer + ".weight", idxs, alpha_act)
 
                 if not (self.model.load_state_dict(self.theta)):
@@ -62,16 +62,17 @@ class Interpolator():
                 print(acc)
                 acc_list.append(acc)
 
-            np.savetxt(accuracy_path, acc_list)
+            np.savetxt(sacc_path, acc_list)
+
+        self.model.load_state_dict(self.theta_f)
         return acc_list
 
-
-    def single_acc_vloss(self, test_loader, alpha, layer, idxs):
+    def single_acc_vloss(self, test_loader, layer, idxs):
         acc_list = []
         v_loss_list = []
 
-        if not accuracy_path.exists() or not validation_loss_path.exists():
-            for alpha_act in alpha:
+        if not sacc_path.exists() or not svloss_path.exists():
+            for alpha_act in self.alpha:
                 self.calc_theta_single(layer + ".weight", idxs, alpha_act)
 
                 if not (self.model.load_state_dict(self.theta)):
@@ -83,17 +84,17 @@ class Interpolator():
                 acc_list.append(acc)
                 v_loss_list.append(val_loss)
 
-            np.savetxt(accuracy_path, acc_list)
-            np.savetxt(validation_loss_path, v_loss_list)
+            np.savetxt(sacc_path, acc_list)
+            np.savetxt(svloss_path, v_loss_list)
 
+        self.model.load_state_dict(self.theta_f)
         return acc_list, v_loss_list
 
-
-    def single_tloss(self, train_loader, optimizer, alpha, layer, idxs):
+    def single_tloss(self, train_loader, optimizer, layer, idxs):
         t_loss_list = []
 
-        if not training_loss_path.exists():
-            for alpha_act in alpha:
+        if not stloss_path.exists():
+            for alpha_act in self.alpha:
                 self.calc_theta_single(layer + ".weight", idxs, alpha_act)
 
                 if not self.model.load_state_dict(self.theta):
@@ -105,14 +106,101 @@ class Interpolator():
                 print(t_loss)
                 t_loss_list.append(t_loss)
 
-            np.savetxt(training_loss_path, t_loss_list)
+            np.savetxt(stloss_path, t_loss_list)
+
+        self.model.load_state_dict(self.theta_f)
         return t_loss_list
 
-
-    def vec_vloss(self):
+    def vec_vloss(self, test_loader, layer):
         v_loss_list = []
 
+        if not vvloss_path.exists():
+            for alpha_act in self.alpha:
+                self.calc_theta_vec(layer + ".weight", alpha_act)
 
+                if not self.model.load_state_dict(self.theta):
+                    print("LOADING PARAMETERS INTO MODEL FAILED")
+                    return None
+                vloss, _ = net.test(self.model, test_loader, self.device)
+                print(vloss)
+                v_loss_list.append(vloss)
+            np.savetxt(vvloss_path, v_loss_list)
+
+        self.model.load_state_dict(self.theta_f)
+        return v_loss_list
+
+    def vec_acc(self, test_loader, layer):
+        acc_list = []
+
+        if not vvloss_path.exists():
+            for alpha_act in self.alpha:
+                self.calc_theta_vec(layer + ".weight", alpha_act)
+
+                if not self.model.load_state_dict(self.theta):
+                    print("LOADING PARAMETERS INTO MODEL FAILED")
+                    return None
+                _, acc = net.test(self.model, test_loader, self.device)
+                print(acc)
+                acc_list.append(acc)
+            np.savetxt(vacc_path, acc_list)
+
+        self.model.load_state_dict(self.theta_f)
+        return acc_list
+
+    def vec_tloss(self, train_loader, optimizer, layer):
+        t_loss_list = []
+
+        if not stloss_path.exists():
+            for alpha_act in self.alpha:
+                self.calc_theta_vec(layer + ".weight", alpha_act)
+
+                if not self.model.load_state_dict(self.theta):
+                    print("LOADING PARAMETERS INTO MODEL FAILED")
+                    return None
+
+                print("Training loss for alpha:", alpha_act, "...")
+                t_loss = net.train(self.model, train_loader, optimizer, self.device, 0)
+                print(t_loss)
+                t_loss_list.append(t_loss)
+
+            np.savetxt(vtloss_path, t_loss_list)
+
+        self.model.load_state_dict(self.theta_f)
+        return t_loss_list
+
+    def get_final_loss(self, test_loader):
+        if not self.model.load_state_dict(self.theta_f):
+            print("[interpolator] - get_final_loss: loading final state parameters has failed")
+            return None
+
+        loss, _ = net.test(self.model, test_loader, self.device)
+        loss = np.broadcast_to(loss, self.alpha.shape)
+        np.savetxt(sf_loss_path, loss)
+        return loss
+
+    def get_final_acc(self, test_loader):
+        if not self.model.load_state_dict(self.theta_f):
+            print("[interpolator] - get_final_acc: loading final state parameters has failed")
+            return None
+
+        _, acc = net.test(self.model, test_loader, self.device)
+        acc = np.broadcast_to(acc, self.alpha.shape)
+        np.savetxt(sf_acc_path, acc)
+        return acc
+
+    def get_final_loss_acc(self, test_loader):
+        if not self.model.load_state_dict(self.theta_f):
+            print("[interpolator] - get_final_loss_acc: loading final state parameters has failed")
+            return None
+
+        loss, acc = net.test(self.model, test_loader, self.device)
+        loss = np.broadcast_to(loss, self.alpha.shape)
+        acc = np.broadcast_to(acc, self.alpha.shape)
+        np.savetxt(sf_loss_path, loss)
+        np.savetxt(sf_acc_path, acc)
+        return loss, acc
+
+"""
 init_state = Path(os.path.join(directory, "init_state.pt"))
 final_state = Path(os.path.join(directory, "final_state.pt"))
 
@@ -121,13 +209,23 @@ model.load_state_dict(torch.load(final_state))
 
 train_loader, test_loader = data_load.data_load()
 
-interpolate = Interpolator(model, "cuda", final_state, init_state)
-v = interpolate.single_vloss(test_loader, np.linspace(-1, 1, 20), "conv2", [4, 0, 10, 0])
+interpolate = Interpolator(model, "cuda", np.linspace(-1, 1, 20), final_state, init_state)
+v = interpolate.single_vloss(test_loader, "conv2", [4, 0, 10, 0])
 print("VALIDATION LOSS:", v)
 
-a = interpolate.single_acc(test_loader, np.linspace(-1, 1, 20), "conv2", [4, 0, 10, 0])
+a = interpolate.single_acc(test_loader, "conv2", [4, 0, 10, 0])
 print("ACCURACY:", a)
 
 optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.5)  # set optimizer
-t = interpolate.single_train_loss(train_loader, optimizer, np.linspace(-1, 1, 20), "conv2", [4, 0, 10, 0])
+t = interpolate.single_tloss(train_loader, optimizer, "conv2", [4, 0, 10, 0])
 print("TRAINING LOSS:", t)
+
+vv = interpolate.vec_vloss(test_loader, "conv2")
+print("VECTOR VLOSS:", vv)
+
+va = interpolate.vec_acc(test_loader, "conv2")
+print("VECTOR ACC:", va)
+
+vt = interpolate.vec_tloss(train_loader, optimizer, "conv2")
+print("VECTOR TLOSS:", vt)
+"""

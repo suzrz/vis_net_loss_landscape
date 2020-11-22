@@ -8,7 +8,9 @@ import data_load
 import directions
 import calculate_loss
 import numpy as np
+from paths import *
 from pathlib import Path
+from interpolate import Interpolator
 from torch import optim as optim
 from torch.optim.lr_scheduler import StepLR
 
@@ -83,13 +85,23 @@ def main():
     model.load_state_dict(torch.load(final_state))
 
     alpha = np.linspace(args.alpha_start, args.alpha_end, args.alpha_steps)
+
+    interpolate = Interpolator(model, device, alpha, final_state, init_state)
+    if not sf_loss_path.exists() or not sf_acc_path.exists():
+        interpolate.get_final_loss_acc(test_loader)
+    if not svloss_path.exists() or not sacc_path.exists():
+        interpolate.single_acc_vloss(test_loader, "conv2", [4, 0, 0, 0])
+
+    plot.plot_accuracy(alpha)
+    plot.plot_2d_loss(alpha)
+
     """PREPARE FOR PLOT"""
+    """
     if not args.two_params_only:
         # prepare files for 2D plot
         calculate_loss.single(model, train_loader, test_loader, device, alpha,
                               optimizer, final_state, init_state)
 
-        """PLOT"""
         plot.plot_accuracy(alpha)
         plot.plot_2d_loss(alpha)
 
@@ -99,7 +111,7 @@ def main():
         calculate_loss.double(model, test_loader, dirs, device, args.results_dir)  # calculate validation loss
         # plot
         plot.surface3d_rand_dirs(args.results_dir)
-
+    """
 
 if __name__ == "__main__":
     main()  # run

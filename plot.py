@@ -4,6 +4,7 @@ import pickle
 import numpy as np
 # import seaborn as sns
 import matplotlib.pyplot as plt
+from paths import *
 from pathlib import Path
 from matplotlib import cm
 from mpl_toolkits.mplot3d import Axes3D
@@ -60,8 +61,8 @@ def plot_subset_hist():
 
 
 def plot_accuracy(alpha):
-    acc = np.loadtxt(accuracy_path)
-    trained_acc = np.loadtxt(trained_accuracy_path)
+    acc = np.loadtxt(sacc_path)
+    trained_acc = np.loadtxt(sf_acc_path)
 
     plt.plot(alpha, acc, "x-", color="purple", label="Accuracy with interpolated parameters")
     plt.plot(alpha, trained_acc, "-", color="orange", label="Accuracy with trained parameters")
@@ -72,8 +73,8 @@ def plot_accuracy(alpha):
 
 
 def plot_2d_loss(alpha):
-    val_loss_list = np.loadtxt(validation_loss_path)
-    trained = np.loadtxt(trained_loss_path)
+    val_loss_list = np.loadtxt(svloss_path)
+    trained = np.loadtxt(sf_loss_path)
 
     plt.plot(alpha, val_loss_list, "x-", color="blue", label="Loss with one param modified")
     plt.plot(alpha, trained, "-", color="orange", label="Trained net loss")

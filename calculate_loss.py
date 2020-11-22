@@ -8,11 +8,27 @@ import numpy as np
 from pathlib import Path
 
 directory = "results"
-trained_loss_path = Path(os.path.join(directory, "trained_loss"))
-trained_accuracy_path = Path(os.path.join(directory, "trained_accuracy"))
-validation_loss_path = Path(os.path.join(directory, "val_loss"))
-training_loss_path = Path(os.path.join(directory, "training_loss"))
-accuracy_path = Path(os.path.join(directory, "accuracy"))
+"""
+prefix |   meaning
+-------|-------------
+   s   | single param
+   v   | whole vector 
+----------------------
+    second position
+----------------------
+ abbr. |   meaning
+----------------------
+   f   |    final
+  v|t  | validation|train
+"""
+sf_loss_path = Path(os.path.join(directory, "sf_loss"))
+sf_acc_path = Path(os.path.join(directory, "sf_acc"))
+svloss_path = Path(os.path.join(directory, "svloss"))
+stloss_path = Path(os.path.join(directory, "stloss"))
+sacc_path = Path(os.path.join(directory, "sacc"))
+vvloss_path = Path(os.path.join(directory, "vvloss"))
+vtloss_path = Path(os.path.join(directory, "vtloss"))
+vacc_path = Path(os.path.join(directory, "vacc"))
 
 def get_diff_in_success_for_subsets(model, optimizer, scheduler, device, directory, epochs=14):
     n_tr_samples = [60000, 50000, 40000, 30000, 20000, 10000]
@@ -29,9 +45,9 @@ def get_diff_in_success_for_subsets(model, optimizer, scheduler, device, directo
                 net.test(model, test_loader, device)
                 scheduler.step()
                 print("Finished epoch no. ", epoch)
-            loss, acc = net.test(model, test_loader, device)
+            loss, sacc = net.test(model, test_loader, device)
             loss_list.append(loss)
-            acc_list.append(acc)
+            acc_list.append(sacc)
 
         loss_list = np.array(loss_list, dtype=float)
         acc_list = np.array(acc_list, dtype=float)
@@ -57,27 +73,27 @@ def single(model, train_loader, test_loader, device, alpha, optimizer, final_sta
     """
     train_loss_list = []  # prepare clean list for train losses
     val_loss_list = []  # prepare clean list for validation losses
-    accuracy_list = []  # prepare clean list for accuracy
+    accuracy_list = []  # prepare clean list for sacc
 
 
 
-    if not trained_loss_path.exists() or not trained_accuracy_path.exists():
-        print("No trained loss and accuracy files found.\nGetting loss and accuracy...")
+    if not sf_loss_path.exists() or not sf_acc_path.exists():
+        print("No trained loss and sacc files found.\nGetting loss and sacc...")
         if not model.load_state_dict(torch.load(final_state_path)):  # load final state of model
-             print("[single: get trained loss and acc] Model parameters loading failed.")
-        trained_loss, trained_accuracy = net.test(model, test_loader, device)  # get trained model loss and accuracy
+             print("[single: get trained loss and sacc] Model parameters loading failed.")
+        sf_loss, sf_acc = net.test(model, test_loader, device)  # get trained model loss and sacc
         # broadcast to list for easier plotting
-        trained_loss = np.broadcast_to(trained_loss, alpha.shape)
-        trained_accuracy = np.broadcast_to(trained_accuracy, alpha.shape)
+        sf_loss = np.broadcast_to(sf_loss, alpha.shape)
+        sf_acc = np.broadcast_to(sf_acc, alpha.shape)
 
-        trained_loss = np.array(trained_loss, dtype=float)
-        trained_accuracy = np.array(trained_accuracy, dtype=float)
+        sf_loss = np.array(sf_loss, dtype=float)
+        sf_acc = np.array(sf_acc, dtype=float)
 
-        np.savetxt(trained_loss_path, trained_loss)
-        np.savetxt(trained_accuracy_path, trained_accuracy)
+        np.savetxt(sf_loss_path, sf_loss)
+        np.savetxt(sf_acc_path, sf_acc)
 
-    if not validation_loss_path.exists() or not training_loss_path.exists() or \
-            not accuracy_path.exists():
+    if not svloss_path.exists() or not stloss_path.exists() or \
+            not sacc_path.exists():
         theta = copy.deepcopy(torch.load(final_state_path))
         theta_f = copy.deepcopy(torch.load(final_state_path))
         theta_i = copy.deepcopy(torch.load(init_state_path))
@@ -96,17 +112,17 @@ def single(model, train_loader, test_loader, device, alpha, optimizer, final_sta
             train_loss_list.append(train_loss)
 
             print("Getting validation loss for alpha: ", alpha_act)
-            val_loss, accuracy = net.test(model, test_loader, device)  # get loss with new parameters
-            val_loss_list.append(val_loss)  # save obtained loss into list
-            accuracy_list.append(accuracy)
+            svloss, sacc = net.test(model, test_loader, device)  # get loss with new parameters
+            val_loss_list.append(svloss)  # save obtained loss into list
+            accuracy_list.append(sacc)
 
         val_loss_list = np.array(val_loss_list, dtype=float)
         train_loss_list = np.array(train_loss_list, dtype=float)
         accuracy_list = np.array(accuracy_list, dtype=float)
 
-        np.savetxt(validation_loss_path, val_loss_list)
-        np.savetxt(training_loss_path, train_loss_list)
-        np.savetxt(accuracy_path, accuracy_list)
+        np.savetxt(svloss_path, val_loss_list)
+        np.savetxt(stloss_path, train_loss_list)
+        np.savetxt(sacc_path, accuracy_list)
 
 
 def set_surf_file(filename):
@@ -135,7 +151,7 @@ def set_surf_file(filename):
         # print(shape)
         losses = -np.ones(shape=shape)
 
-        fd["val_loss"] = losses
+        fd["svloss"] = losses
 
         return
 
@@ -204,7 +220,7 @@ def double(model, test_loader, directions, device, directory):
         with h5py.File(file, "r+") as fd:
             xcoords = fd["xcoordinates"][:]
             ycoords = fd["ycoordinates"][:]
-            losses = fd["val_loss"][:]
+            losses = fd["svloss"][:]
             # print(losses, xcoords, ycoords)  # losses = ones, x, y ... ok
 
             inds, coords = get_indices(losses, xcoords, ycoords)
@@ -220,7 +236,7 @@ def double(model, test_loader, directions, device, directory):
 
                 losses.ravel()[ind] = loss
 
-                fd["val_loss"][:] = losses
+                fd["svloss"][:] = losses
 
                 fd.flush()
     else:

@@ -71,10 +71,10 @@ def train(model, train_loader, optimizer, device, epoch):
         train_loss += f.nll_loss(output, target, reduction="sum").item()
         loss.backward()
         optimizer.step()
-        if batch_idx % 10 == 0:
-            print("Train epoch: {} [{}/{} ({:.0f} %)]\tLoss: {:.6f}".format(
-                epoch, batch_idx*len(data), len(train_loader.dataset),
-                100. * batch_idx / len(train_loader), loss.item()))
+        #if batch_idx % 10 == 0:
+            #print("Train epoch: {} [{}/{} ({:.0f} %)]\tLoss: {:.6f}".format(
+            #   epoch, batch_idx*len(data), len(train_loader.dataset),
+            #    100. * batch_idx / len(train_loader), loss.item()))
 
     train_loss /= len(train_loader.dataset)
     return train_loss

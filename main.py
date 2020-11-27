@@ -1,4 +1,3 @@
-"""https://github.com/okn-yu/Visualizing-the-Loss-Landscape-of-Neural-Nets"""
 import net
 import plot
 import torch

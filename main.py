@@ -96,13 +96,11 @@ def main():
     if not test_subs_loss.exists() or not test_subs_acc.exists():
         interpolate.get_test_subset_impact(subs_test)
 
-    plot.plot_accuracy(alpha)
-    plot.plot_2d_loss(alpha)
+    plot.plot_one_param(alpha)
 
     plot.plot_impact_of_subset_size(subs_train, np.loadtxt(train_subs_loss), np.loadtxt(train_subs_acc))
     plot.plot_impact_of_subset_size(subs_test, np.loadtxt(test_subs_loss), np.loadtxt(test_subs_acc))
 
-    """PREPARE FOR PLOT"""
     """
     if not args.single_param_only:
         # prepare files for 3D plot

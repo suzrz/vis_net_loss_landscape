@@ -1,26 +1,31 @@
-import os
 import h5py
-import pickle
 import numpy as np
 # import seaborn as sns
 import matplotlib.pyplot as plt
 from paths import *
-from pathlib import Path
 from matplotlib import cm
 from mpl_toolkits.mplot3d import Axes3D
 
 
-directory = "results"
-trained_loss_path = Path(os.path.join(directory, "trained_loss"))
-trained_accuracy_path = Path(os.path.join(directory, "trained_accuracy"))
-validation_loss_path = Path(os.path.join(directory, "val_loss"))
-training_loss_path = Path(os.path.join(directory, "training_loss"))
-accuracy_path = Path(os.path.join(directory, "accuracy"))
+def plot_impact_of_subset_size(subsets, losses, accs):
+    fig, (ax1, ax2) = plt.subplots(2)
+    ax1.set_xlabel("Size of test subset")
+    ax1.set_ylabel("Validation loss")
+    ax1.plot(subsets, losses, color="orange")
+    ax1.tick_params(axis='y', labelcolor="orange")
+
+    ax2.set_xlabel("Size of subset")
+    ax2.set_ylabel("Accuracy")
+    ax2.plot(subsets, accs, color="blue")
+    ax2.tick_params(axis='y', labelcolor="blue")
+
+    fig.tight_layout()
+    plt.show()
 
 
 def plot_stability(subsets):
-    losses = np.loadtxt(stab_loss)
-    accs = np.loadtxt(stab_acc)
+    losses = np.loadtxt(test_subs_acc)
+    accs = np.loadtxt(test_subs_acc)
 
     ind = np.arange(len(losses))
     width = 0.35
@@ -56,10 +61,10 @@ def plot_stability(subsets):
 
     plt.show()
 
-def plot_subset_hist(n_tr_samples):
 
-    losses = np.loadtxt(subs_loss)
-    accs = np.loadtxt(subs_acc)
+def plot_subset_hist(n_tr_samples):
+    losses = np.loadtxt(train_subs_loss)
+    accs = np.loadtxt(train_subs_acc)
 
     ind = np.arange(len(losses))
     width = 0.35
@@ -121,11 +126,11 @@ def plot_2d_loss(alpha):
 
 
 def line2d_single_parameter(alpha):
-    val_loss_list = np.loadtxt(validation_loss_path)
-    train_loss_list = np.loadtxt(training_loss_path)
-    accuracy = np.loadtxt(accuracy_path)
-    trained = np.loadtxt(trained_loss_path)
-    trained_acc = np.loadtxt(trained_accuracy_path)
+    val_loss_list = np.loadtxt(svloss_path)
+    train_loss_list = np.loadtxt(stloss_path)
+    accuracy = np.loadtxt(sacc_path)
+    trained = np.loadtxt(sf_loss_path)
+    trained_acc = np.loadtxt(sf_acc_path)
 
     fig, (ax1, ax2) = plt.subplots(1, 2)
 

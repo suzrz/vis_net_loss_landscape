@@ -1,15 +1,14 @@
-import os
 import net
 import copy
 import torch
-import data_load
 import numpy as np
-from pathlib import Path
 import data_load  # only for testing, delete after program validation
 from torch import optim as optim  # only for testing, delete after program validation
 from paths import *
+from torch.optim.lr_scheduler import StepLR
 
-class Interpolator():
+
+class Interpolator:
     def __init__(self, model, device, alpha, final_state_path, init_state_path):
         self.model = model
         self.device = device
@@ -20,7 +19,7 @@ class Interpolator():
 
     def calc_theta_single(self, layer, idxs, alpha):
         self.theta[layer][idxs] = (self.theta_i[layer][idxs] * (1.0 - alpha)) + (
-                    self.theta_f[layer][idxs] * (alpha))
+                    self.theta_f[layer][idxs] * alpha)
 
     def calc_theta_vec(self, layer, alpha):
         self.theta[layer] = torch.add((torch.mul(self.theta_i[layer], (1.0 - alpha))), 
@@ -201,39 +200,51 @@ class Interpolator():
 
         return loss, acc
 
-    def get_subset_perf(self, subset_list, epochs, optimizer, scheduler, test_loader):
+    def get_train_subset_impact(self, subset_list, epochs, test_loader):
         loss_list = []
         acc_list = []
+
         for n_samples in subset_list:
             self.model.load_state_dict(self.theta_i)
+
+            optimizer = optim.SGD(self.model.parameters(), lr=0.01, momentum=0.5)  # set optimizer
+            scheduler = StepLR(optimizer, step_size=1, gamma=0.7)  # set scheduler
+
             for epoch in range(1, epochs):
                 train_loader, test_loader = data_load.data_load(train_samples=n_samples)
+
                 net.train(self.model, train_loader, optimizer, self.device, epoch)
                 net.test(self.model, test_loader, self.device)
+
                 scheduler.step()
                 print("[interpolator] - get_subset_perf : Finished epoch", epoch, "for training set of size:", n_samples)
+
             loss, acc = net.test(self.model, test_loader, self.device)
+
             loss_list.append(loss)
             acc_list.append(acc)
 
-        np.savetxt(subs_loss, loss_list)
-        np.savetxt(subs_acc, acc_list)
+        np.savetxt(train_subs_loss, loss_list)
+        np.savetxt(train_subs_acc, acc_list)
+
         self.model.load_state_dict(self.theta_f)
 
-    def get_stability(self, subset_list):
+    def get_test_subset_impact(self, subset_list):
         loss_list = []
         acc_list = []
 
         self.model.load_state_dict(self.theta_f)
+
         for n_samples in subset_list:
             _, test_loader = data_load.data_load(test_samples=n_samples)
             loss, acc = net.test(self.model, test_loader, self.device)
+
             loss_list.append(loss)
             acc_list.append(acc)
-            print("[interpolator] - get_stability : subset", n_samples, "| loss", loss, "| acc", acc )
+            print("[interpolator] - get_stability : subset", n_samples, "| loss", loss, "| acc", acc)
 
-        np.savetxt(stab_loss, loss_list)
-        np.savetxt(stab_acc, acc_list)
+        np.savetxt(test_subs_loss, loss_list)
+        np.savetxt(test_subs_acc, acc_list)
 
 
 """

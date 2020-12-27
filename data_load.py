@@ -1,4 +1,5 @@
 import torch
+import numpy as np
 from torch import utils as utils
 from torchvision import datasets, transforms
 
@@ -11,8 +12,10 @@ def data_load(train_samples=60000, test_samples=10000):
             transform.Normalize(mean, std) normalizes tensor norm = (img_pix - mean) / std
     """
     transform = transforms.Compose([
+        transforms.Resize((32, 32)),
         transforms.ToTensor(),
         transforms.Normalize(0.1307, 0.3081)])
+
 
     """LOAD DATA
         Load data from torchvision and apply transform
@@ -23,7 +26,8 @@ def data_load(train_samples=60000, test_samples=10000):
                               transform=transform)
 
     tr = list(range(0, len(train_set), 1))
-    te = list(range(0, len(test_set), 1))
+    #te = list(range(0, len(test_set), 1))
+    te = np.random.permutation(len(test_set))
 
     tr = tr[:train_samples]
     te = te[:test_samples]

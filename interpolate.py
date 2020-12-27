@@ -173,7 +173,9 @@ class Interpolator:
 
         loss, _ = net.test(self.model, test_loader, self.device)
         loss = np.broadcast_to(loss, self.alpha.shape)
+
         np.savetxt(sf_loss_path, loss)
+
         return loss
 
     def get_final_acc(self, test_loader):
@@ -186,7 +188,7 @@ class Interpolator:
 
         return acc
 
-    def get_final_loss_acc(self, test_loader):
+    def get_final_loss_acc(self, test_loader, loss_only=False, acc_only=False):
         if not self.model.load_state_dict(self.theta_f):
             print("[interpolator] - get_final_loss_acc: loading final state parameters has failed")
             return None
@@ -235,13 +237,23 @@ class Interpolator:
 
         self.model.load_state_dict(self.theta_f)
 
-        for n_samples in subset_list:
-            _, test_loader = data_load.data_load(test_samples=n_samples)
-            loss, acc = net.test(self.model, test_loader, self.device)
 
-            loss_list.append(loss)
-            acc_list.append(acc)
-            print("[interpolator] - get_stability : subset", n_samples, "| loss", loss, "| acc", acc)
+        for n_samples in subset_list:
+            loss_s = []
+            acc_s = []
+            for x in range(int((10000/n_samples)*2)):
+                _, test_loader = data_load.data_load(test_samples=n_samples)
+                loss, acc = net.test(self.model, test_loader, self.device)
+
+                loss_s.append(loss)
+                acc_s.append(acc)
+
+            loss_avg = sum(loss_s)/len(loss_s)
+            acc_avg = sum(acc_s)/len(acc_s)
+
+            loss_list.append(loss_avg)
+            acc_list.append(acc_avg)
+            #print("[interpolator] - get_stability : subset", n_samples, "| loss", loss, "| acc", acc)
 
         np.savetxt(test_subs_loss, loss_list)
         np.savetxt(test_subs_acc, acc_list)

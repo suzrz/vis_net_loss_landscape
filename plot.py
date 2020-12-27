@@ -11,6 +11,8 @@ color_trained = "orange"
 color_acc = "royalblue"
 
 
+
+
 def plot_one_param(alpha, loss_only=False, acc_only=False):
     if not acc_only:
         fig, ax = plt.subplots()
@@ -44,14 +46,40 @@ def plot_one_param(alpha, loss_only=False, acc_only=False):
 
 
 def plot_impact_of_subset_size(subsets, losses, accs):
-    fig, (ax1, ax2) = plt.subplots(2)
+    """
+    fig, (ax1, ax2) = plt.subplots(1, 2)
     ax1.set_xlabel("Size of test subset")
     ax1.set_ylabel("Validation loss")
     ax1.plot(subsets, losses, color=color_loss)
+    ax1.annotate("{}".format(losses[-1]), xy=(subsets[-1], losses[-1]))
 
     ax2.set_xlabel("Size of subset")
     ax2.set_ylabel("Accuracy")
     ax2.plot(subsets, accs, color=color_acc)
+    ax2.annotate("{}".format(accs[-1]), xy=(subsets[-1], accs[-1]))
+
+    fig.tight_layout()
+    plt.show()
+    """
+
+    fig, ax = plt.subplots(1)
+    ax.set_xlabel("Size of test subset")
+    ax.set_ylabel("Validation loss")
+    ax.plot(subsets, losses, color=color_loss)
+    ax.spines["right"].set_visible(False)
+    ax.spines["top"].set_visible(False)
+    ax.annotate("{:.2f}".format(losses[-1]), xy=(subsets[-1], losses[-1]))
+
+    fig.tight_layout()
+    plt.show()
+
+    fig, ax = plt.subplots(1)
+    ax.set_xlabel("Size of test subset")
+    ax.set_ylabel("Validation loss")
+    ax.plot(subsets, accs, color=color_loss)
+    ax.spines["right"].set_visible(False)
+    ax.spines["top"].set_visible(False)
+    ax.annotate("{:.2f}".format(accs[-1]), xy=(subsets[-1], accs[-1]))
 
     fig.tight_layout()
     plt.show()

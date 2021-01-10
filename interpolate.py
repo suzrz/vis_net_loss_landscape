@@ -1,6 +1,7 @@
 import net
 import copy
 import torch
+import random
 import numpy as np
 import data_load  # only for testing, delete after program validation
 from torch import optim as optim  # only for testing, delete after program validation
@@ -232,33 +233,66 @@ class Interpolator:
         self.model.load_state_dict(self.theta_f)
 
     def get_test_subset_impact(self, subset_list):
-        loss_list = []
-        acc_list = []
+        #losses = {}
+        subset_losses = []
 
         self.model.load_state_dict(self.theta_f)
 
 
         for n_samples in subset_list:
-            loss_s = []
-            acc_s = []
-            for x in range(int((10000/n_samples)*2)):
-                _, test_loader = data_load.data_load(test_samples=n_samples)
+            losses = []
+            accs = []
+            for x in range(100):  # 10x pruchod experimentem TODO
+                print("N SAMPLES:", n_samples, "x:", x)
+                _, test_loader = data_load.data_load(test_samples=n_samples)  # to choose random data each time
                 loss, acc = net.test(self.model, test_loader, self.device)
+                losses.append(loss)
+                accs.append(acc)
+            #losses["{}".format(n_samples)] = losses
+            subset_losses.append(losses)
 
-                loss_s.append(loss)
-                acc_s.append(acc)
+        import matplotlib.pyplot as plt
+        fig, ax = plt.subplots()
+        ax.set_ylabel("Validation loss")
+        ax.set_xlabel("Size of validation dataset")
+        ax.set_xticklabels(subset_list)
 
-            loss_avg = sum(loss_s)/len(loss_s)
-            acc_avg = sum(acc_s)/len(acc_s)
+        ax.spines["right"].set_visible(False)
+        ax.spines["top"].set_visible(False)
+        ax.boxplot(subset_losses)
 
-            loss_list.append(loss_avg)
-            acc_list.append(acc_avg)
-            #print("[interpolator] - get_stability : subset", n_samples, "| loss", loss, "| acc", acc)
+        plt.show()
 
-        np.savetxt(test_subs_loss, loss_list)
-        np.savetxt(test_subs_acc, acc_list)
+        fig, ax = plt.subplots()
+        ax.set_ylabel("Validation loss")
+        ax.set_xlabel("Size of validation dataset")
+        ax.set_xticklabels(subset_list)
+
+        ax.spines["right"].set_visible(False)
+        ax.spines["top"].set_visible(False)
+        ax.violinplot(subset_losses, showmedians=True, )
 
 
+"""
+                for x in range(int((10000/n_samples)*2)):
+                    _, test_loader = data_load.data_load(test_samples=n_samples)
+                    loss, acc = net.test(self.model, test_loader, self.device)
+
+                    loss_s.append(loss)
+                    acc_s.append(acc)
+
+                loss_avg = sum(loss_s)/len(loss_s)
+                acc_avg = sum(acc_s)/len(acc_s)
+
+                loss_list.append(loss_avg)
+                acc_list.append(acc_avg)
+                #print("[interpolator] - get_stability : subset", n_samples, "| loss", loss, "| acc", acc)
+
+            np.savetxt(test_subs_loss, loss_list)
+            np.savetxt(test_subs_acc, acc_list)
+
+
+"""
 """
 init_state = Path(os.path.join(directory, "init_state.pt"))
 final_state = Path(os.path.join(directory, "final_state.pt"))

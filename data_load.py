@@ -1,4 +1,5 @@
 import torch
+import random
 import numpy as np
 from torch import utils as utils
 from torchvision import datasets, transforms
@@ -25,6 +26,8 @@ def data_load(train_samples=60000, test_samples=10000):
     test_set = datasets.MNIST("../data", train=False, download=True,
                               transform=transform)
 
+    #train_set = random.sample(train_set, train_samples)
+    #test_set = random.sample(test_set, test_samples)
     tr = list(range(0, len(train_set), 1))
     #te = list(range(0, len(test_set), 1))
     te = np.random.permutation(len(test_set))
@@ -37,5 +40,8 @@ def data_load(train_samples=60000, test_samples=10000):
 
     train_loader = utils.data.DataLoader(train_set, 64, shuffle=True)
     test_loader = utils.data.DataLoader(test_set, 1000, shuffle=False)
+
+    print("TRAIN SET SIZE:", len(train_set))
+    print("TEST SET SIZE:", len(test_set))
 
     return train_loader, test_loader

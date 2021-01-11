@@ -10,6 +10,47 @@ color_loss = "teal"
 color_trained = "orange"
 color_acc = "royalblue"
 
+def plot_line(x, y, xlabel, ylabel, annotate=False):
+    fig, ax = plt.subplots(figsize=(6.4, 2))
+    if xlabel:
+        ax.set_xlabel(xlabel)
+    if ylabel:
+        ax.set_ylabel(ylabel)
+    ax.plot(x, y, ".-", color=color_loss)
+    ax.spines["right"].set_visible(False)
+    ax.spines["top"].set_visible(False)
+    if annotate:
+        #ax.annotate("{:.4f}".format(y[-1]), xy=(x[-1], y[-1]),
+        #            xytext=(y[-1] - 0.01 * x[-1], y[-1] + 0.01 * y[-1]))
+        #ax.annotate("{:.4f}".format(y[-2]), xy=(x[-2], y[-2]),
+        #            xytext=(x[-2] - 0.01 * x[-2], y[-2] + 0.01 * y[-2]))
+        #ax.annotate("{:.4f}".format(y[-3]), xy=(x[-3], y[-3]),
+        #            xytext=(x[-3] - 0.01 * x[-3], y[-3] + 0.01 * y[-3]))
+        if y[-1] < 1:
+            k = 3
+        else:
+            k = 0.03
+
+        ax.annotate("{:.4f}".format(y[-1]), xy=(x[-1], y[-1]), xytext=(x[-1], y[-1] + y[-1]*k))
+        ax.annotate("{:.4f}".format(y[-2]), xy=(x[-2], y[-2]), xytext=(x[-2], y[-2] + y[-2]*k))
+        ax.annotate("{:.4f}".format(y[-3]), xy=(x[-3], y[-3]), xytext=(x[-3], y[-3] + y[-3]*k))
+
+    fig.tight_layout()
+    plt.show()
+
+def plot_impact(x, loss=None, acc=None, loss_only=False, acc_only=False, annotate=True, xlabel=None):
+    if not acc_only:
+        if not loss.all():
+            print("No loss data found.")
+            return
+        plot_line(x, loss, xlabel, "Validation loss", annotate)
+
+
+    if not loss_only:
+        if not acc.all():
+            print("No accuracy data found.")
+            return
+        plot_line(x, acc, xlabel, "Accuracy", annotate)
 
 
 

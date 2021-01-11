@@ -99,9 +99,13 @@ def main():
     if not epochs_loss.exists() or not  epochs_acc.exists():
         # TODO interpolate
         pass
-    interpolate.get_epochs_impact(epochs, test_loader)
+    #interpolate.get_epochs_impact(epochs, test_loader)
 
     #plot.plot_one_param(alpha)
+
+    plot.plot_impact(subs_train, np.loadtxt(train_subs_loss), np.loadtxt(train_subs_acc))
+    #plot.plot_impact(subs_test, np.loadtxt(test_subs_loss), np.loadtxt(test_subs_acc))
+    plot.plot_impact(epochs, np.loadtxt(epochs_loss), np.loadtxt(epochs_acc))
 
     #plot.plot_impact_of_subset_size(subs_train, np.loadtxt(train_subs_loss), np.loadtxt(train_subs_acc))
     #plot.plot_impact_of_subset_size(subs_test, np.loadtxt(test_subs_loss), np.loadtxt(test_subs_acc))

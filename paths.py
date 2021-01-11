@@ -35,3 +35,6 @@ train_subs_acc = Path(os.path.join(directory, "train_subs_acc"))
 
 test_subs_loss = Path(os.path.join(directory, "test_subs_loss"))
 test_subs_acc = Path(os.path.join(directory, "test_subs_acc"))
+
+epochs_loss = Path(os.path.join(directory, "epochs_loss"))
+epochs_acc = Path(os.path.join(directory, "epochs_acc"))

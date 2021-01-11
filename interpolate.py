@@ -233,6 +233,7 @@ class Interpolator:
         self.model.load_state_dict(self.theta_f)
 
     def get_test_subset_impact(self, subset_list):
+        # TODO ukladani vysledku
         #losses = {}
         subset_losses = []
 
@@ -271,6 +272,57 @@ class Interpolator:
         ax.spines["right"].set_visible(False)
         ax.spines["top"].set_visible(False)
         ax.violinplot(subset_losses, showmedians=True, )
+
+    def get_epochs_impact(self, epochs_list, test_loader):
+        loss_list = []
+        acc_list = []
+
+
+        for epoch in epochs_list:
+            print("Epoch number", epoch)
+            self.model.load_state_dict(self.theta_i)
+
+            optimizer = optim.SGD(self.model.parameters(), lr=0.01, momentum=0.5)  # set optimizer
+            scheduler = StepLR(optimizer, step_size=1, gamma=0.7)  # set scheduler
+            for x in range(epoch):
+                train_loader, test_loader = data_load.data_load()
+
+                net.train(self.model, train_loader, optimizer, self.device, epoch)
+                net.test(self.model, test_loader, self.device)
+
+                scheduler.step()
+                print("[interpolator] - get_subset_perf : Finished epoch", epoch)
+
+            loss, acc = net.test(self.model, test_loader, self.device)
+
+            loss_list.append(loss)
+            acc_list.append(acc)
+
+        import matplotlib.pyplot as plt
+        fig, ax = plt.subplots(figsize=(6.4, 2))
+        ax.set_xlabel("Number of epochs")
+        ax.set_ylabel("Validation loss")
+        ax.plot(epochs_list, loss_list, ".-", color="teal")
+        ax.set_yticks(minor=True)
+        ax.grid(True, "both")
+        ax.spines["right"].set_visible(False)
+        ax.spines["top"].set_visible(False)
+        fig.tight_layout()
+        plt.show()
+
+        fig, ax = plt.subplots(figsize=(6.4, 2))
+        ax.set_xlabel("Number of epochs")
+        ax.set_ylabel("Accuracy")
+        ax.plot(epochs_list, acc_list, ".-", color="royalblue")
+        ax.set_yticks(minor=True)
+        ax.grid(True, "both")
+        ax.spines["right"].set_visible(False)
+        ax.spines["top"].set_visible(False)
+        fig.tight_layout()
+        plt.show()
+
+        np.savetxt(epochs_loss, loss_list)
+        np.savetxt(epochs_acc, acc_list)
 
 
 """

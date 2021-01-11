@@ -86,6 +86,7 @@ def main():
     # Examinate
     subs_train = [1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 15000, 20000, 30000, 40000, 50000, 60000]
     subs_test = [1000, 1500, 2000, 3000, 4000, 5000, 7000, 8000, 9000, 10000]
+    epochs = [1, 2, 5, 10, 15, 17, 20, 22, 25, 27, 30]
 
     if not sf_loss_path.exists() or not sf_acc_path.exists():
         interpolate.get_final_loss_acc(test_loader)
@@ -93,13 +94,17 @@ def main():
         interpolate.single_acc_vloss(test_loader, "conv2", [4, 0, 0, 0])
     if not train_subs_loss.exists() or not train_subs_acc.exists():
         interpolate.get_train_subset_impact(subs_train, args.epochs, test_loader)
-    if not test_subs_loss.exists() or not test_subs_acc.exists():
-        interpolate.get_test_subset_impact(subs_test)
+    #if not test_subs_loss.exists() or not test_subs_acc.exists():
+    #    interpolate.get_test_subset_impact(subs_test)
+    if not epochs_loss.exists() or not  epochs_acc.exists():
+        # TODO interpolate
+        pass
+    interpolate.get_epochs_impact(epochs, test_loader)
 
-    plot.plot_one_param(alpha)
+    #plot.plot_one_param(alpha)
 
-    plot.plot_impact_of_subset_size(subs_train, np.loadtxt(train_subs_loss), np.loadtxt(train_subs_acc))
-    plot.plot_impact_of_subset_size(subs_test, np.loadtxt(test_subs_loss), np.loadtxt(test_subs_acc))
+    #plot.plot_impact_of_subset_size(subs_train, np.loadtxt(train_subs_loss), np.loadtxt(train_subs_acc))
+    #plot.plot_impact_of_subset_size(subs_test, np.loadtxt(test_subs_loss), np.loadtxt(test_subs_acc))
 
     """
     if not args.single_param_only:

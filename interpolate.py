@@ -236,9 +236,9 @@ class Interpolator:
         # TODO ukladani vysledku
         #losses = {}
         subset_losses = []
+        subset_accs = []
 
         self.model.load_state_dict(self.theta_f)
-
 
         for n_samples in subset_list:
             losses = []
@@ -251,6 +251,10 @@ class Interpolator:
                 accs.append(acc)
             #losses["{}".format(n_samples)] = losses
             subset_losses.append(losses)
+            subset_accs.append(accs)
+
+        np.savetxt(test_subs_loss, subset_losses)
+        np.savetxt(test_subs_acc, subset_accs)
 
         import matplotlib.pyplot as plt
         fig, ax = plt.subplots()
@@ -262,67 +266,48 @@ class Interpolator:
         ax.spines["top"].set_visible(False)
         ax.boxplot(subset_losses)
 
-        plt.show()
+        #plt.show()
+        plt.savefig("test_subset_loss.pdf", format="pdf")
 
         fig, ax = plt.subplots()
-        ax.set_ylabel("Validation loss")
+        ax.set_ylabel("Accuracy")
         ax.set_xlabel("Size of validation dataset")
         ax.set_xticklabels(subset_list)
 
         ax.spines["right"].set_visible(False)
         ax.spines["top"].set_visible(False)
-        ax.violinplot(subset_losses, showmedians=True, )
+        ax.boxplot(subset_accs)
+        plt.savefig("test_subset_acc.pdf", format="pdf")
+
+
 
     def get_epochs_impact(self, epochs_list, test_loader):
         loss_list = []
         acc_list = []
 
+        if not epochs_loss.exists() or not epochs_acc.exists():
+            for epoch in epochs_list:
+                print("Epoch number", epoch)
+                self.model.load_state_dict(self.theta_i)
 
-        for epoch in epochs_list:
-            print("Epoch number", epoch)
-            self.model.load_state_dict(self.theta_i)
+                optimizer = optim.SGD(self.model.parameters(), lr=0.01, momentum=0.5)  # set optimizer
+                scheduler = StepLR(optimizer, step_size=1, gamma=0.7)  # set scheduler
+                for x in range(epoch):
+                    train_loader, test_loader = data_load.data_load()
 
-            optimizer = optim.SGD(self.model.parameters(), lr=0.01, momentum=0.5)  # set optimizer
-            scheduler = StepLR(optimizer, step_size=1, gamma=0.7)  # set scheduler
-            for x in range(epoch):
-                train_loader, test_loader = data_load.data_load()
+                    net.train(self.model, train_loader, optimizer, self.device, epoch)
+                    net.test(self.model, test_loader, self.device)
 
-                net.train(self.model, train_loader, optimizer, self.device, epoch)
-                net.test(self.model, test_loader, self.device)
+                    scheduler.step()
+                    print("[interpolator] - get_subset_perf : Finished epoch", x)
 
-                scheduler.step()
-                print("[interpolator] - get_subset_perf : Finished epoch", epoch)
+                loss, acc = net.test(self.model, test_loader, self.device)
 
-            loss, acc = net.test(self.model, test_loader, self.device)
+                loss_list.append(loss)
+                acc_list.append(acc)
 
-            loss_list.append(loss)
-            acc_list.append(acc)
-
-        import matplotlib.pyplot as plt
-        fig, ax = plt.subplots(figsize=(6.4, 2))
-        ax.set_xlabel("Number of epochs")
-        ax.set_ylabel("Validation loss")
-        ax.plot(epochs_list, loss_list, ".-", color="teal")
-        ax.set_yticks(minor=True)
-        ax.grid(True, "both")
-        ax.spines["right"].set_visible(False)
-        ax.spines["top"].set_visible(False)
-        fig.tight_layout()
-        plt.show()
-
-        fig, ax = plt.subplots(figsize=(6.4, 2))
-        ax.set_xlabel("Number of epochs")
-        ax.set_ylabel("Accuracy")
-        ax.plot(epochs_list, acc_list, ".-", color="royalblue")
-        ax.set_yticks(minor=True)
-        ax.grid(True, "both")
-        ax.spines["right"].set_visible(False)
-        ax.spines["top"].set_visible(False)
-        fig.tight_layout()
-        plt.show()
-
-        np.savetxt(epochs_loss, loss_list)
-        np.savetxt(epochs_acc, acc_list)
+                np.savetxt(epochs_loss, loss_list)
+                np.savetxt(epochs_acc, loss_list)
 
 
 """

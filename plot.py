@@ -95,13 +95,12 @@ def plot_box(x, loss_only=False, acc_only=False, show=False, xlabel=None):
 
 
 
-def plot_one_param(alpha, loss_only=False, acc_only=False):
+def plot_one_param(alpha, loss, acc, loss_img_path, acc_img_path, loss_only=False, acc_only=False, show=False):
     if not acc_only:
         fig, ax = plt.subplots()
-        losses = np.loadtxt(svloss_path)
         trained_loss = np.loadtxt(sf_loss_path)
 
-        ax.plot(alpha, losses, "x-", color=color_loss, label="Validation loss with one parameter modified", linewidth=1, markersize=3)
+        ax.plot(alpha, loss, "x-", color=color_loss, label="Validation loss with one parameter modified", linewidth=1, markersize=3)
         ax.plot(alpha, trained_loss, "-", color=color_trained, label="Validation loss of trained neural network", linewidth=1, markersize=3)
         #ax.legend(loc="upper right", fontsize="small")
         ax.set_xlabel(r"$\alpha$")
@@ -109,15 +108,15 @@ def plot_one_param(alpha, loss_only=False, acc_only=False):
         ax.spines["right"].set_visible(False)
         ax.spines["top"].set_visible(False)
 
-        #plt.show()
-        plt.savefig("loss_single.pdf", format="pdf")
+        if show:
+            plt.show()
+        plt.savefig("{}.pdf".format(loss_img_path), format="pdf")
 
     if not loss_only:
         fig, ax = plt.subplots()
-        accs = np.loadtxt(sacc_path)
         trained_accuracy = np.loadtxt(sf_acc_path)
 
-        ax.plot(alpha, accs, ".-", color=color_acc, label="Accuracy with one parameter modified", linewidth=1)
+        ax.plot(alpha, acc, ".-", color=color_acc, label="Accuracy with one parameter modified", linewidth=1)
         ax.plot(alpha, trained_accuracy, "-", color=color_trained, label="Accuracy of trained neural network", linewidth=1)
         #ax.legend(loc="lower right", fontsize="small")
         ax.set_xlabel(r"$\alpha$")
@@ -125,8 +124,9 @@ def plot_one_param(alpha, loss_only=False, acc_only=False):
         ax.spines["right"].set_visible(False)
         ax.spines["top"].set_visible(False)
 
-        #plt.show()
-        plt.savefig("acc_single.pdf", format="pdf")
+        if show:
+            plt.show()
+        plt.savefig("{}.pdf".format(acc_img_path), format="pdf")
 
 
 

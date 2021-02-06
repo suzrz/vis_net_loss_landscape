@@ -18,12 +18,12 @@ def parse_arguments():
     parser.add_argument("--alpha-start", type=float, default=-1., help="Set starting point of interpolation (float, default = -1.0)")
     parser.add_argument("--alpha-end", type=float, default=1., help="Set ending point of interpolation (float, default = 1.0)")
     parser.add_argument("--alpha-steps", type=int, default=20, help="Set number of interpolation steps (int, default = 20)")
-    parser.add_argument("--hist", action="store_true")
     parser.add_argument("--single-param-only", action="store_true",
                         help="Only one single parameter will be interpolated")
     parser.add_argument("--two-params-only", action="store_true",
                         help="Only two parameters will be interpolated")
     parser.add_argument("--epochs", type=int, default=14, help="Set number of training epochs (default = 14)")
+    parser.add_argument("--preliminary", action="store_true", help="Preliminary experiments will be executed.")
 
     args = parser.parse_args()
 
@@ -80,27 +80,26 @@ def main():
     # Get neural network model
     model = get_net(device, train_loader, test_loader, args.epochs)
 
-    alpha = np.linspace(args.alpha_start, args.alpha_end, args.alpha_steps)
+    alpha = np.linspace(args.alpha_start, args.alpha_end, args.alpha_steps)  # Prepare interpolation coefficient
     interpolate = Interpolator(model, device, alpha, final_state, init_state)  # Create interpolator
 
-    interpolate.get_final_loss_acc(test_loader)
-    interpolate.single_acc_vloss(test_loader, "conv2", [4, 0, 0, 0])
+    interpolate.get_final_loss_acc(test_loader)  # get final loss and accuracy
+    interpolate.single_acc_vloss(test_loader, "conv2", [4, 0, 0, 0])  # examine parameter
+    interpolate.vec_acc_vlos(test_loader, "conv2")
 
     #Preliminary experiments
-    subs_train = [1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 15000, 20000, 30000, 40000, 50000, 60000]
-    subs_test = [1000, 1500, 2000, 3000, 4000, 5000, 7000, 8000, 9000, 10000]
-    epochs = [2, 5, 10, 15, 17, 20, 22, 25, 27, 30]
+    if args.preliminary:
+        subs_train = [1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 15000, 20000, 30000, 40000, 50000, 60000]
+        subs_test = [1000, 1500, 2000, 3000, 4000, 5000, 7000, 8000, 9000, 10000]
+        epochs = [2, 5, 10, 15, 17, 20, 22, 25, 27, 30]
 
-    net.pre_train_subset(model, device, subs_train, args.epochs, test_loader)
-    net.pre_test_subset(model, device, subs_test)
-    net.pre_epochs(model, device, epochs)
+        net.pre_train_subset(model, device, subs_train, args.epochs, test_loader)
+        net.pre_test_subset(model, device, subs_test)
+        net.pre_epochs(model, device, epochs)
 
-
-    #plot.plot_one_param(alpha)
-
-    plot.plot_impact(subs_train, np.loadtxt(train_subs_loss), np.loadtxt(train_subs_acc), xlabel="Size of training data set")
-    plot.plot_impact(epochs, np.loadtxt(epochs_loss), np.loadtxt(epochs_acc), annotate=False, xlabel="Number of epochs")
-    plot.plot_box(subs_test, show=True, xlabel="Size of test subset")
+        plot.plot_impact(subs_train, np.loadtxt(train_subs_loss), np.loadtxt(train_subs_acc), xlabel="Size of training data set")
+        plot.plot_impact(epochs, np.loadtxt(epochs_loss), np.loadtxt(epochs_acc), annotate=False, xlabel="Number of epochs")
+        plot.plot_box(subs_test, show=True, xlabel="Size of test subset")
 
     """
     if not args.single_param_only:

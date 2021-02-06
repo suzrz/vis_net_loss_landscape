@@ -22,20 +22,53 @@ final_state = Path(os.path.join(directory, "final_state.pt"))
 
   -----------------------------------------------------
 """
-sf_loss_path = Path(os.path.join(directory, "sf_loss"))
-sf_acc_path = Path(os.path.join(directory, "sf_acc"))
-svloss_path = Path(os.path.join(directory, "svloss"))
-stloss_path = Path(os.path.join(directory, "stloss"))
-sacc_path = Path(os.path.join(directory, "sacc"))
-vvloss_path = Path(os.path.join(directory, "vvloss"))
-vtloss_path = Path(os.path.join(directory, "vtloss"))
-vacc_path = Path(os.path.join(directory, "vacc"))
+# directories for single parameters experiments
+single = Path(os.path.join(directory, "singleParam"))
+single_img = Path(os.path.join(imgs, "singleParam"))
+if not single.exists():
+    os.makedirs(single)
+if not single_img.exists():
+    os.makedirs(single_img)
 
-train_subs_loss = Path(os.path.join(directory, "train_subs_loss"))
-train_subs_acc = Path(os.path.join(directory, "train_subs_acc"))
+# directories for vector paramaters experiments
+vec = Path(os.path.join(directory, "vec"))
+vec_img = Path(os.path.join(imgs, "vec"))
+if not vec.exists():
+    os.makedirs(vec)
+if not vec_img.exists():
+    os.makedirs(vec_img)
 
-test_subs_loss = Path(os.path.join(directory, "test_subs_loss"))
-test_subs_acc = Path(os.path.join(directory, "test_subs_acc"))
+# directory for preliminary experiments results
+prelim = Path(os.path.join(directory, "preliminary"))
+if not prelim.exists():
+    os.makedirs(prelim)
+
+# final loss and accuracy of the model
+sf_loss_path = Path(os.path.join(directory, "final_loss"))
+sf_acc_path = Path(os.path.join(directory, "final_acc"))
+
+# single loss experiments paths
+svloss_path = Path(os.path.join(single, "svloss"))  # results\svloss
+svloss_img_path = Path(os.path.join(single_img, "svloss"))
+
+# single accuracy experiments paths
+sacc_path = Path(os.path.join(single, "sacc"))
+sacc_img_path = Path(os.path.join(single_img, "sacc"))
+
+# vector loss experiments paths
+vvloss_path = Path(os.path.join(vec, "vvloss"))
+vvloss_img_path = Path(os.path.join(vec_img, "vvloss"))
+
+# vector accuracy experiments paths
+vacc_path = Path(os.path.join(vec, "vacc"))
+vacc_img_path = Path(os.path.join(vec_img, "vacc"))
+
+# preliminary experiments paths
+train_subs_loss = Path(os.path.join(prelim, "train_subs_loss"))
+train_subs_acc = Path(os.path.join(prelim, "train_subs_acc"))
+
+test_subs_loss = Path(os.path.join(prelim, "test_subs_loss"))
+test_subs_acc = Path(os.path.join(prelim, "test_subs_acc"))
 
 epochs_loss = Path(os.path.join(directory, "epochs_loss"))
 epochs_acc = Path(os.path.join(directory, "epochs_acc"))

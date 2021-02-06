@@ -6,10 +6,92 @@ from paths import *
 from matplotlib import cm
 from mpl_toolkits.mplot3d import Axes3D
 
-color_loss = "teal"
-color_trained = "orange"
-color_acc = "royalblue"
+color_loss = "red"
+color_trained = "lightgray"
+color_acc = "blue"
 
+def plot_line(x, y, xlabel, ylabel, annotate=False, color="blue"):
+    fig, ax = plt.subplots(figsize=(6.4, 2))
+    if xlabel:
+        ax.set_xlabel(xlabel)
+    if ylabel:
+        ax.set_ylabel(ylabel)
+    ax.plot(x, y, ".-", color=color, linewidth=1)
+    ax.spines["right"].set_visible(False)
+    ax.spines["top"].set_visible(False)
+    if annotate:
+        #ax.annotate("{:.4f}".format(y[-1]), xy=(x[-1], y[-1]),
+        #            xytext=(y[-1] - 0.01 * x[-1], y[-1] + 0.01 * y[-1]))
+        #ax.annotate("{:.4f}".format(y[-2]), xy=(x[-2], y[-2]),
+        #            xytext=(x[-2] - 0.01 * x[-2], y[-2] + 0.01 * y[-2]))
+        #ax.annotate("{:.4f}".format(y[-3]), xy=(x[-3], y[-3]),
+        #            xytext=(x[-3] - 0.01 * x[-3], y[-3] + 0.01 * y[-3]))
+        if y[-1] < 1:
+            # loss
+            k = 2
+            if x[-1] < 1000:
+                k = 0.25
+        else:
+            # accuracy
+            k = 0.02
+            if x[-1] < 1000:
+                k = 0.002
+
+        ax.annotate("{:.3f}".format(y[-1]), xy=(x[-1], y[-1]), xytext=(x[-1], y[-1] + y[-1]*k))
+        ax.annotate("{:.3f}".format(y[-2]), xy=(x[-2], y[-2]), xytext=(x[-2], y[-2] + y[-2]*k))
+        ax.annotate("{:.3f}".format(y[-3]), xy=(x[-3], y[-3]), xytext=(x[-3], y[-3] + y[-3]*k))
+
+    fig.tight_layout()
+    #plt.show()
+    plt.savefig(os.path.join(os.path.join(imgs), "{}.pdf".format(ylabel)), format="pdf")
+
+def plot_impact(x, loss=None, acc=None, loss_only=False, acc_only=False, annotate=True, xlabel=None):
+    if not acc_only:
+        if not loss.all():
+            print("No loss data found.")
+            return
+        plot_line(x, loss, xlabel, "Validation loss", annotate, color_loss)
+
+
+    if not loss_only:
+        if not acc.all():
+            print("No accuracy data found.")
+            return
+        plot_line(x, acc, xlabel, "Accuracy", annotate, color_acc)
+
+
+def plot_box(x, loss_only=False, acc_only=False, show=False, xlabel=None):
+    if not acc_only:
+        fig, ax = plt.subplots()
+
+        loss = np.loadtxt(epochs_loss)
+
+        ax.set_ylabel("Validation loss")
+        ax.set_xlabel(xlabel)
+        ax.set_xticklabels(x)
+        ax.spines["right"].set_visible(False)
+        ax.spines["top"].set_visible(False)
+        ax.boxplot(loss)
+
+        if show:
+            plt.show()
+        plt.savefig(os.path.join(os.path.join(imgs, "subsets_imp"), "test_loss.pdf"), format="pdf")
+
+    if not loss_only:
+        fig, ax = plt.subplots()
+
+        acc = np.loadtxt(epochs_acc)
+
+        ax.set_ylabel("Accuracy")
+        ax.set_xlabel(xlabel)
+        ax.set_xticklabels(x)
+        ax.spines["right"].set_visible(False)
+        ax.spines["top"].set_visible(False)
+        ax.boxplot(acc)
+
+        if show:
+            plt.show()
+        plt.savefig(os.path.join(os.path.join(imgs, "subsets_imp"), "test_acc.pdf"), format="pdf")
 
 
 
@@ -19,74 +101,33 @@ def plot_one_param(alpha, loss_only=False, acc_only=False):
         losses = np.loadtxt(svloss_path)
         trained_loss = np.loadtxt(sf_loss_path)
 
-        ax.plot(alpha, losses, "x-", color=color_loss, label="Validation loss with one parameter modified")
-        ax.plot(alpha, trained_loss, "-", color=color_trained, label="Validation loss of trained neural network")
-        ax.legend()
-        ax.set_xlabel("Alpha")
+        ax.plot(alpha, losses, "x-", color=color_loss, label="Validation loss with one parameter modified", linewidth=1, markersize=3)
+        ax.plot(alpha, trained_loss, "-", color=color_trained, label="Validation loss of trained neural network", linewidth=1, markersize=3)
+        #ax.legend(loc="upper right", fontsize="small")
+        ax.set_xlabel(r"$\alpha$")
         ax.set_ylabel("Validation loss")
         ax.spines["right"].set_visible(False)
         ax.spines["top"].set_visible(False)
 
-        plt.show()
+        #plt.show()
+        plt.savefig("loss_single.pdf", format="pdf")
 
     if not loss_only:
         fig, ax = plt.subplots()
         accs = np.loadtxt(sacc_path)
         trained_accuracy = np.loadtxt(sf_acc_path)
 
-        ax.plot(alpha, accs, "x-", color=color_acc, label="Accuracy with one parameter modified")
-        ax.plot(alpha, trained_accuracy, "-", color=color_trained, label="Accuracy of trained neural network")
-        ax.legend()
-        ax.set_xlabel("Alpha")
-        ax.set_ylabel("Validation loss")
+        ax.plot(alpha, accs, ".-", color=color_acc, label="Accuracy with one parameter modified", linewidth=1)
+        ax.plot(alpha, trained_accuracy, "-", color=color_trained, label="Accuracy of trained neural network", linewidth=1)
+        #ax.legend(loc="lower right", fontsize="small")
+        ax.set_xlabel(r"$\alpha$")
+        ax.set_ylabel("Accuracy")
         ax.spines["right"].set_visible(False)
         ax.spines["top"].set_visible(False)
 
-        plt.show()
+        #plt.show()
+        plt.savefig("acc_single.pdf", format="pdf")
 
-
-def plot_impact_of_subset_size(subsets, losses, accs):
-    """
-    fig, (ax1, ax2) = plt.subplots(1, 2)
-    ax1.set_xlabel("Size of test subset")
-    ax1.set_ylabel("Validation loss")
-    ax1.plot(subsets, losses, color=color_loss)
-    ax1.annotate("{}".format(losses[-1]), xy=(subsets[-1], losses[-1]))
-
-    ax2.set_xlabel("Size of subset")
-    ax2.set_ylabel("Accuracy")
-    ax2.plot(subsets, accs, color=color_acc)
-    ax2.annotate("{}".format(accs[-1]), xy=(subsets[-1], accs[-1]))
-
-    fig.tight_layout()
-    plt.show()
-    """
-
-    fig, ax = plt.subplots(figsize=(6.4, 2))
-    ax.set_xlabel("Size of subset")
-    ax.set_ylabel("Validation loss")
-    ax.plot(subsets, losses, ".-", color=color_loss)
-    ax.spines["right"].set_visible(False)
-    ax.spines["top"].set_visible(False)
-    ax.annotate("{:.4f}".format(losses[-1]), xy=(subsets[-1], losses[-1]), xytext=(subsets[-1]-0.01*subsets[-1], losses[-1]+0.01*losses[-1]))
-    ax.annotate("{:.4f}".format(losses[-2]), xy=(subsets[-2], losses[-2]), xytext=(subsets[-2]-0.01*subsets[-2], losses[-2]+0.01*losses[-2]))
-    ax.annotate("{:.4f}".format(losses[-3]), xy=(subsets[-3], losses[-3]), xytext=(subsets[-3]-0.01*subsets[-3], losses[-3]+0.01*losses[-3]))
-
-    fig.tight_layout()
-    plt.show()
-
-    fig, ax = plt.subplots(figsize=(6.4, 2))
-    ax.set_xlabel("Size of subset")
-    ax.set_ylabel("Accuracy")
-    ax.plot(subsets, accs, ".-", color=color_loss)
-    ax.spines["right"].set_visible(False)
-    ax.spines["top"].set_visible(False)
-    ax.annotate("{:.2f}".format(accs[-1]), xy=(subsets[-1]-0.01*subsets[-1], accs[-1]+0.001*accs[-1]))
-    ax.annotate("{:.2f}".format(accs[-2]), xy=(subsets[-2]-0.01*subsets[-2], accs[-2]+0.001*accs[-2]))
-    ax.annotate("{:.2f}".format(accs[-3]), xy=(subsets[-3]-0.01*subsets[-3], accs[-2]+0.001*accs[-3]))
-
-    fig.tight_layout()
-    plt.show()
 
 
 """ Template may be needed later

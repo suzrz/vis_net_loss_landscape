@@ -3,6 +3,7 @@ from pathlib import Path
 
 
 directory = "results"
+imgs = "imgs"
 
 init_state = Path(os.path.join(directory, "init_state.pt"))
 final_state = Path(os.path.join(directory, "final_state.pt"))
@@ -35,3 +36,7 @@ train_subs_acc = Path(os.path.join(directory, "train_subs_acc"))
 
 test_subs_loss = Path(os.path.join(directory, "test_subs_loss"))
 test_subs_acc = Path(os.path.join(directory, "test_subs_acc"))
+
+epochs_loss = Path(os.path.join(directory, "epochs_loss"))
+epochs_acc = Path(os.path.join(directory, "epochs_acc"))
+

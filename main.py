@@ -80,13 +80,14 @@ def main():
     # Get neural network model
     model = get_net(device, train_loader, test_loader, args.epochs)
 
-    alpha = np.linspace(args.alpha_start, args.alpha_end, args.alpha_steps)
+    alpha = np.linspace(args.alpha_start, args.alpha_end, args.alpha_steps)  # Prepare interpolation coefficient
     interpolate = Interpolator(model, device, alpha, final_state, init_state)  # Create interpolator
 
-    interpolate.get_final_loss_acc(test_loader)
-    interpolate.single_acc_vloss(test_loader, "conv2", [4, 0, 0, 0])
+    interpolate.get_final_loss_acc(test_loader)  # get final loss and accuracy
+    interpolate.single_acc_vloss(test_loader, "conv2", [4, 0, 0, 0])  # examine parameter
 
     #Preliminary experiments
+    """ TODO: Condintional execution
     subs_train = [1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 15000, 20000, 30000, 40000, 50000, 60000]
     subs_test = [1000, 1500, 2000, 3000, 4000, 5000, 7000, 8000, 9000, 10000]
     epochs = [2, 5, 10, 15, 17, 20, 22, 25, 27, 30]
@@ -94,14 +95,14 @@ def main():
     net.pre_train_subset(model, device, subs_train, args.epochs, test_loader)
     net.pre_test_subset(model, device, subs_test)
     net.pre_epochs(model, device, epochs)
-
+    
 
     #plot.plot_one_param(alpha)
 
     plot.plot_impact(subs_train, np.loadtxt(train_subs_loss), np.loadtxt(train_subs_acc), xlabel="Size of training data set")
     plot.plot_impact(epochs, np.loadtxt(epochs_loss), np.loadtxt(epochs_acc), annotate=False, xlabel="Number of epochs")
     plot.plot_box(subs_test, show=True, xlabel="Size of test subset")
-
+    """
     """
     if not args.single_param_only:
         # prepare files for 3D plot

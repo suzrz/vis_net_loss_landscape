@@ -22,14 +22,25 @@ final_state = Path(os.path.join(directory, "final_state.pt"))
 
   -----------------------------------------------------
 """
+single = Path(os.path.join(directory, "singleParam"))
+single_img = Path(os.path.join(imgs, "singleParam"))
+if not single.exists():
+    os.makedirs(single)
+if not single_img.exists():
+    os.makedirs(single_img)
+
 sf_loss_path = Path(os.path.join(directory, "sf_loss"))
 sf_acc_path = Path(os.path.join(directory, "sf_acc"))
-svloss_path = Path(os.path.join(directory, "svloss"))
-stloss_path = Path(os.path.join(directory, "stloss"))
-sacc_path = Path(os.path.join(directory, "sacc"))
+svloss_path = Path(os.path.join(single, "svloss"))  # results\svloss
+svloss_img_path = Path(os.path.join(single_img, "svloss"))
+#stloss_path = Path(os.path.join(directory, "stloss"))
+sacc_path = Path(os.path.join(single, "sacc"))
+sacc_img_path = Path(os.path.join(single_img, "sacc"))
 vvloss_path = Path(os.path.join(directory, "vvloss"))
-vtloss_path = Path(os.path.join(directory, "vtloss"))
+vvloss_img_path = Path(os.path.join(imgs, "vvloss"))
+#vtloss_path = Path(os.path.join(directory, "vtloss"))
 vacc_path = Path(os.path.join(directory, "vacc"))
+vacc_img_path = Path(os.path.join(imgs, "vacc"))
 
 train_subs_loss = Path(os.path.join(directory, "train_subs_loss"))
 train_subs_acc = Path(os.path.join(directory, "train_subs_acc"))

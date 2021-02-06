@@ -1,6 +1,13 @@
+import copy
 import torch
-import torch.nn.functional as f
+import data_load
+import numpy as np
+from paths import *
+from torch import optim
 from torch import nn as nn
+import torch.nn.functional as f
+from torch.optim.lr_scheduler import StepLR
+
 
 
 class Net(nn.Module):
@@ -102,3 +109,100 @@ def test(model, test_loader, device):
     test_loss /= len(test_loader.dataset)  # compute validation loss of neural network
     accuracy = 100. * correct / len(test_loader.dataset)
     return test_loss, accuracy
+
+
+def pre_train_subset(model, device, subset_list, epochs, test_loader):
+    """
+    Function to examine impact of different sizes of training subset.
+    """
+    if train_subs_loss.exists() and train_subs_acc.exists():
+        return
+
+    loss_list = []
+    acc_list = []
+    theta_i = copy.deepcopy(torch.load(init_state))
+    theta_f = copy.deepcopy(torch.load(final_state))
+
+    for n_samples in subset_list:
+        model.load_state_dict(theta_i)
+
+        optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.5)  # set optimizer
+        scheduler = StepLR(optimizer, step_size=1, gamma=0.7)  # set scheduler
+
+        for epoch in range(1, epochs):
+            train_loader, test_loader = data_load.data_load(train_samples=n_samples)
+
+            train(model, train_loader, optimizer, device, epoch)
+            test(model, test_loader, device)
+
+            scheduler.step()
+            print("[pre_train_subset] : Finished epoch {} for training set of size: {}".format(epoch,
+                                                                                                           n_samples))
+
+        loss, acc = test(model, test_loader, device)
+
+        loss_list.append(loss)
+        acc_list.append(acc)
+
+    np.savetxt(train_subs_loss, loss_list)
+    np.savetxt(train_subs_acc, acc_list)
+
+    model.load_state_dict(theta_f)
+
+
+def pre_test_subset(model, device, subset_list):
+    if test_subs_loss.exists() and test_subs_acc.exists():
+        return
+
+    subset_losses = []
+    subset_accs = []
+    theta_f = copy.deepcopy(torch.load(final_state))
+
+    model.load_state_dict(theta_f)
+
+    for n_samples in subset_list:
+        losses = []
+        accs = []
+        for x in range(100):  # 10x pruchod experimentem TODO
+            print("[pre_test_subset] : Measuring performance for {} samples, {} [{} %]".format(n_samples, x, x/100*100))
+            _, test_loader = data_load.data_load(test_samples=n_samples)  # to choose random data each time
+            loss, acc = test(model, test_loader, device)
+            losses.append(loss)
+            accs.append(acc)
+
+        subset_losses.append(losses)
+        subset_accs.append(accs)
+
+    np.savetxt(test_subs_loss, subset_losses)
+    np.savetxt(test_subs_acc, subset_accs)
+
+
+def pre_epochs(model, device, epochs_list):
+    if epochs_loss.exists() and epochs_acc.exists():
+        return
+
+    loss_list = []
+    acc_list = []
+
+    theta_i = copy.deepcopy(torch.load(init_state))
+
+    model.load_state_dict(theta_i)
+    optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.5)  # set optimizer
+    scheduler = StepLR(optimizer, step_size=1, gamma=0.7)  # set scheduler
+    train_loader, test_loader = data_load.data_load()
+
+    for epoch in range(max(epochs_list)):
+        train(model, train_loader, optimizer, device, epoch)
+        test(model, test_loader, device)
+
+        scheduler.step()
+
+        print("[pre_epochs] : Finished epoch {}".format(epoch))
+        if epoch in epochs_list:
+            loss, acc = test(model, test_loader, device)
+
+            loss_list.append(loss)
+            acc_list.append(acc)
+
+    np.savetxt(epochs_loss, loss_list)
+    np.savetxt(epochs_acc, loss_list)

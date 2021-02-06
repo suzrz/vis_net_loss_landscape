@@ -43,7 +43,7 @@ def plot_line(x, y, xlabel, ylabel, annotate=False, color="blue"):
 
     fig.tight_layout()
     #plt.show()
-    plt.savefig("{}.pdf".format(ylabel[:3]), format="pdf")
+    plt.savefig(os.path.join(os.path.join(imgs), "{}.pdf".format(ylabel)), format="pdf")
 
 def plot_impact(x, loss=None, acc=None, loss_only=False, acc_only=False, annotate=True, xlabel=None):
     if not acc_only:
@@ -58,6 +58,40 @@ def plot_impact(x, loss=None, acc=None, loss_only=False, acc_only=False, annotat
             print("No accuracy data found.")
             return
         plot_line(x, acc, xlabel, "Accuracy", annotate, color_acc)
+
+
+def plot_box(x, loss_only=False, acc_only=False, show=False, xlabel=None):
+    if not acc_only:
+        fig, ax = plt.subplots()
+
+        loss = np.loadtxt(epochs_loss)
+
+        ax.set_ylabel("Validation loss")
+        ax.set_xlabel(xlabel)
+        ax.set_xticklabels(x)
+        ax.spines["right"].set_visible(False)
+        ax.spines["top"].set_visible(False)
+        ax.boxplot(loss)
+
+        if show:
+            plt.show()
+        plt.savefig(os.path.join(os.path.join(imgs, "subsets_imp"), "test_loss.pdf"), format="pdf")
+
+    if not loss_only:
+        fig, ax = plt.subplots()
+
+        acc = np.loadtxt(epochs_acc)
+
+        ax.set_ylabel("Accuracy")
+        ax.set_xlabel(xlabel)
+        ax.set_xticklabels(x)
+        ax.spines["right"].set_visible(False)
+        ax.spines["top"].set_visible(False)
+        ax.boxplot(acc)
+
+        if show:
+            plt.show()
+        plt.savefig(os.path.join(os.path.join(imgs, "subsets_imp"), "test_acc.pdf"), format="pdf")
 
 
 
@@ -94,48 +128,6 @@ def plot_one_param(alpha, loss_only=False, acc_only=False):
         #plt.show()
         plt.savefig("acc_single.pdf", format="pdf")
 
-def plot_impact_of_subset_size(subsets, losses, accs):
-    """
-    fig, (ax1, ax2) = plt.subplots(1, 2)
-    ax1.set_xlabel("Size of test subset")
-    ax1.set_ylabel("Validation loss")
-    ax1.plot(subsets, losses, color=color_loss)
-    ax1.annotate("{}".format(losses[-1]), xy=(subsets[-1], losses[-1]))
-
-    ax2.set_xlabel("Size of subset")
-    ax2.set_ylabel("Accuracy")
-    ax2.plot(subsets, accs, color=color_acc)
-    ax2.annotate("{}".format(accs[-1]), xy=(subsets[-1], accs[-1]))
-
-    fig.tight_layout()
-    plt.show()
-    """
-
-    fig, ax = plt.subplots(figsize=(6.4, 2))
-    ax.set_xlabel("Size of subset")
-    ax.set_ylabel("Validation loss")
-    ax.plot(subsets, losses, ".-", color=color_loss)
-    ax.spines["right"].set_visible(False)
-    ax.spines["top"].set_visible(False)
-    ax.annotate("{:.4f}".format(losses[-1]), xy=(subsets[-1], losses[-1]), xytext=(subsets[-1]-0.01*subsets[-1], losses[-1]+0.01*losses[-1]))
-    ax.annotate("{:.4f}".format(losses[-2]), xy=(subsets[-2], losses[-2]), xytext=(subsets[-2]-0.01*subsets[-2], losses[-2]+0.01*losses[-2]))
-    ax.annotate("{:.4f}".format(losses[-3]), xy=(subsets[-3], losses[-3]), xytext=(subsets[-3]-0.01*subsets[-3], losses[-3]+0.01*losses[-3]))
-
-    fig.tight_layout()
-    plt.show()
-
-    fig, ax = plt.subplots(figsize=(6.4, 2))
-    ax.set_xlabel("Size of subset")
-    ax.set_ylabel("Accuracy")
-    ax.plot(subsets, accs, ".-", color=color_loss)
-    ax.spines["right"].set_visible(False)
-    ax.spines["top"].set_visible(False)
-    ax.annotate("{:.2f}".format(accs[-1]), xy=(subsets[-1]-0.01*subsets[-1], accs[-1]+0.001*accs[-1]))
-    ax.annotate("{:.2f}".format(accs[-2]), xy=(subsets[-2]-0.01*subsets[-2], accs[-2]+0.001*accs[-2]))
-    ax.annotate("{:.2f}".format(accs[-3]), xy=(subsets[-3]-0.01*subsets[-3], accs[-2]+0.001*accs[-3]))
-
-    fig.tight_layout()
-    plt.show()
 
 
 """ Template may be needed later

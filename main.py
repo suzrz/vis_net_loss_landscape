@@ -1,6 +1,7 @@
 import net
 import plot
 import torch
+import logging
 import argparse
 import data_load
 import numpy as np
@@ -14,16 +15,26 @@ def parse_arguments():
     """PARSE ARGUMENTS"""
     parser = argparse.ArgumentParser()
     parser.add_argument('--no-cuda', action='store_true', default=False,
-                        help='disables CUDA training')
-    parser.add_argument("--alpha-start", type=float, default=-1., help="Set starting point of interpolation (float, default = -1.0)")
-    parser.add_argument("--alpha-end", type=float, default=1., help="Set ending point of interpolation (float, default = 1.0)")
-    parser.add_argument("--alpha-steps", type=int, default=20, help="Set number of interpolation steps (int, default = 20)")
+                        help="Disables CUDA training.")
+    parser.add_argument("--alpha-start", type=float, default=-1.,
+                        help="Set starting point of interpolation (float, default = -1.0).")
+    parser.add_argument("--alpha-end", type=float, default=1.,
+                        help="Set ending point of interpolation (float, default = 1.0).")
+    parser.add_argument("--alpha-steps", type=int, default=20,
+                        help="Set number of interpolation steps (int, default = 20).")
     parser.add_argument("--single-param-only", action="store_true",
-                        help="Only one single parameter will be interpolated")
+                        help="Only one single parameter experiment will be executed.")
     parser.add_argument("--two-params-only", action="store_true",
-                        help="Only two parameters will be interpolated")
-    parser.add_argument("--epochs", type=int, default=14, help="Set number of training epochs (default = 14)")
-    parser.add_argument("--preliminary", action="store_true", help="Preliminary experiments will be executed.")
+                        help="Only two parameters will be interpolated.")
+    parser.add_argument("--epochs", type=int, default=14,
+                        help="Set number of training epochs (default = 14).")
+    parser.add_argument("--idxs", nargs='+', default=[0, 0, 0, 0],
+                        help="Set index of examined parameter (default = [0, 0, 0, 0]). Recommended to set.")
+    parser.add_argument("--layer", default="conv1",
+                        help="Set layer of examined parameter (default = conv1). Recommended to set.")
+    parser.add_argument("--preliminary", action="store_true",
+                        help="Preliminary experiments will be executed.")
+    #parser.add_argument("--debug", action="store_true", help="Enables debug logging.")
 
     args = parser.parse_args()
 
@@ -36,8 +47,8 @@ def get_net(device, train_loader, test_loader, epochs):
 
     # Save initial state of network if not saved yet
     if not init_state.exists():
+        logging.info("[main get_net]: No initial state of the model found. Initializing ...")
         torch.save(model.state_dict(), init_state)
-        print("New initial state saved.")
 
     # Get optimizer and scheduler
     optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.5)  # set optimizer
@@ -49,29 +60,45 @@ def get_net(device, train_loader, test_loader, epochs):
 
     # Train model if not trained yet
     if not final_state.exists():
-        print("Final state not found - beginning training")
+        logging.info("[main get_net]: No final state of the model found. Training ...")
         for epoch in range(1, epochs):
             net.train(model, train_loader, optimizer, device, epoch)
             net.test(model, test_loader, device)
             scheduler.step()
-            print("Finished epoch no. ", epoch)
+            logging.debug("[main get_net]: Finished training epoch ", epoch)
 
         torch.save(model.state_dict(), final_state)  # save final parameters of model
 
     model.load_state_dict(torch.load(final_state))
+    logging.debug("[main get_net]: Loaded final parameters in the model.")
 
     return model  # return neural network in final (trained) state
 
 
 def main():
+    logging.debug("[main] Main started. Parsing command line arguments...")
     args = parse_arguments()
+
+    #if args.debug:
+    #    level = logging.DEBUG
+    #else:
+    #    level = logging.INFO
+    #logging.basicConfig(level=level, format="%(asctime)s - %(levelname)s - %(message)s",
+    #                    filename="main.log", filemode='w')
+
+    logging.debug("[main]: Command line arguments: {}".format(args))
 
     # Set device
     use_cuda = not args.no_cuda and torch.cuda.is_available()
     device = torch.device("cuda" if use_cuda else "cpu")
+    if use_cuda:
+        logging.debug("[main]: CUDA is enabled.")
+    else:
+        logging.debug("[main]: CUDA is disabled.")
 
     # Check if directory for results exists
     if not os.path.isdir("results"):
+        logging.debug("[main]: Creating new results directory...")
         os.makedirs("results")
 
     # Prepare dataset
@@ -81,14 +108,10 @@ def main():
     model = get_net(device, train_loader, test_loader, args.epochs)
 
     alpha = np.linspace(args.alpha_start, args.alpha_end, args.alpha_steps)  # Prepare interpolation coefficient
-    interpolate = Interpolator(model, device, alpha, final_state, init_state)  # Create interpolator
-
-    interpolate.get_final_loss_acc(test_loader)  # get final loss and accuracy
-    interpolate.single_acc_vloss(test_loader, "conv2", [4, 0, 0, 0])  # examine parameter
-    interpolate.vec_acc_vlos(test_loader, "conv2")
 
     #Preliminary experiments
     if args.preliminary:
+        logging.info("[main]: Preliminary experiments enabled. Executing...")
         subs_train = [1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 15000, 20000, 30000, 40000, 50000, 60000]
         subs_test = [1000, 1500, 2000, 3000, 4000, 5000, 7000, 8000, 9000, 10000]
         epochs = [2, 5, 10, 15, 17, 20, 22, 25, 27, 30]
@@ -100,6 +123,13 @@ def main():
         plot.plot_impact(subs_train, np.loadtxt(train_subs_loss), np.loadtxt(train_subs_acc), xlabel="Size of training data set")
         plot.plot_impact(epochs, np.loadtxt(epochs_loss), np.loadtxt(epochs_acc), annotate=False, xlabel="Number of epochs")
         plot.plot_box(subs_test, show=True, xlabel="Size of test subset")
+
+    logging.info("[main]: Executing experiments...")
+    interpolate = Interpolator(model, device, alpha, final_state, init_state)  # Create interpolator
+
+    interpolate.get_final_loss_acc(test_loader)  # get final loss and accuracy
+    interpolate.single_acc_vloss(test_loader, args.layer, list(map(int, args.idxs)))  # examine parameter
+    interpolate.vec_acc_vlos(test_loader, args.layer)
 
     """
     if not args.single_param_only:

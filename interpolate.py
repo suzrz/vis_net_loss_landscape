@@ -7,7 +7,10 @@ import numpy as np
 from paths import *
 from pathlib import Path
 
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s",
+                    filename="log.log")
+mpl_logger = logging.getLogger('matplotlib')
+mpl_logger.setLevel(logging.WARNING)
 
 def convert_list2str(int_list):
     res = int(''.join(map(str, int_list)))

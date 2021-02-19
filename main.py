@@ -32,6 +32,8 @@ def parse_arguments():
                         help="Set index of examined parameter (default = [0, 0, 0, 0]). Recommended to set.")
     parser.add_argument("--layer", default="conv1",
                         help="Set layer of examined parameter (default = conv1). Recommended to set.")
+    parser.add_argument("--trained", action="store_true",
+                        help="Plot difference between interpolated and actual trained results.")
     parser.add_argument("--preliminary", action="store_true",
                         help="Preliminary experiments will be executed.")
     #parser.add_argument("--debug", action="store_true", help="Enables debug logging.")
@@ -44,6 +46,8 @@ def parse_arguments():
 def get_net(device, train_loader, test_loader, epochs):
     # Create instance of neural network
     model = net.Net().to(device)
+    loss_list = []
+    acc_list = []
 
     # Save initial state of network if not saved yet
     if not init_state.exists():
@@ -63,11 +67,16 @@ def get_net(device, train_loader, test_loader, epochs):
         logging.info("[main get_net]: No final state of the model found. Training ...")
         for epoch in range(1, epochs):
             net.train(model, train_loader, optimizer, device, epoch)
-            net.test(model, test_loader, device)
+            loss, acc = net.test(model, test_loader, device)
+            loss_list.append(loss)
+            acc_list.append(acc)
             scheduler.step()
-            logging.debug("[main get_net]: Finished training epoch ", epoch)
+            logging.debug("[main get_net]: Finished training epoch {}".format(epoch))
 
         torch.save(model.state_dict(), final_state)  # save final parameters of model
+
+        np.savetxt(os.path.join(directory, "actual_loss"), loss_list)
+        np.savetxt(os.path.join(directory, "actual_acc"), acc_list)
 
     model.load_state_dict(torch.load(final_state))
     logging.debug("[main get_net]: Loaded final parameters in the model.")
@@ -128,8 +137,8 @@ def main():
     interpolate = Interpolator(model, device, alpha, final_state, init_state)  # Create interpolator
 
     interpolate.get_final_loss_acc(test_loader)  # get final loss and accuracy
-    interpolate.single_acc_vloss(test_loader, args.layer, list(map(int, args.idxs)))  # examine parameter
-    interpolate.vec_acc_vlos(test_loader, args.layer)
+    interpolate.single_acc_vloss(test_loader, args.layer, list(map(int, args.idxs)), args.trained)  # examine parameter
+    interpolate.vec_acc_vlos(test_loader, args.layer, trained=args.trained)
 
     """
     if not args.single_param_only:

@@ -34,7 +34,7 @@ class Interpolator:
         self.theta[layer] = torch.add((torch.mul(self.theta_i[layer], (1.0 - alpha))), 
                                       torch.mul(self.theta_f[layer], alpha))
 
-    def single_acc_vloss(self, test_loader, layer, idxs):
+    def single_acc_vloss(self, test_loader, layer, idxs, trained):
         loss_res = Path("{}_{}_{}".format(svloss_path, layer, convert_list2str(idxs)))
         loss_img = Path("{}_{}_{}".format(svloss_img_path, layer, convert_list2str(idxs)))
         acc_res = Path("{}_{}_{}".format(sacc_path, layer, convert_list2str(idxs)))
@@ -61,12 +61,12 @@ class Interpolator:
             np.savetxt(acc_res, acc_list)
 
         logging.debug("[interpolator.single_acc_vloss]: Saving results to figure {}, {} ...".format(loss_img, acc_img))
-        plot.plot_one_param(self.alpha, np.loadtxt(loss_res), np.loadtxt(acc_res), loss_img, acc_img)
+        plot.plot_one_param(self.alpha, np.loadtxt(loss_res), np.loadtxt(acc_res), loss_img, acc_img, trained=trained)
         self.model.load_state_dict(self.theta_f)
 
         return
 
-    def vec_acc_vlos(self, test_loader, layer):
+    def vec_acc_vlos(self, test_loader, layer, trained):
         loss_res = Path("{}_{}".format(vvloss_path, layer))
         loss_img = Path("{}_{}".format(vvloss_img_path, layer))
         acc_res = Path("{}_{}".format(vacc_path, layer))
@@ -93,7 +93,7 @@ class Interpolator:
             np.savetxt(acc_res, acc_list)
 
         logging.debug("[interpolator.vec_acc_vloss]: Saving results to figure {}, {} ...".format(loss_img, acc_img))
-        plot.plot_one_param(self.alpha, np.loadtxt(loss_res), np.loadtxt(acc_res), loss_img, acc_img)
+        plot.plot_one_param(self.alpha, np.loadtxt(loss_res), np.loadtxt(acc_res), loss_img, acc_img, trained=True)
         self.model.load_state_dict(self.theta_f)
 
         return

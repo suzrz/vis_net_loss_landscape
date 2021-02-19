@@ -2,8 +2,8 @@ import os
 import subprocess
 from pathlib import Path
 
-alpha_start = -2
-alpha_end = 2
+alpha_start = 0
+alpha_end = 1.0
 alpha_steps = 40
 layers_c = ["conv1", "conv2"]
 layers_f = ["fc1", "fc2", "fc3"]
@@ -19,7 +19,8 @@ for l in layers_c:
                          "--alpha-end", "{}".format(alpha_end),
                          "--alpha-steps", "{}".format(alpha_steps),
                          "--layer", "{}".format(l),
-                         "--idxs", str(i[0]), str(i[1]), str(i[2]), str(i[3])
+                         "--idxs", str(i[0]), str(i[1]), str(i[2]), str(i[3]),
+                         "--trained"
                          ])
 
 for l in layers_f:
@@ -29,6 +30,7 @@ for l in layers_f:
                          "--alpha-end", "{}".format(alpha_end),
                          "--alpha-steps", "{}".format(alpha_steps),
                          "--layer", "{}".format(l),
-                         "--idxs", str(i[0]), str(i[1])
+                         "--idxs", str(i[0]), str(i[1]),
+                         "--trained"
                          ])
 

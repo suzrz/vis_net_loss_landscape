@@ -61,7 +61,7 @@ class Interpolator:
             np.savetxt(acc_res, acc_list)
 
         logging.debug("[interpolator.single_acc_vloss]: Saving results to figure {}, {} ...".format(loss_img, acc_img))
-        plot.plot_one_param(self.alpha, np.loadtxt(loss_res), np.loadtxt(acc_res), loss_img, acc_img, trained)
+        plot.plot_one_param(self.alpha, np.loadtxt(loss_res), np.loadtxt(acc_res), loss_img, acc_img, trained=trained)
         self.model.load_state_dict(self.theta_f)
 
         return
@@ -93,7 +93,7 @@ class Interpolator:
             np.savetxt(acc_res, acc_list)
 
         logging.debug("[interpolator.vec_acc_vloss]: Saving results to figure {}, {} ...".format(loss_img, acc_img))
-        plot.plot_one_param(self.alpha, np.loadtxt(loss_res), np.loadtxt(acc_res), loss_img, acc_img, trained)
+        plot.plot_one_param(self.alpha, np.loadtxt(loss_res), np.loadtxt(acc_res), loss_img, acc_img, trained=True)
         self.model.load_state_dict(self.theta_f)
 
         return

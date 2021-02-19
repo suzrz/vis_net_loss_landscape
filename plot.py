@@ -7,7 +7,7 @@ from matplotlib import cm
 from mpl_toolkits.mplot3d import Axes3D
 
 color_loss = "red"
-color_trained = "lightgray"
+color_trained = "black"
 color_acc = "blue"
 
 def plot_line(x, y, xlabel, ylabel, annotate=False, color="blue"):
@@ -107,15 +107,14 @@ def plot_one_param(alpha, loss, acc, loss_img_path, acc_img_path, loss_only=Fals
         ax.set_ylabel("Validation loss")
         ax.spines["right"].set_visible(False)
         ax.spines["top"].set_visible(False)
-        ax.tick_params(axis='x', color=color_loss)
-        ax.tick_params(axis='y', color=color_loss)
-
+        ax.tick_params(axis='x', colors=color_loss)
+        #ax.tick_params(axis='y', color=color_loss)
 
         if trained:
             ax.spines["right"].set_visible(True)
             ax.spines["top"].set_visible(True)
             ax2 = fig.add_subplot(111, label="2", frame_on=False)
-            ax2.plot(range(len(trained_loss)), trained_loss, "-", color=color_trained)
+            ax2.plot(range(len(trained_loss)), trained_loss, "-", color=color_trained, linewidth=1, linestyle="dashed")
             ax2.xaxis.tick_top()
             #ax2.yaxis.tick_right()
             ax2.set_xlabel("Epochs")
@@ -124,7 +123,7 @@ def plot_one_param(alpha, loss, acc, loss_img_path, acc_img_path, loss_only=Fals
             ax2.set_yticks([], minor=True)
             ax2.xaxis.set_label_position("top")
             #ax2.yaxis.set_label_position("right")
-            ax2.tick_params(axis='x', color=color_trained)
+            ax2.tick_params(axis='x', colors=color_trained)
             #ax2.tick_params(axis='y', color=color_trained)
 
 
@@ -144,14 +143,14 @@ def plot_one_param(alpha, loss, acc, loss_img_path, acc_img_path, loss_only=Fals
         ax.set_ylabel("Accuracy")
         ax.spines["right"].set_visible(False)
         ax.spines["top"].set_visible(False)
-        ax.tick_params(axis='x', color=color_acc)
-        ax.tick_params(axis='y', color=color_acc)
+        ax.tick_params(axis='x', colors=color_acc)
+        #ax.tick_params(axis='y', color=color_acc)
 
         if trained:
             ax.spines["right"].set_visible(True)
             ax.spines["top"].set_visible(True)
             ax2 = fig.add_subplot(111, label="2", frame_on=False)
-            ax2.plot(range(len(trained_accuracy)), trained_accuracy, "-", color=color_trained, label="Accuracy of trained neural network", linewidth=1)
+            ax2.plot(range(len(trained_accuracy)), trained_accuracy, "-", color=color_trained, label="Accuracy of trained neural network", linewidth=1, linestyle="dashed")
             ax2.xaxis.tick_top()
             #ax2.yaxis.tick_right()
             ax2.set_yticks([])
@@ -160,7 +159,7 @@ def plot_one_param(alpha, loss, acc, loss_img_path, acc_img_path, loss_only=Fals
             #ax2.set_ylabel("Accuracy")
             ax2.xaxis.set_label_position("top")
             #ax2.yaxis.set_label_position("right")
-            ax2.tick_params(axis='x', color=color_trained)
+            ax2.tick_params(axis='x', colors=color_trained)
             #ax2.tick_params(axis='y', color=color_trained)
 
         if show:

@@ -73,3 +73,5 @@ test_subs_acc = Path(os.path.join(prelim, "test_subs_acc"))
 epochs_loss = Path(os.path.join(directory, "epochs_loss"))
 epochs_acc = Path(os.path.join(directory, "epochs_acc"))
 
+# random directions experiment surface file
+surf = Path(os.path.join(directory, "surf_file.h5"))

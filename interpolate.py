@@ -1,8 +1,10 @@
 import net
 import copy
+import h5py
 import plot
 import torch
 import logging
+import directions
 import numpy as np
 from paths import *
 from pathlib import Path
@@ -12,10 +14,12 @@ logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %
 mpl_logger = logging.getLogger('matplotlib')
 mpl_logger.setLevel(logging.WARNING)
 
+
 def convert_list2str(int_list):
     res = int(''.join(map(str, int_list)))
 
     return res
+
 
 class Interpolator:
     def __init__(self, model, device, alpha, final_state_path, init_state_path):
@@ -51,12 +55,14 @@ class Interpolator:
                 self.calc_theta_single(layer + ".bias", idxs, alpha_act)
 
                 self.model.load_state_dict(self.theta)
-                logging.debug("[interpolator.single_acc_vloss]: Getting validation loss and accuracy for alpha = {}".format(alpha_act))
+                logging.debug("[interpolator.single_acc_vloss]: Getting validation loss "
+                              "and accuracy for alpha = {}".format(alpha_act))
                 val_loss, acc = net.test(self.model, test_loader, self.device)
                 acc_list.append(acc)
                 v_loss_list.append(val_loss)
 
-            logging.debug("[interpolator.single_acc_vloss]: Saving results to files. ({}, {})".format(loss_res, acc_res))
+            logging.debug("[interpolator.single_acc_vloss]: Saving results to "
+                          "files. ({}, {})".format(loss_res, acc_res))
             np.savetxt(loss_res, v_loss_list)
             np.savetxt(acc_res, acc_list)
 
@@ -83,7 +89,8 @@ class Interpolator:
                 self.calc_theta_vec(layer + ".bias", alpha_act)
 
                 self.model.load_state_dict(self.theta)
-                logging.debug("[interpolator.vec_acc_vloss]: Getting validation loss and accuracy for alpha = {}".format(alpha_act))
+                logging.debug("[interpolator.vec_acc_vloss]: Getting "
+                              "validation loss and accuracy for alpha = {}".format(alpha_act))
                 vloss, acc = net.test(self.model, test_loader, self.device)
                 v_loss_list.append(vloss)
                 acc_list.append(acc)
@@ -97,6 +104,68 @@ class Interpolator:
         self.model.load_state_dict(self.theta_f)
 
         return
+
+    def set_surf_file(self):
+        xmin, xmax, xnum = self.alpha[0], self.alpha[-1], len(self.alpha)
+        ymin, ymax, ynum = self.alpha[0], self.alpha[-1], len(self.alpha)
+
+        with h5py.File(surf, 'a') as fd:
+            xcoord = np.linspace(xmin, xmax, xnum)
+            fd["xcoordinates"] = xcoord
+
+            ycoord = np.linspace(ymin, ymax, ynum)
+            fd["ycoordinates"] = ycoord
+
+            shape = (len(xcoord), len(ycoord))
+            losses = -np.ones(shape=shape)
+
+            fd["val_loss"] = losses
+
+            return
+
+    def get_indices(self, vals, xcoords, ycoords):
+        idxs = np.array(range(vals.size))
+        idxs = idxs[vals.ravel() <= 0]
+
+        xcoords_mesh, ycoords_mesh = np.meshgrid(xcoords, ycoords)
+        s1 = xcoords_mesh.ravel()[idxs]
+        s2 = ycoords_mesh.ravel()[idxs]
+
+        return idxs, np.c_[s1, s2]
+
+    def update_weights(self, directions, step):
+        dx = directions[0]
+        dy = directions[1]
+        theta_i = [p.data for p in self.model.parameters()]
+
+        changes = [d0 * step[0] + d1 * step[1] for (d0, d1) in zip(dx, dy)]
+
+        for (p, w, d) in zip(self.model.parameters(), theta_i, changes):
+            p.data = w.to(self.device) + d.clone().detach().requires_grad_(True)
+
+    def rand_dirs(self, test_loader):
+        if not surf.exists():
+            self.set_surf_file()
+
+        self.model.load_state_dict(self.theta_f)
+        if surf.exists():
+                dirs = directions.random_directions(self.model, self.device)
+
+                with h5py.File(surf, "r+") as fd:
+                    xcoords = fd["xcoordinates"][:]
+                    ycoords = fd["ycoordinates"][:]
+                    losses = fd["val_loss"][:]
+
+                    idxs, coords = self.get_indices(losses, xcoords, ycoords)
+
+                    for count, idx in enumerate(idxs):
+                        coord = coords[count]
+
+                        self.update_weights(dirs, coord)
+                        loss, _ = net.test(self.model, test_loader, self.device)
+                        losses.ravel()[idx] = loss
+                        fd["val_loss"][:] = losses
+                        fd.flush()
 
     def get_final_loss_acc(self, test_loader):
         if sf_loss_path.exists() and sf_acc_path.exists():

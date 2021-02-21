@@ -214,11 +214,9 @@ def surface3d_rand_dirs():
     # vmax = 100
 
     # vlevel = 0.5
-    filename = "surf_3d.h5"
-    file = os.path.join(directory, filename)
     surf_name = "val_loss"
 
-    with h5py.File(file, 'r') as fd:
+    with h5py.File(surf, 'r') as fd:
         x = np.array(fd["xcoordinates"][:])
         y = np.array(fd["ycoordinates"][:])
 
@@ -231,8 +229,8 @@ def surface3d_rand_dirs():
         ax.set_xlabel("x")
         ax.set_ylabel("y")
         ax.set_zlabel("f(x, y)")
-        surf = ax.plot_surface(X, Y, Z, linewidth=0, antialiased=False, cmap=cm.jet)
-        fig.colorbar(surf, shrink=0.5, aspect=5)
+        surface = ax.plot_surface(X, Y, Z, linewidth=0, antialiased=False, cmap=cm.jet)
+        fig.colorbar(surface, shrink=0.5, aspect=5)
         plt.show()
 
         """COUNTOURS"""

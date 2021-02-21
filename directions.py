@@ -1,5 +1,5 @@
 import torch
-
+import paths
 
 def random_dir(model, device):
     weights = [p.data for p in model.parameters()]
@@ -16,9 +16,13 @@ def random_dir(model, device):
 
     return direction
 
-
 def random_directions(model, device):
     x_dir = random_dir(model, device)
     y_dir = random_dir(model, device)
 
     return [x_dir, y_dir]
+
+def set_surf_file(file):
+    """
+    Prepare surface file for random directions experiment
+    """

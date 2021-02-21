@@ -139,6 +139,8 @@ def main():
     interpolate.get_final_loss_acc(test_loader)  # get final loss and accuracy
     interpolate.single_acc_vloss(test_loader, args.layer, list(map(int, args.idxs)), args.trained)  # examine parameter
     interpolate.vec_acc_vlos(test_loader, args.layer, trained=args.trained)
+    interpolate.rand_dirs(test_loader)
+    plot.surface3d_rand_dirs()
 
     """
     if not args.single_param_only:

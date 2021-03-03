@@ -1,3 +1,4 @@
+import re
 import h5py
 import numpy as np
 # import seaborn as sns
@@ -166,7 +167,19 @@ def plot_one_param(alpha, loss, acc, loss_img_path, acc_img_path, loss_only=Fals
             plt.show()
         plt.savefig("{}.pdf".format(acc_img_path), format="pdf")
 
+def plot_single(x, layer, label, show=False):
+    files = os.listdir(single)
+    fig = plt.figure()
+    ax = fig.add_subplot()
 
+    for file in files:
+        if re.search(layer, file) and re.search("loss", file):
+            print(file)
+            ax.plot(x, np.loadtxt(os.path.join(single, file)))
+
+    
+    plt.show()
+            
 
 """ Template may be needed later
 def plot_subset_hist(n_tr_samples):

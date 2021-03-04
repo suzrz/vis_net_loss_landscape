@@ -128,8 +128,8 @@ def plot_one_param(alpha, loss, acc, loss_img_path, acc_img_path, loss_only=Fals
             #ax2.tick_params(axis='y', color=color_trained)
 
 
-        if show:
-            plt.show()
+        #if show:
+        #    plt.show()
         plt.savefig("{}.pdf".format(loss_img_path), format="pdf")
 
     if not loss_only:
@@ -163,21 +163,34 @@ def plot_one_param(alpha, loss, acc, loss_img_path, acc_img_path, loss_only=Fals
             ax2.tick_params(axis='x', colors=color_trained)
             #ax2.tick_params(axis='y', color=color_trained)
 
-        if show:
-            plt.show()
+        #if show:
+        #    plt.show()
         plt.savefig("{}.pdf".format(acc_img_path), format="pdf")
 
-def plot_single(x, layer, label, show=False):
+def plot_single(x, layer, show=False):
     files = os.listdir(single)
     fig = plt.figure()
     ax = fig.add_subplot()
+    ax.spines["right"].set_visible(False)
+    ax.spines["top"].set_visible(False)
+    count = 0
+
+    print("layer:", layer)
 
     for file in files:
         if re.search(layer, file) and re.search("loss", file):
-            print(file)
-            ax.plot(x, np.loadtxt(os.path.join(single, file)))
+            count = count + 1
+            print(count)
+            #print(file)
+            lab = file.split("_")
+            ax.plot(x, np.loadtxt(os.path.join(single, file)), label=lab[-1])
+        if count >= 10:
+            plt.legend()
+            plt.savefig("{}.pdf".format(os.path.join(single_img, layer)), format="pdf")
+            plt.show()
+            return
 
-    
+    plt.savefig("{}.pdf".format(os.path.join(single_img, layer)), format="pdf")
     plt.show()
             
 
@@ -275,3 +288,11 @@ def surface3d_rand_dirs():
         #fig.savefig(result_base + '_' + surf_name + "_3D_surface.pdf",
         #            dpi=300, bbox_inches="tight", format="pdf")
         """
+
+
+x = np.linspace(-1.0, 2.0, 40)
+plot_single(x, "conv1")
+plot_single(x, "conv2")
+plot_single(x, "fc1")
+plot_single(x, "fc2")
+plot_single(x, "fc3")

@@ -3,6 +3,7 @@ import copy
 import h5py
 import plot
 import torch
+import scipy.optimize
 import logging
 import directions
 import numpy as np
@@ -38,6 +39,16 @@ class Interpolator:
         self.theta[layer] = torch.add((torch.mul(self.theta_i[layer], (1.0 - alpha))), 
                                       torch.mul(self.theta_f[layer], alpha))
 
+    def parabola(self, x, a, b, c):
+        return a*x**2 + b*x + c
+
+    def quadr(self, alpha, epochs, data):
+        fit_params, pcov = scipy.optimize.curve_fit(self.parabola, epochs, data)
+        approx = self.parabola(alpha, *fit_params)
+        print(approx)
+
+        np.savetxt("quadr", approx)
+
     def single_acc_vloss(self, test_loader, layer, idxs, trained):
         loss_res = Path("{}_{}_{}".format(svloss_path, layer, convert_list2str(idxs)))
         loss_img = Path("{}_{}_{}".format(svloss_img_path, layer, convert_list2str(idxs)))
@@ -67,7 +78,7 @@ class Interpolator:
             np.savetxt(acc_res, acc_list)
 
         logging.debug("[interpolator.single_acc_vloss]: Saving results to figure {}, {} ...".format(loss_img, acc_img))
-        plot.plot_one_param(self.alpha, np.loadtxt(loss_res), np.loadtxt(acc_res), loss_img, acc_img, trained=trained)
+        plot.plot_one_param(self.alpha, np.loadtxt(loss_res), np.loadtxt(acc_res), loss_img, acc_img, trained=False)
         self.model.load_state_dict(self.theta_f)
 
         return

@@ -72,6 +72,7 @@ def get_net(device, train_loader, test_loader, epochs):
             acc_list.append(acc)
             scheduler.step()
             logging.debug("[main get_net]: Finished training epoch {}".format(epoch))
+            torch.save(model.state_dict(), "state_{}".format(epoch))
 
         torch.save(model.state_dict(), final_state)  # save final parameters of model
 
@@ -118,6 +119,7 @@ def main():
 
     alpha = np.linspace(args.alpha_start, args.alpha_end, args.alpha_steps)  # Prepare interpolation coefficient
 
+    print(model)
     #Preliminary experiments
     if args.preliminary:
         logging.info("[main]: Preliminary experiments enabled. Executing...")
@@ -136,12 +138,18 @@ def main():
     logging.info("[main]: Executing experiments...")
     interpolate = Interpolator(model, device, alpha, final_state, init_state)  # Create interpolator
 
-    interpolate.get_final_loss_acc(test_loader)  # get final loss and accuracy
-    interpolate.single_acc_vloss(test_loader, args.layer, list(map(int, args.idxs)), args.trained)  # examine parameter
-    interpolate.vec_acc_vlos(test_loader, args.layer, trained=args.trained)
-    interpolate.rand_dirs(test_loader)
-    plot.surface3d_rand_dirs()
+    #interpolate.get_final_loss_acc(test_loader)  # get final loss and accuracy
+    #interpolate.single_acc_vloss(test_loader, args.layer, list(map(int, args.idxs)), args.trained)  # examine parameter
+    #interpolate.vec_acc_vlos(test_loader, args.layer, trained=args.trained)
+    #interpolate.rand_dirs(test_loader)
+    #plot.surface3d_rand_dirs()
 
+
+    plot.plot_single(alpha, "conv1", True)
+    plot.plot_single(alpha, "conv2", True)
+    plot.plot_single(alpha, "fc1", True)
+    plot.plot_single(alpha, "fc2", True)
+    plot.plot_single(alpha, "fc3", True)
     """
     if not args.single_param_only:
         # prepare files for 3D plot

@@ -8,7 +8,7 @@ from matplotlib import cm
 from mpl_toolkits.mplot3d import Axes3D
 
 color_loss = "red"
-color_trained = "black"
+color_trained = "dimgrey"
 color_acc = "blue"
 
 def plot_line(x, y, xlabel, ylabel, annotate=False, color="blue"):
@@ -98,8 +98,9 @@ def plot_box(x, loss_only=False, acc_only=False, show=False, xlabel=None):
 
 def plot_one_param(alpha, loss, acc, loss_img_path, acc_img_path, loss_only=False, acc_only=False, show=False, trained=False):
     if not acc_only:
-        fig = plt.figure()
-        ax = fig.add_subplot(111, label="1")
+        #fig = plt.figure()
+        #ax = fig.add_subplot(111, label="1")
+        fig, ax = plt.subplots()
         trained_loss = np.loadtxt(os.path.join(results, "actual_loss"))
 
         ax.plot(alpha, loss, "x-", color=color_loss, label="Validation loss with one parameter modified", linewidth=1, markersize=3)
@@ -114,14 +115,15 @@ def plot_one_param(alpha, loss, acc, loss_img_path, acc_img_path, loss_only=Fals
         if trained:
             ax.spines["right"].set_visible(True)
             ax.spines["top"].set_visible(True)
-            ax2 = fig.add_subplot(111, label="2", frame_on=False)
+            ax2 = ax.twiny()
+            #ax2 = fig.add_subplot(111, label="2", frame_on=False)
             ax2.plot(range(len(trained_loss)), trained_loss, "-", color=color_trained, linewidth=1, linestyle="dashed")
             ax2.xaxis.tick_top()
             #ax2.yaxis.tick_right()
             ax2.set_xlabel("Epochs")
             #ax2.set_ylabel("Validation loss")
-            ax2.set_yticks([])
-            ax2.set_yticks([], minor=True)
+            #ax2.set_yticks([])
+            #ax2.set_yticks([], minor=True)
             ax2.xaxis.set_label_position("top")
             #ax2.yaxis.set_label_position("right")
             ax2.tick_params(axis='x', colors=color_trained)
@@ -133,8 +135,9 @@ def plot_one_param(alpha, loss, acc, loss_img_path, acc_img_path, loss_only=Fals
         plt.savefig("{}.pdf".format(loss_img_path), format="pdf")
 
     if not loss_only:
-        fig = plt.figure()
-        ax = fig.add_subplot(111, label="1")
+        #fig = plt.figure()
+        #ax = fig.add_subplot(111, label="1")
+        fig, ax = plt.subplots()
 
         trained_accuracy = np.loadtxt(os.path.join(results, "actual_acc"))
 
@@ -150,12 +153,13 @@ def plot_one_param(alpha, loss, acc, loss_img_path, acc_img_path, loss_only=Fals
         if trained:
             ax.spines["right"].set_visible(True)
             ax.spines["top"].set_visible(True)
-            ax2 = fig.add_subplot(111, label="2", frame_on=False)
+            #ax2 = fig.add_subplot(111, label="2", frame_on=False)
+            ax2 = ax.twiny()
             ax2.plot(range(len(trained_accuracy)), trained_accuracy, "-", color=color_trained, label="Accuracy of trained neural network", linewidth=1, linestyle="dashed")
             ax2.xaxis.tick_top()
             #ax2.yaxis.tick_right()
-            ax2.set_yticks([])
-            ax2.set_yticks([], minor=True)
+            #ax2.set_yticks([])
+            #ax2.set_yticks([], minor=True)
             ax2.set_xlabel("Epochs")
             #ax2.set_ylabel("Accuracy")
             ax2.xaxis.set_label_position("top")

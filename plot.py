@@ -100,7 +100,7 @@ def plot_one_param(alpha, loss, acc, loss_img_path, acc_img_path, loss_only=Fals
     if not acc_only:
         fig = plt.figure()
         ax = fig.add_subplot(111, label="1")
-        trained_loss = np.loadtxt(os.path.join(directory, "actual_loss"))
+        trained_loss = np.loadtxt(os.path.join(results, "actual_loss"))
 
         ax.plot(alpha, loss, "x-", color=color_loss, label="Validation loss with one parameter modified", linewidth=1, markersize=3)
         #ax.legend(loc="upper right", fontsize="small")
@@ -136,7 +136,7 @@ def plot_one_param(alpha, loss, acc, loss_img_path, acc_img_path, loss_only=Fals
         fig = plt.figure()
         ax = fig.add_subplot(111, label="1")
 
-        trained_accuracy = np.loadtxt(os.path.join(directory, "actual_acc"))
+        trained_accuracy = np.loadtxt(os.path.join(results, "actual_acc"))
 
         ax.plot(alpha, acc, ".-", color=color_acc, label="Accuracy with one parameter modified", linewidth=1)
         #ax.legend(loc="lower right", fontsize="small")
@@ -289,10 +289,11 @@ def surface3d_rand_dirs():
         #            dpi=300, bbox_inches="tight", format="pdf")
         """
 
-
+"""
 x = np.linspace(-1.0, 2.0, 40)
 plot_single(x, "conv1")
 plot_single(x, "conv2")
 plot_single(x, "fc1")
 plot_single(x, "fc2")
 plot_single(x, "fc3")
+"""

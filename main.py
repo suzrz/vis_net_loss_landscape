@@ -1,3 +1,4 @@
+import sys
 import net
 import plot
 import torch
@@ -36,7 +37,7 @@ def parse_arguments():
                         help="Plot difference between interpolated and actual trained results.")
     parser.add_argument("--preliminary", action="store_true",
                         help="Preliminary experiments will be executed.")
-    #parser.add_argument("--debug", action="store_true", help="Enables debug logging.")
+    parser.add_argument("--debug", action="store_true", help="Enables debug logging.")
 
     args = parser.parse_args()
 
@@ -45,14 +46,18 @@ def parse_arguments():
 
 def get_net(device, train_loader, test_loader, epochs):
     # Create instance of neural network
+    logging.debug("[main]: Getting NN model")
     model = net.Net().to(device)
+    logging.debug("[main]: Model:"
+                  "{}".format(model))
     loss_list = []
     acc_list = []
 
     # Save initial state of network if not saved yet
     if not init_state.exists():
-        logging.info("[main get_net]: No initial state of the model found. Initializing ...")
+        logging.info("[main]: No initial state of the model found. Initializing ...")
         torch.save(model.state_dict(), init_state)
+        logging.debug("[main]: Initial state saved into {}".format(init_state))
 
     # Get optimizer and scheduler
     optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.5)  # set optimizer
@@ -64,20 +69,20 @@ def get_net(device, train_loader, test_loader, epochs):
 
     # Train model if not trained yet
     if not final_state.exists():
-        logging.info("[main get_net]: No final state of the model found. Training ...")
+        logging.info("[main]: No final state of the model found. Training ...")
         for epoch in range(1, epochs):
             net.train(model, train_loader, optimizer, device, epoch)
             loss, acc = net.test(model, test_loader, device)
             loss_list.append(loss)
             acc_list.append(acc)
             scheduler.step()
-            logging.debug("[main get_net]: Finished training epoch {}".format(epoch))
-            torch.save(model.state_dict(), "state_{}".format(epoch))
+            logging.debug("[main]: Finished training epoch {}".format(epoch))
+            torch.save(model.state_dict(), os.path.join(results, "state_{}".format(epoch)))
 
         torch.save(model.state_dict(), final_state)  # save final parameters of model
 
-        np.savetxt(os.path.join(directory, "actual_loss"), loss_list)
-        np.savetxt(os.path.join(directory, "actual_acc"), acc_list)
+        np.savetxt(os.path.join(results, "actual_loss"), loss_list)
+        np.savetxt(os.path.join(results, "actual_acc"), acc_list)
 
     model.load_state_dict(torch.load(final_state))
     logging.debug("[main get_net]: Loaded final parameters in the model.")
@@ -86,15 +91,17 @@ def get_net(device, train_loader, test_loader, epochs):
 
 
 def main():
-    logging.debug("[main] Main started. Parsing command line arguments...")
     args = parse_arguments()
 
-    #if args.debug:
-    #    level = logging.DEBUG
-    #else:
-    #    level = logging.INFO
-    #logging.basicConfig(level=level, format="%(asctime)s - %(levelname)s - %(message)s",
-    #                    filename="main.log", filemode='w')
+    alpha = np.linspace(args.alpha_start, args.alpha_end, args.alpha_steps)  # Prepare interpolation coefficient
+
+    if args.debug:
+        lvl = logging.DEBUG
+    else:
+        lvl = logging.INFO
+
+    logging.basicConfig(level=lvl, format="%(asctime)s - %(levelname)s - %(message)s",
+                        filename="main.log", filemode='w')
 
     logging.debug("[main]: Command line arguments: {}".format(args))
 
@@ -102,14 +109,11 @@ def main():
     use_cuda = not args.no_cuda and torch.cuda.is_available()
     device = torch.device("cuda" if use_cuda else "cpu")
     if use_cuda:
-        logging.debug("[main]: CUDA is enabled.")
+        logging.info("[main]: CUDA is enabled.")
     else:
-        logging.debug("[main]: CUDA is disabled.")
+        logging.info("[main]: CUDA is disabled.")
 
-    # Check if directory for results exists
-    if not os.path.isdir("results"):
-        logging.debug("[main]: Creating new results directory...")
-        os.makedirs("results")
+    init_dirs()
 
     # Prepare dataset
     train_loader, test_loader = data_load.data_load()  # Get test and train data loader
@@ -117,9 +121,6 @@ def main():
     # Get neural network model
     model = get_net(device, train_loader, test_loader, args.epochs)
 
-    alpha = np.linspace(args.alpha_start, args.alpha_end, args.alpha_steps)  # Prepare interpolation coefficient
-
-    print(model)
     #Preliminary experiments
     if args.preliminary:
         logging.info("[main]: Preliminary experiments enabled. Executing...")
@@ -134,22 +135,22 @@ def main():
         plot.plot_impact(subs_train, np.loadtxt(train_subs_loss), np.loadtxt(train_subs_acc), xlabel="Size of training data set")
         plot.plot_impact(epochs, np.loadtxt(epochs_loss), np.loadtxt(epochs_acc), annotate=False, xlabel="Number of epochs")
         plot.plot_box(subs_test, show=True, xlabel="Size of test subset")
+        sys.exit(0)
 
-    logging.info("[main]: Executing experiments...")
+    logging.info("[main]: Executing interpolation experiments...")
     interpolate = Interpolator(model, device, alpha, final_state, init_state)  # Create interpolator
 
-    #interpolate.get_final_loss_acc(test_loader)  # get final loss and accuracy
-    #interpolate.single_acc_vloss(test_loader, args.layer, list(map(int, args.idxs)), args.trained)  # examine parameter
-    #interpolate.vec_acc_vlos(test_loader, args.layer, trained=args.trained)
+    interpolate.single_acc_vloss(test_loader, args.layer, list(map(int, args.idxs)))  # examine parameter
+    interpolate.vec_acc_vlos(test_loader, args.layer, trained=args.trained)
     #interpolate.rand_dirs(test_loader)
     #plot.surface3d_rand_dirs()
 
 
-    plot.plot_single(alpha, "conv1", True)
-    plot.plot_single(alpha, "conv2", True)
-    plot.plot_single(alpha, "fc1", True)
-    plot.plot_single(alpha, "fc2", True)
-    plot.plot_single(alpha, "fc3", True)
+    #plot.plot_single(alpha, "conv1", True)
+    #plot.plot_single(alpha, "conv2", True)
+    #plot.plot_single(alpha, "fc1", True)
+    #plot.plot_single(alpha, "fc2", True)
+    #plot.plot_single(alpha, "fc3", True)
     """
     if not args.single_param_only:
         # prepare files for 3D plot

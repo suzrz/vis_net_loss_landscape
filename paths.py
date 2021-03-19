@@ -1,12 +1,14 @@
 import os
+import logging
 from pathlib import Path
 
 
-directory = "results"
-imgs = "imgs"
+# general directories
+results = Path(os.path.join(".", "results"))
+imgs = Path(os.path.join(".", "imgs"))
 
-init_state = Path(os.path.join(directory, "init_state.pt"))
-final_state = Path(os.path.join(directory, "final_state.pt"))
+init_state = Path(os.path.join(results, "init_state.pt"))
+final_state = Path(os.path.join(results, "final_state.pt"))
 
 """
   ----------------- FILENAMES MEANING -----------------
@@ -23,29 +25,19 @@ final_state = Path(os.path.join(directory, "final_state.pt"))
   -----------------------------------------------------
 """
 # directories for single parameters experiments
-single = Path(os.path.join(directory, "singleParam"))
+single = Path(os.path.join(results, "singleParam"))
 single_img = Path(os.path.join(imgs, "singleParam"))
-if not single.exists():
-    os.makedirs(single)
-if not single_img.exists():
-    os.makedirs(single_img)
 
 # directories for vector paramaters experiments
-vec = Path(os.path.join(directory, "vec"))
+vec = Path(os.path.join(results, "vec"))
 vec_img = Path(os.path.join(imgs, "vec"))
-if not vec.exists():
-    os.makedirs(vec)
-if not vec_img.exists():
-    os.makedirs(vec_img)
 
 # directory for preliminary experiments results
-prelim = Path(os.path.join(directory, "preliminary"))
-if not prelim.exists():
-    os.makedirs(prelim)
+prelim = Path(os.path.join(results, "preliminary"))
 
 # final loss and accuracy of the model
-sf_loss_path = Path(os.path.join(directory, "final_loss"))
-sf_acc_path = Path(os.path.join(directory, "final_acc"))
+sf_loss_path = Path(os.path.join(results, "final_loss"))
+sf_acc_path = Path(os.path.join(results, "final_acc"))
 
 # single loss experiments paths
 svloss_path = Path(os.path.join(single, "svloss"))  # results\svloss
@@ -70,8 +62,17 @@ train_subs_acc = Path(os.path.join(prelim, "train_subs_acc"))
 test_subs_loss = Path(os.path.join(prelim, "test_subs_loss"))
 test_subs_acc = Path(os.path.join(prelim, "test_subs_acc"))
 
-epochs_loss = Path(os.path.join(directory, "epochs_loss"))
-epochs_acc = Path(os.path.join(directory, "epochs_acc"))
+epochs_loss = Path(os.path.join(results, "epochs_loss"))
+epochs_acc = Path(os.path.join(results, "epochs_acc"))
 
 # random directions experiment surface file
-surf = Path(os.path.join(directory, "surf_file.h5"))
+surf = Path(os.path.join(results, "surf_file.h5"))
+
+def init_dirs():
+    dirs = [results, imgs, single, single_img, vec, vec_img, prelim]
+
+    for dir in dirs:
+        logging.debug("[paths]: Searching for {}...".format(dir))
+        if not dir.exists():
+            logging.debug("[paths]: Creating new {} directory...".format(dir))
+            os.makedirs(dir)

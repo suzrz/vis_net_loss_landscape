@@ -3,17 +3,12 @@ import copy
 import h5py
 import plot
 import torch
-import scipy.optimize
 import logging
 import directions
 import numpy as np
+import scipy.optimize
 from paths import *
 from pathlib import Path
-
-logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s",
-                    filename="log.log")
-mpl_logger = logging.getLogger('matplotlib')
-mpl_logger.setLevel(logging.WARNING)
 
 
 def convert_list2str(int_list):
@@ -30,15 +25,28 @@ class Interpolator:
         self.theta = copy.deepcopy(torch.load(final_state_path))
         self.theta_f = copy.deepcopy(torch.load(final_state_path))
         self.theta_i = copy.deepcopy(torch.load(init_state_path))
+        logging.debug("[interpolate]: model:"
+                      "{}".format(model))
+        logging.debug("[interpolate]: device: {}".format(device))
+        logging.debug("[interpolate]: alpha: {}".format(alpha))
+        logging.debug("[interpolate]: final state path: {}".format(final_state_path))
+        logging.debug("[interpolate]: init state path: {}".format(init_state_path))
 
     def calc_theta_single(self, layer, idxs, alpha):
+        logging.debug("[interpolate]: Calculating value of: {} {} for alpha = {}".format(
+            layer, idxs, alpha
+        ))
         self.theta[layer][idxs] = (self.theta_i[layer][idxs] * (1.0 - alpha)) + (
                     self.theta_f[layer][idxs] * alpha)
 
     def calc_theta_vec(self, layer, alpha):
-        self.theta[layer] = torch.add((torch.mul(self.theta_i[layer], (1.0 - alpha))), 
+        logging.debug("[interpolate]: Calculating value of: {} for alpha = {}".format(
+            layer, alpha
+        ))
+        self.theta[layer] = torch.add((torch.mul(self.theta_i[layer], (1.0 - alpha))),
                                       torch.mul(self.theta_f[layer], alpha))
 
+    @staticmethod
     def parabola(self, x, a, b, c):
         return a*x**2 + b*x + c
 
@@ -49,7 +57,7 @@ class Interpolator:
 
         np.savetxt("quadr", approx)
 
-    def single_acc_vloss(self, test_loader, layer, idxs, trained):
+    def single_acc_vloss(self, test_loader, layer, idxs, trained=False):
         loss_res = Path("{}_{}_{}".format(svloss_path, layer, convert_list2str(idxs)))
         loss_img = Path("{}_{}_{}".format(svloss_img_path, layer, convert_list2str(idxs)))
         acc_res = Path("{}_{}_{}".format(sacc_path, layer, convert_list2str(idxs)))
@@ -83,7 +91,7 @@ class Interpolator:
 
         return
 
-    def vec_acc_vlos(self, test_loader, layer, trained):
+    def vec_acc_vlos(self, test_loader, layer, trained=False):
         loss_res = Path("{}_{}".format(vvloss_path, layer))
         loss_img = Path("{}_{}".format(vvloss_img_path, layer))
         acc_res = Path("{}_{}".format(vacc_path, layer))

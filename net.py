@@ -1,5 +1,6 @@
 import copy
 import torch
+import logging
 import data_load
 import numpy as np
 from paths import *
@@ -26,6 +27,8 @@ class Net(nn.Module):
         self.fc1 = nn.Linear(16*6*6, 120)
         self.fc2 = nn.Linear(120, 84)
         self.fc3 = nn.Linear(84, 10)
+        logging.info("[net]: Network was initialized.")
+        logging.debug("[net]: Network architecture:\n{}".format(self))
 
     def forward(self, x):
         """
@@ -78,12 +81,9 @@ def train(model, train_loader, optimizer, device, epoch):
         train_loss += f.nll_loss(output, target, reduction="sum").item()
         loss.backward()
         optimizer.step()
-        #if batch_idx % 10 == 0:
-            #print("Train epoch: {} [{}/{} ({:.0f} %)]\tLoss: {:.6f}".format(
-            #   epoch, batch_idx*len(data), len(train_loader.dataset),
-            #    100. * batch_idx / len(train_loader), loss.item()))
 
     train_loss /= len(train_loader.dataset)
+    logging.info("[net]: Training in epoch {} has finished (loss = {})".format(epoch, train_loss))
     return train_loss
 
 
@@ -108,6 +108,9 @@ def test(model, test_loader, device):
 
     test_loss /= len(test_loader.dataset)  # compute validation loss of neural network
     accuracy = 100. * correct / len(test_loader.dataset)
+    logging.info("[net]: Validation has finished:"
+                 "\n      Validation loss: {}"
+                 "\n      Accuracy: {} %".format(test_loss, accuracy))
     return test_loss, accuracy
 
 
@@ -115,6 +118,7 @@ def pre_train_subset(model, device, subset_list, epochs, test_loader):
     """
     Function to examine impact of different sizes of training subset.
     """
+    logging.info("[net]: Subset preliminary experiment started")
     if train_subs_loss.exists() and train_subs_acc.exists():
         return
 
@@ -136,8 +140,7 @@ def pre_train_subset(model, device, subset_list, epochs, test_loader):
             test(model, test_loader, device)
 
             scheduler.step()
-            print("[pre_train_subset] : Finished epoch {} for training set of size: {}".format(epoch,
-                                                                                                           n_samples))
+            logging.debug("[net]: Finished epoch for tranining subset {}".format(epoch, n_samples))
 
         loss, acc = test(model, test_loader, device)
 
@@ -164,11 +167,11 @@ def pre_test_subset(model, device, subset_list):
         losses = []
         accs = []
         for x in range(100):  # 10x pruchod experimentem TODO
-            print("[pre_test_subset] : Measuring performance for {} samples, {} [{} %]".format(n_samples, x, x/100*100))
             _, test_loader = data_load.data_load(test_samples=n_samples)  # to choose random data each time
             loss, acc = test(model, test_loader, device)
             losses.append(loss)
             accs.append(acc)
+            logging.info("[net]: Subset size: {}\nValidation loss: {}\nAccuracy: {}\n".format(n_samples, loss, acc))
 
         subset_losses.append(losses)
         subset_accs.append(accs)
@@ -178,6 +181,7 @@ def pre_test_subset(model, device, subset_list):
 
 
 def pre_epochs(model, device, epochs_list):
+    logging.info("[net]: Epochs performance experiment started.")
     if epochs_loss.exists() and epochs_acc.exists():
         return
 
@@ -203,6 +207,9 @@ def pre_epochs(model, device, epochs_list):
 
             loss_list.append(loss)
             acc_list.append(acc)
+            logging.info("[net]: Epochs preliminary experiment for epoch {}:\nValidation loss: {}\nAccuracy: {}".format(
+                epoch, loss, acc
+            ))
 
     np.savetxt(epochs_loss, loss_list)
     np.savetxt(epochs_acc, loss_list)

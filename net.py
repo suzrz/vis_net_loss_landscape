@@ -195,13 +195,13 @@ def pre_epochs(model, device, epochs_list):
     scheduler = StepLR(optimizer, step_size=1, gamma=0.7)  # set scheduler
     train_loader, test_loader = data_load.data_load()
 
-    for epoch in range(max(epochs_list)):
+    for epoch in range(max(epochs_list) + 1):
         train(model, train_loader, optimizer, device, epoch)
         test(model, test_loader, device)
 
         scheduler.step()
 
-        print("[pre_epochs] : Finished epoch {}".format(epoch))
+        logging.debug("[net]: finished epoch {} in preliminary experiment".format(epoch))
         if epoch in epochs_list:
             loss, acc = test(model, test_loader, device)
 

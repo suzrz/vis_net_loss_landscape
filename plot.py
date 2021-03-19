@@ -1,5 +1,6 @@
 import re
 import h5py
+import logging
 import numpy as np
 # import seaborn as sns
 import matplotlib.pyplot as plt
@@ -12,21 +13,22 @@ color_trained = "dimgrey"
 color_acc = "blue"
 
 def plot_line(x, y, xlabel, ylabel, annotate=False, color="blue"):
+    logging.debug("[plot]: plotting line")
     fig, ax = plt.subplots(figsize=(6.4, 2))
+
     if xlabel:
+        logging.debug("[plot]: xlabel = {}".format(xlabel))
         ax.set_xlabel(xlabel)
     if ylabel:
+        logging.debug("[plot]: ylabel = {}".format(ylabel))
         ax.set_ylabel(ylabel)
+
     ax.plot(x, y, ".-", color=color, linewidth=1)
+
     ax.spines["right"].set_visible(False)
     ax.spines["top"].set_visible(False)
+
     if annotate:
-        #ax.annotate("{:.4f}".format(y[-1]), xy=(x[-1], y[-1]),
-        #            xytext=(y[-1] - 0.01 * x[-1], y[-1] + 0.01 * y[-1]))
-        #ax.annotate("{:.4f}".format(y[-2]), xy=(x[-2], y[-2]),
-        #            xytext=(x[-2] - 0.01 * x[-2], y[-2] + 0.01 * y[-2]))
-        #ax.annotate("{:.4f}".format(y[-3]), xy=(x[-3], y[-3]),
-        #            xytext=(x[-3] - 0.01 * x[-3], y[-3] + 0.01 * y[-3]))
         if y[-1] < 1:
             # loss
             k = 2
@@ -43,27 +45,34 @@ def plot_line(x, y, xlabel, ylabel, annotate=False, color="blue"):
         ax.annotate("{:.3f}".format(y[-3]), xy=(x[-3], y[-3]), xytext=(x[-3], y[-3] + y[-3]*k))
 
     fig.tight_layout()
-    #plt.show()
     plt.savefig(os.path.join(os.path.join(imgs), "{}.pdf".format(ylabel)), format="pdf")
 
-def plot_impact(x, loss=None, acc=None, loss_only=False, acc_only=False, annotate=True, xlabel=None):
+
+def plot_impact(x, loss, acc, loss_only=False, acc_only=False, annotate=True, xlabel=None):
+    logging.debug("[plot]: Plotting preliminary experiments results")
     if not acc_only:
-        if not loss.all():
-            print("No loss data found.")
+        if not loss.exists():
+            logging.error("[plot]: No loss data found")
             return
-        plot_line(x, loss, xlabel, "Validation loss", annotate, color_loss)
+        plot_line(x, np.loadtxt(loss), xlabel, "Validation loss", annotate, color_loss)
 
 
     if not loss_only:
-        if not acc.all():
-            print("No accuracy data found.")
+        if not acc.exists():
+            logging.error("[plot]: No accuracy data found")
             return
-        plot_line(x, acc, xlabel, "Accuracy", annotate, color_acc)
+        plot_line(x, np.loadtxt(acc), xlabel, "Accuracy", annotate, color_acc)
 
 
 def plot_box(x, loss_only=False, acc_only=False, show=False, xlabel=None):
+    logging.info("[plot]: Plotting preliminary experiments results (test subset size)")
+
     if not acc_only:
         fig, ax = plt.subplots()
+
+        if not epochs_loss.exists():
+            logging.error("[plot]: No loss data found")
+            return
 
         loss = np.loadtxt(epochs_loss)
 
@@ -80,6 +89,10 @@ def plot_box(x, loss_only=False, acc_only=False, show=False, xlabel=None):
 
     if not loss_only:
         fig, ax = plt.subplots()
+
+        if not epochs_acc.exists():
+            logging.error("[plot]: No accuracy data found")
+            return
 
         acc = np.loadtxt(epochs_acc)
 

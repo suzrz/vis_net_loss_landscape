@@ -132,8 +132,8 @@ def main():
         net.pre_test_subset(model, device, subs_test)
         net.pre_epochs(model, device, epochs)
 
-        plot.plot_impact(subs_train, np.loadtxt(train_subs_loss), np.loadtxt(train_subs_acc), xlabel="Size of training data set")
-        plot.plot_impact(epochs, np.loadtxt(epochs_loss), np.loadtxt(epochs_acc), annotate=False, xlabel="Number of epochs")
+        plot.plot_impact(subs_train, train_subs_loss, train_subs_acc, xlabel="Size of training data set")
+        plot.plot_impact(epochs, epochs_loss, epochs_acc, annotate=False, xlabel="Number of epochs")
         plot.plot_box(subs_test, show=True, xlabel="Size of test subset")
         sys.exit(0)
 

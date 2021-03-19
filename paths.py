@@ -62,8 +62,8 @@ train_subs_acc = Path(os.path.join(prelim, "train_subs_acc"))
 test_subs_loss = Path(os.path.join(prelim, "test_subs_loss"))
 test_subs_acc = Path(os.path.join(prelim, "test_subs_acc"))
 
-epochs_loss = Path(os.path.join(results, "epochs_loss"))
-epochs_acc = Path(os.path.join(results, "epochs_acc"))
+epochs_loss = Path(os.path.join(prelim, "epochs_loss"))
+epochs_acc = Path(os.path.join(prelim, "epochs_acc"))
 
 # random directions experiment surface file
 surf = Path(os.path.join(results, "surf_file.h5"))

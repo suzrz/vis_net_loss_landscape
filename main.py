@@ -12,6 +12,9 @@ from torch import optim as optim
 from torch.optim.lr_scheduler import StepLR
 
 
+mpl_logger = logging.getLogger("matplotlib")
+mpl_logger.setLevel(logging.WARNING)
+
 def parse_arguments():
     """PARSE ARGUMENTS"""
     parser = argparse.ArgumentParser()
@@ -48,8 +51,6 @@ def get_net(device, train_loader, test_loader, epochs):
     # Create instance of neural network
     logging.debug("[main]: Getting NN model")
     model = net.Net().to(device)
-    logging.debug("[main]: Model:"
-                  "{}".format(model))
     loss_list = []
     acc_list = []
 
@@ -140,17 +141,19 @@ def main():
     logging.info("[main]: Executing interpolation experiments...")
     interpolate = Interpolator(model, device, alpha, final_state, init_state)  # Create interpolator
 
-    interpolate.single_acc_vloss(test_loader, args.layer, list(map(int, args.idxs)))  # examine parameter
-    interpolate.vec_acc_vlos(test_loader, args.layer, trained=args.trained)
+    #interpolate.single_acc_vloss(test_loader, args.layer, list(map(int, args.idxs)))  # examine parameter
+    #interpolate.vec_acc_vlos(test_loader, args.layer, trained=args.trained)
     #interpolate.rand_dirs(test_loader)
     #plot.surface3d_rand_dirs()
 
 
-    #plot.plot_single(alpha, "conv1", True)
-    #plot.plot_single(alpha, "conv2", True)
-    #plot.plot_single(alpha, "fc1", True)
-    #plot.plot_single(alpha, "fc2", True)
-    #plot.plot_single(alpha, "fc3", True)
+    plot.plot_single(alpha, "conv1", True)
+    plot.plot_single(alpha, "conv2", True)
+    plot.plot_single(alpha, "fc1", True)
+    plot.plot_single(alpha, "fc2", True)
+    plot.plot_single(alpha, "fc3", True)
+    plot.plot_vec_in_one(alpha, "loss")
+    plot.plot_vec_in_one(alpha, "acc")
     """
     if not args.single_param_only:
         # prepare files for 3D plot

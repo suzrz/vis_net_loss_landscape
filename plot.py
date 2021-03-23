@@ -209,7 +209,36 @@ def plot_single(x, layer, show=False):
 
     plt.savefig("{}.pdf".format(os.path.join(single_img, layer)), format="pdf")
     plt.show()
-            
+
+
+def plot_vec_in_one(x, metric):
+    files = os.listdir(vec)
+    fig = plt.figure()
+    ax = fig.add_subplot()
+    label = "Validation loss" if metric == "loss" else "Accuracy"
+    ax.spines["right"].set_visible(False)
+    ax.spines["top"].set_visible(False)
+
+    for file in files:
+        if re.search(metric, file):
+            lab = file.split('_')
+            ax.plot(x, np.loadtxt(os.path.join(vec, file)), label=lab[-1])
+            ax.set_xlabel(r"$\alpha$")
+            ax.set_ylabel(label)
+
+    actual = actual_loss_path if metric == "loss" else actual_acc_path
+    actual = np.loadtxt(actual)
+    ax2 = ax.twiny()
+    ax2.plot(range(len(actual)), actual, '-', color=color_trained, label="actual", linewidth=1, linestyle="dashed")
+    ax2.spines["right"].set_visible(False)
+    ax2.spines["top"].set_visible(False)
+    ax2.set_xticks([])
+    ax2.set_xticks([], minor=True)
+
+    fig.legend(loc="lower center", ncol=6, mode="expand")
+    fig.subplots_adjust(bottom=0.17)
+    plt.savefig("{}_{}.pdf".format(vec_img, "all"), format="pdf", ncol=6)
+    plt.show()
 
 """ Template may be needed later
 def plot_subset_hist(n_tr_samples):

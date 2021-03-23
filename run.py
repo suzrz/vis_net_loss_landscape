@@ -14,15 +14,14 @@ idxs_fc = [random.sample(range(1, 10), 3) for x in range(0, 20)]
 main = Path(os.path.join(".", "main.py"))
 for l in layers_c:
     for i in idxs_conv:
-        print((str(i[0])))
-
         subprocess.call(["py", main,
                          "--alpha-start", "{}".format(alpha_start),
                          "--alpha-end", "{}".format(alpha_end),
                          "--alpha-steps", "{}".format(alpha_steps),
                          "--layer", "{}".format(l),
                          "--idxs", str(i[0]), str(i[1]), str(i[2]), str(i[3]),
-                         "--trained"
+                         "--trained",
+                         "--debug"
                          ])
 
 for l in layers_f:
@@ -33,6 +32,7 @@ for l in layers_f:
                          "--alpha-steps", "{}".format(alpha_steps),
                          "--layer", "{}".format(l),
                          "--idxs", str(i[0]), str(i[1]),
-                         "--trained"
+                         "--trained",
+                         "--debug"
                          ])
 

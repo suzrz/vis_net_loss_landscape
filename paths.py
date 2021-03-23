@@ -35,6 +35,10 @@ vec_img = Path(os.path.join(imgs, "vec"))
 # directory for preliminary experiments results
 prelim = Path(os.path.join(results, "preliminary"))
 
+# actual loss and accuracy progress of the model
+actual_loss_path = Path(os.path.join(results, "actual_loss"))
+actual_acc_path = Path(os.path.join(results, "actual_acc"))
+
 # final loss and accuracy of the model
 sf_loss_path = Path(os.path.join(results, "final_loss"))
 sf_acc_path = Path(os.path.join(results, "final_acc"))

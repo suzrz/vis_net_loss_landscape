@@ -1,6 +1,7 @@
 import sys
 import net
 import plot
+import copy
 import torch
 import logging
 import argparse
@@ -71,7 +72,15 @@ def get_net(device, train_loader, test_loader, epochs):
     # Train model if not trained yet
     if not final_state.exists():
         logging.info("[main]: No final state of the model found. Training ...")
+
+        loss, acc = net.test(model, test_loader, device)
+        loss_list.append(loss)
+        acc_list.append(acc)
+
         for epoch in range(1, epochs):
+            logging.debug("[main]: Epoch {}".format(epoch))
+            logging.debug("[main]: Loss {}".format(loss))
+            logging.debug("[main]: Acc {}".format(acc))
             net.train(model, train_loader, optimizer, device, epoch)
             loss, acc = net.test(model, test_loader, device)
             loss_list.append(loss)
@@ -139,19 +148,26 @@ def main():
         sys.exit(0)
 
     logging.info("[main]: Executing interpolation experiments...")
+    model2 = copy.deepcopy(model)
     interpolate = Interpolator(model, device, alpha, final_state, init_state)  # Create interpolator
-
+    model2.load_state_dict(interpolate.theta_f)
+    model.load_state_dict(interpolate.theta_i)
+    model2.fc1 = model.fc1
+    loss, acc = net.test(model2, test_loader, interpolate.device)
+    print(loss, acc)
+    sys.exit(1)
     #interpolate.single_acc_vloss(test_loader, args.layer, list(map(int, args.idxs)))  # examine parameter
-    #interpolate.vec_acc_vlos(test_loader, args.layer, trained=args.trained)
+    interpolate.vec_acc_vlos(test_loader, args.layer, trained=args.trained)
     #interpolate.rand_dirs(test_loader)
     #plot.surface3d_rand_dirs()
 
 
-    plot.plot_single(alpha, "conv1", True)
-    plot.plot_single(alpha, "conv2", True)
-    plot.plot_single(alpha, "fc1", True)
-    plot.plot_single(alpha, "fc2", True)
-    plot.plot_single(alpha, "fc3", True)
+
+    #plot.plot_single(alpha, "conv1", True)
+    #plot.plot_single(alpha, "conv2", True)
+    #plot.plot_single(alpha, "fc1", True)
+    #plot.plot_single(alpha, "fc2", True)
+    #plot.plot_single(alpha, "fc3", True)
     plot.plot_vec_in_one(alpha, "loss")
     plot.plot_vec_in_one(alpha, "acc")
     """

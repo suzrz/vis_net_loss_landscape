@@ -32,6 +32,12 @@ class Interpolator:
         logging.debug("[interpolate]: final state path: {}".format(final_state_path))
         logging.debug("[interpolate]: init state path: {}".format(init_state_path))
 
+    def calc_distance(self, layer, idxs=None):
+        if not idxs:
+            return torch.sqrt(torch.float_power(self.theta_f, 2) + torch.float_power(self.theta_i, 2))
+        else:
+            return np.sqrt(np.power(self.theta_f[layer][idxs], 2) + np.power(self.theta_i[layer][idxs], 2))
+
     def calc_theta_single(self, layer, idxs, alpha):
         logging.debug("[interpolate]: Calculating value of: {} {} for alpha = {}".format(
             layer, idxs, alpha
@@ -62,6 +68,9 @@ class Interpolator:
         loss_img = Path("{}_{}_{}".format(svloss_img_path, layer, convert_list2str(idxs)))
         acc_res = Path("{}_{}_{}".format(sacc_path, layer, convert_list2str(idxs)))
         acc_img = Path("{}_{}_{}".format(sacc_img_path, layer, convert_list2str(idxs)))
+
+        logging.debug("[interpolator]: Result files:\n{}\n{}".format(loss_res, acc_res))
+        logging.debug("[interpolator]: Img files:\n{}\n{}".format(loss_img, acc_img))
 
         if not loss_res.exists() or not acc_res.exists():
             logging.debug("[interpolator.single_acc_vloss]: Files with results not found - beginning interpolation.")

@@ -111,7 +111,7 @@ def main():
         lvl = logging.INFO
 
     logging.basicConfig(level=lvl, format="%(asctime)s - %(levelname)s - %(message)s",
-                        filename="main.log", filemode='w')
+                        filename="main.log")
 
     logging.debug("[main]: Command line arguments: {}".format(args))
 
@@ -150,24 +150,20 @@ def main():
     logging.info("[main]: Executing interpolation experiments...")
     model2 = copy.deepcopy(model)
     interpolate = Interpolator(model, device, alpha, final_state, init_state)  # Create interpolator
-    model2.load_state_dict(interpolate.theta_f)
-    model.load_state_dict(interpolate.theta_i)
-    model2.fc1 = model.fc1
-    loss, acc = net.test(model2, test_loader, interpolate.device)
-    print(loss, acc)
-    sys.exit(1)
+
     #interpolate.single_acc_vloss(test_loader, args.layer, list(map(int, args.idxs)))  # examine parameter
-    interpolate.vec_acc_vlos(test_loader, args.layer, trained=args.trained)
+    model.load_state_dict(torch.load(final_state))
+    #interpolate.vec_acc_vlos(test_loader, args.layer, trained=args.trained)
     #interpolate.rand_dirs(test_loader)
     #plot.surface3d_rand_dirs()
 
 
 
-    #plot.plot_single(alpha, "conv1", True)
-    #plot.plot_single(alpha, "conv2", True)
-    #plot.plot_single(alpha, "fc1", True)
-    #plot.plot_single(alpha, "fc2", True)
-    #plot.plot_single(alpha, "fc3", True)
+    plot.plot_single(alpha, "conv1", True)
+    plot.plot_single(alpha, "conv2", True)
+    plot.plot_single(alpha, "fc1", True)
+    plot.plot_single(alpha, "fc2", True)
+    plot.plot_single(alpha, "fc3", True)
     plot.plot_vec_in_one(alpha, "loss")
     plot.plot_vec_in_one(alpha, "acc")
     """

@@ -34,14 +34,16 @@ class Interpolator:
 
     def calc_distance(self, layer, idxs=None):
         if not idxs:
-            return torch.sqrt(torch.float_power(self.theta_f, 2) + torch.float_power(self.theta_i, 2))
+            return torch.mean(torch.sqrt(torch.pow(self.theta_f[layer], 2) + torch.pow(self.theta_i[layer], 2)))
         else:
-            return np.sqrt(np.power(self.theta_f[layer][idxs], 2) + np.power(self.theta_i[layer][idxs], 2))
+            return torch.mean(torch.sqrt(torch.pow(self.theta_f[layer][idxs], 2) + torch.pow(self.theta_i[layer][idxs], 2)))
 
     def calc_theta_single(self, layer, idxs, alpha):
         logging.debug("[interpolate]: Calculating value of: {} {} for alpha = {}".format(
             layer, idxs, alpha
         ))
+        logging.debug("[interpolate]: {} {}".format(layer, idxs))
+        logging.debug("[interpolate]: Theta:\n{}".format(self.theta[layer][idxs]))
         self.theta[layer][idxs] = (self.theta_i[layer][idxs] * (1.0 - alpha)) + (
                     self.theta_f[layer][idxs] * alpha)
 
@@ -68,9 +70,11 @@ class Interpolator:
         loss_img = Path("{}_{}_{}".format(svloss_img_path, layer, convert_list2str(idxs)))
         acc_res = Path("{}_{}_{}".format(sacc_path, layer, convert_list2str(idxs)))
         acc_img = Path("{}_{}_{}".format(sacc_img_path, layer, convert_list2str(idxs)))
+        dist = Path("{}_{}_{}_{}".format(svloss_path, layer, convert_list2str(idxs), "distance"))
 
         logging.debug("[interpolator]: Result files:\n{}\n{}".format(loss_res, acc_res))
         logging.debug("[interpolator]: Img files:\n{}\n{}".format(loss_img, acc_img))
+        logging.debug("[interpolator]: Dist file:\n{}".format(dist))
 
         if not loss_res.exists() or not acc_res.exists():
             logging.debug("[interpolator.single_acc_vloss]: Files with results not found - beginning interpolation.")
@@ -94,6 +98,15 @@ class Interpolator:
             np.savetxt(loss_res, v_loss_list)
             np.savetxt(acc_res, acc_list)
 
+        if not dist.exists():
+            logging.info("[interpolate]: Calculating distance for: {} {}".format(layer, idxs))
+            distance = self.calc_distance(layer + ".weight", idxs)
+            logging.info("[interpolate]: Distance: {}".format(distance))
+            with open(dist, 'w') as f:
+                f.write("{}".format(distance))
+
+
+
         logging.debug("[interpolator.single_acc_vloss]: Saving results to figure {}, {} ...".format(loss_img, acc_img))
         plot.plot_one_param(self.alpha, np.loadtxt(loss_res), np.loadtxt(acc_res), loss_img, acc_img, trained=False)
         self.model.load_state_dict(self.theta_f)
@@ -105,6 +118,11 @@ class Interpolator:
         loss_img = Path("{}_{}".format(vvloss_img_path, layer))
         acc_res = Path("{}_{}".format(vacc_path, layer))
         acc_img = Path("{}_{}".format(vacc_img_path, layer))
+        dist = Path("{}_{}_{}".format(vvloss_path, layer, "distance"))
+
+        logging.debug("[interpolator]: Result files:\n{}\n{}".format(loss_res, acc_res))
+        logging.debug("[interpolator]: Img files:\n{}\n{}".format(loss_img, acc_img))
+        logging.debug("[interpolator]: Dist file:\n{}".format(dist))
 
         if not loss_res.exists() or not acc_res.exists():
             logging.debug("[interpolator.vec_acc_vloss]: Result files not found - beginning interpolation.")
@@ -126,6 +144,12 @@ class Interpolator:
             logging.debug("[interpolator.vec_acc_vloss]: Saving results to fiels. ({}, {})".format(loss_res, acc_res))
             np.savetxt(loss_res, v_loss_list)
             np.savetxt(acc_res, acc_list)
+
+        if not dist.exists():
+            logging.debug("[interpolator]: Calculating distance for {}".format(layer))
+            distance = self.calc_distance(layer + ".weight")
+            with open(dist, 'w') as f:
+                f.write("{}".format(distance))
 
         logging.debug("[interpolator.vec_acc_vloss]: Saving results to figure {}, {} ...".format(loss_img, acc_img))
         plot.plot_one_param(self.alpha, np.loadtxt(loss_res), np.loadtxt(acc_res), loss_img, acc_img, trained=True)

@@ -153,19 +153,19 @@ def main():
 
     #interpolate.single_acc_vloss(test_loader, args.layer, list(map(int, args.idxs)))  # examine parameter
     model.load_state_dict(torch.load(final_state))
-    #interpolate.vec_acc_vlos(test_loader, args.layer, trained=args.trained)
+    interpolate.vec_acc_vlos(test_loader, args.layer, trained=args.trained)
     #interpolate.rand_dirs(test_loader)
     #plot.surface3d_rand_dirs()
 
 
 
-    plot.plot_single(alpha, "conv1", True)
-    plot.plot_single(alpha, "conv2", True)
-    plot.plot_single(alpha, "fc1", True)
-    plot.plot_single(alpha, "fc2", True)
-    plot.plot_single(alpha, "fc3", True)
-    plot.plot_vec_in_one(alpha, "loss")
-    plot.plot_vec_in_one(alpha, "acc")
+    #plot.plot_single(alpha, "conv1", True)
+    #plot.plot_single(alpha, "conv2", True)
+    #plot.plot_single(alpha, "fc1", True)
+    #plot.plot_single(alpha, "fc2", True)
+    #plot.plot_single(alpha, "fc3", True)
+    #plot.plot_vec_in_one(alpha, "loss")
+    #plot.plot_vec_in_one(alpha, "acc")
     """
     if not args.single_param_only:
         # prepare files for 3D plot

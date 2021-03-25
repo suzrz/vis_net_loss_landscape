@@ -1,5 +1,6 @@
 import re
 import h5py
+import copy
 import logging
 import numpy as np
 # import seaborn as sns
@@ -184,7 +185,27 @@ def plot_one_param(alpha, loss, acc, loss_img_path, acc_img_path, loss_only=Fals
         #    plt.show()
         plt.savefig("{}.pdf".format(acc_img_path), format="pdf")
 
-def plot_single(x, layer, show=False):
+def map_distance(directory):
+    a_files = os.listdir(directory)
+    distances = {}
+    for file in a_files:
+        if re.search("distance", file):
+            f = open(os.path.join(directory, file), 'r')
+            distances[file] = float(f.readline())
+
+    print(distances)
+    result = copy.deepcopy(distances)
+
+    mx = distances[max(distances, key=lambda key: distances[key])]
+    mn = distances[min(distances, key=lambda key: distances[key])]
+
+    for key, value in distances.items():
+        result[key] = (value - mn)/(mx - mn) * (1 - 0) + 0
+
+    print(results)
+    return result
+
+def plot_single(x, layer, opacity_dict, show=False):
     files = os.listdir(single)
     fig = plt.figure()
     ax = fig.add_subplot()
@@ -195,23 +216,19 @@ def plot_single(x, layer, show=False):
     print("layer:", layer)
 
     for file in files:
-        if re.search(layer, file) and re.search("loss", file):
-            count = count + 1
-            print(count)
-            #print(file)
+        if re.search(layer, file) and re.search("loss", file) and not re.search("distance", file):
+            k = file + "_distance"
             lab = file.split("_")
-            ax.plot(x, np.loadtxt(os.path.join(single, file)), label=lab[-1])
-        if count >= 10:
-            plt.legend()
-            plt.savefig("{}.pdf".format(os.path.join(single_img, layer)), format="pdf")
-            plt.show()
-            return
+            ax.plot(x, np.loadtxt(os.path.join(single, file)), label=lab[-1], alpha=opacity_dict[k])
 
+    ax.set_ylabel("Validation loss")
+    ax.set_xlabel(r"$\alpha$")
+    ax.legend()
     plt.savefig("{}.pdf".format(os.path.join(single_img, layer)), format="pdf")
     plt.show()
 
 
-def plot_vec_in_one(x, metric):
+def plot_vec_in_one(x, metric, opacity_dict):
     files = os.listdir(vec)
     fig = plt.figure()
     ax = fig.add_subplot()
@@ -220,9 +237,10 @@ def plot_vec_in_one(x, metric):
     ax.spines["top"].set_visible(False)
 
     for file in files:
-        if re.search(metric, file):
+        if re.search(metric, file) and not re.search("distance", file):
+            k = file + "_distance"
             lab = file.split('_')
-            ax.plot(x, np.loadtxt(os.path.join(vec, file)), label=lab[-1])
+            ax.plot(x, np.loadtxt(os.path.join(vec, file)), label=lab[-1], alpha=opacity_dict[k])
             ax.set_xlabel(r"$\alpha$")
             ax.set_ylabel(label)
 
@@ -336,10 +354,14 @@ def surface3d_rand_dirs():
         """
 
 """
-x = np.linspace(-1.0, 2.0, 40)
-plot_single(x, "conv1")
-plot_single(x, "conv2")
-plot_single(x, "fc1")
-plot_single(x, "fc2")
-plot_single(x, "fc3")
+d = map_distance(single)
+plot_single(x, "conv1", d)
+plot_single(x, "conv2", d)
+plot_single(x, "fc1", d)
+plot_single(x, "fc2", d)
+plot_single(x, "fc3", d)
 """
+x = np.linspace(-1.0, 1.5, 60)
+d = map_distance(vec)
+plot_vec_in_one(x, "loss", d)
+plot_vec_in_one(x, "acc", d)

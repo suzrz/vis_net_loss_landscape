@@ -255,8 +255,40 @@ def plot_vec_in_one(x, metric, opacity_dict):
 
     fig.legend(loc="lower center", ncol=6, mode="expand")
     fig.subplots_adjust(bottom=0.17)
-    plt.savefig("{}_{}.pdf".format(vec_img, "all"), format="pdf", ncol=6)
+    plt.savefig("{}_{}.pdf".format(vec_img, "all"), format="pdf")
     plt.show()
+
+
+def plot_vec_all_la(x, opacity_dict):
+    files = os.listdir(vec)
+    fig, (ax, ax2) = plt.subplots(1, 2, figsize=(10, 5))
+
+    #ax = fig.add_subplot()
+    ax.spines["right"].set_visible(False)
+    ax.spines["top"].set_visible(False)
+    ax.set_ylabel("Validation loss")
+    ax.set_xlabel(r"$\alpha$")
+
+    #ax2 = fig.add_subplot()
+    ax2.spines["right"].set_visible(False)
+    ax2.spines["top"].set_visible(False)
+    ax2.set_ylabel("Accuracy")
+    ax2.set_xlabel(r"$\alpha$")
+
+    for file in files:
+        if not re.search("distance", file):
+            lab = file.split('_')
+            k = "vvloss_{}_distance".format(lab[-1])
+            if re.search("loss", file):
+                ax.plot(x, np.loadtxt(os.path.join(vec, file)), label=lab[-1], alpha=opacity_dict[k])
+            if re.search("acc", file):
+                ax2.plot(x, np.loadtxt(os.path.join(vec, file)), alpha=opacity_dict[k])
+
+    fig.legend(loc="lower center", ncol=6, mode="expand")
+    fig.subplots_adjust(bottom=0.17)
+    plt.savefig("{}_{}.pdf".format(vec_img, "all_la"), format="pdf")
+    plt.show()
+
 
 """ Template may be needed later
 def plot_subset_hist(n_tr_samples):
@@ -363,5 +395,5 @@ plot_single(x, "fc3", d)
 """
 x = np.linspace(-1.0, 1.5, 60)
 d = map_distance(vec)
-plot_vec_in_one(x, "loss", d)
-plot_vec_in_one(x, "acc", d)
+#plot_vec_in_one(x, "loss", d)
+plot_vec_all_la(x, d)

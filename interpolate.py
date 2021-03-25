@@ -65,6 +65,26 @@ class Interpolator:
 
         np.savetxt("quadr", approx)
 
+    def interpolate_all(self, test_loader):
+        if not loss_path.exists() or not acc_path.exists():
+            v_loss_list = []
+            acc_list = []
+            layers = ["conv1.weight", "conv1.bias", "conv2.weight", "conv2.bias", "fc1.weight",
+                      "fc1.bias", "fc2.weight", "fc2.bias", "fc3.weight", "fc3.bias"]
+
+            self.model.load_state_dict(self.theta_f)
+            for alpha_act in self.alpha:
+                for layer in layers:
+                    self.calc_theta_vec(layer, alpha_act)
+                    self.model.load_state_dict(self.theta)
+
+                loss, acc = net.test(self.model, test_loader, self.device)
+                v_loss_list.append(loss)
+                acc_list.append(acc)
+
+            np.savetxt(loss_path, v_loss_list)
+            np.savetxt(acc_path, acc_list)
+
     def single_acc_vloss(self, test_loader, layer, idxs, trained=False):
         loss_res = Path("{}_{}_{}".format(svloss_path, layer, convert_list2str(idxs)))
         loss_img = Path("{}_{}_{}".format(svloss_img_path, layer, convert_list2str(idxs)))

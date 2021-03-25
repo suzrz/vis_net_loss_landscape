@@ -201,6 +201,8 @@ def map_distance(directory):
 
     for key, value in distances.items():
         result[key] = (value - mn)/(mx - mn) * (1 - 0) + 0
+        if result[key] < 0.1:
+            result[key] = 0.1
 
     print(results)
     return result
@@ -283,6 +285,9 @@ def plot_vec_all_la(x, opacity_dict):
                 ax.plot(x, np.loadtxt(os.path.join(vec, file)), label=lab[-1], alpha=opacity_dict[k])
             if re.search("acc", file):
                 ax2.plot(x, np.loadtxt(os.path.join(vec, file)), alpha=opacity_dict[k])
+
+    ax.plot(x, np.loadtxt(loss_path), label="all", color=color_trained, linewidth=1)
+    ax2.plot(x, np.loadtxt(acc_path), color=color_trained, linewidth=1)
 
     fig.legend(loc="lower center", ncol=6, mode="expand")
     fig.subplots_adjust(bottom=0.17)
@@ -385,15 +390,14 @@ def surface3d_rand_dirs():
         #            dpi=300, bbox_inches="tight", format="pdf")
         """
 
-"""
+x = np.linspace(0, 1, 60)
 d = map_distance(single)
 plot_single(x, "conv1", d)
 plot_single(x, "conv2", d)
 plot_single(x, "fc1", d)
 plot_single(x, "fc2", d)
 plot_single(x, "fc3", d)
-"""
-x = np.linspace(-1.0, 1.5, 60)
+
 d = map_distance(vec)
 #plot_vec_in_one(x, "loss", d)
 plot_vec_all_la(x, d)

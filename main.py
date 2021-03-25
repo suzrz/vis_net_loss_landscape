@@ -153,10 +153,10 @@ def main():
 
     #interpolate.single_acc_vloss(test_loader, args.layer, list(map(int, args.idxs)))  # examine parameter
     model.load_state_dict(torch.load(final_state))
-    interpolate.vec_acc_vlos(test_loader, args.layer, trained=args.trained)
+    #interpolate.vec_acc_vlos(test_loader, args.layer, trained=args.trained)
     #interpolate.rand_dirs(test_loader)
     #plot.surface3d_rand_dirs()
-
+    interpolate.interpolate_all(test_loader)
 
 
     #plot.plot_single(alpha, "conv1", True)

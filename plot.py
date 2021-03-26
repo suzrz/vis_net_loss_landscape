@@ -221,11 +221,10 @@ def plot_single(x, layer, opacity_dict, show=False):
         if re.search(layer, file) and re.search("loss", file) and not re.search("distance", file):
             k = file + "_distance"
             lab = file.split("_")
-            ax.plot(x, np.loadtxt(os.path.join(single, file)), label=lab[-1], alpha=opacity_dict[k])
+            ax.plot(x, np.loadtxt(os.path.join(single, file)), label=lab[-1], alpha=opacity_dict[k], color="blueviolet")
 
     ax.set_ylabel("Validation loss")
     ax.set_xlabel(r"$\alpha$")
-    ax.legend()
     plt.savefig("{}.pdf".format(os.path.join(single_img, layer)), format="pdf")
     plt.show()
 

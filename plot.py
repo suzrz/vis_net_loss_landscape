@@ -262,7 +262,7 @@ def plot_vec_in_one(x, metric, opacity_dict):
 
 def plot_vec_all_la(x, opacity_dict):
     files = os.listdir(vec)
-    fig, (ax, ax2) = plt.subplots(1, 2, figsize=(10, 5))
+    fig, (ax, ax2) = plt.subplots(1, 2, figsize=(8, 3))
 
     #ax = fig.add_subplot()
     ax.spines["right"].set_visible(False)
@@ -288,7 +288,7 @@ def plot_vec_all_la(x, opacity_dict):
     ax.plot(x, np.loadtxt(loss_path), label="all", color=color_trained, linewidth=1)
     ax2.plot(x, np.loadtxt(acc_path), color=color_trained, linewidth=1)
 
-    fig.legend(loc="lower center", ncol=6, mode="expand")
+    fig.legend()
     fig.subplots_adjust(bottom=0.17)
     plt.savefig("{}_{}.pdf".format(vec_img, "all_la"), format="pdf")
     plt.show()

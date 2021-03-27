@@ -5,7 +5,7 @@ from pathlib import Path
 
 alpha_start = -1.0
 alpha_end = 2.0
-alpha_steps = 40
+alpha_steps = 60
 layers_c = ["conv1", "conv2"]
 layers_f = ["fc1", "fc2", "fc3"]
 idxs_conv = [random.sample(range(1, 5), 4) for x in range(0, 20)]

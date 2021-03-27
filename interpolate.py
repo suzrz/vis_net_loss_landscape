@@ -34,9 +34,9 @@ class Interpolator:
 
     def calc_distance(self, layer, idxs=None):
         if not idxs:
-            return torch.mean(torch.sqrt(torch.pow(self.theta_f[layer], 2) + torch.pow(self.theta_i[layer], 2)))
+            return torch.dist(self.theta_f[layer], self.theta_i[layer])
         else:
-            return torch.mean(torch.sqrt(torch.pow(self.theta_f[layer][idxs], 2) + torch.pow(self.theta_i[layer][idxs], 2)))
+            return torch.dist(self.theta_f[layer][idxs], self.theta_i[layer][idxs])
 
     def calc_theta_single(self, layer, idxs, alpha):
         logging.debug("[interpolate]: Calculating value of: {} {} for alpha = {}".format(
@@ -104,7 +104,6 @@ class Interpolator:
             self.model.load_state_dict(self.theta_f)
             for alpha_act in self.alpha:
                 self.calc_theta_single(layer + ".weight", idxs, alpha_act)
-                self.calc_theta_single(layer + ".bias", idxs, alpha_act)
 
                 self.model.load_state_dict(self.theta)
                 logging.debug("[interpolator.single_acc_vloss]: Getting validation loss "
@@ -255,3 +254,7 @@ class Interpolator:
         np.savetxt(sf_acc_path, acc)
 
         return loss, acc
+
+    def print_theta(self, layer, idxs):
+        layer = layer + ".weight"
+        print(self.theta[layer][idxs])

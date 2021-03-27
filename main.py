@@ -151,12 +151,13 @@ def main():
     model2 = copy.deepcopy(model)
     interpolate = Interpolator(model, device, alpha, final_state, init_state)  # Create interpolator
 
-    #interpolate.single_acc_vloss(test_loader, args.layer, list(map(int, args.idxs)))  # examine parameter
+    #interpolate.print_theta(args.layer, (0, 0))
+    interpolate.single_acc_vloss(test_loader, args.layer, (65, 367))  # examine parameter
     model.load_state_dict(torch.load(final_state))
     #interpolate.vec_acc_vlos(test_loader, args.layer, trained=args.trained)
     #interpolate.rand_dirs(test_loader)
     #plot.surface3d_rand_dirs()
-    interpolate.interpolate_all(test_loader)
+    #interpolate.interpolate_all(test_loader)
 
 
     #plot.plot_single(alpha, "conv1", True)

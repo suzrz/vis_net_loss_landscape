@@ -112,8 +112,9 @@ class Interpolator:
 
             np.savetxt(loss_path, v_loss_list)
             np.savetxt(acc_path, acc_list)
+            self.model.load_state_dict(self.theta_f)
 
-    def single_acc_vloss(self, test_loader, layer, idxs, trained=False):
+    def single_acc_vloss(self, test_loader, layer, idxs):
         """
         Method interpolates individual parameter of the model and evaluates the model after each interpolation
         step
@@ -121,13 +122,14 @@ class Interpolator:
         :param test_loader: test loader
         :param layer: layer
         :param idxs: position of the parameter
-        :param trained: show trained state TODO: to be deleted
         """
 
         loss_res = Path("{}_{}_{}".format(svloss_path, layer, convert_list2str(idxs)))
         loss_img = Path("{}_{}_{}".format(svloss_img_path, layer, convert_list2str(idxs)))
+
         acc_res = Path("{}_{}_{}".format(sacc_path, layer, convert_list2str(idxs)))
         acc_img = Path("{}_{}_{}".format(sacc_img_path, layer, convert_list2str(idxs)))
+
         dist = Path("{}_{}_{}_{}".format(svloss_path, layer, convert_list2str(idxs), "distance"))
 
         logging.debug("[interpolator]: Result files:\n{}\n{}".format(loss_res, acc_res))
@@ -136,6 +138,7 @@ class Interpolator:
 
         if not loss_res.exists() or not acc_res.exists():
             logging.debug("[interpolator.single_acc_vloss]: Files with results not found - beginning interpolation.")
+
             v_loss_list = []
             acc_list = []
 
@@ -144,6 +147,7 @@ class Interpolator:
                 self.calc_theta_single(layer + ".weight", idxs, alpha_act)
 
                 self.model.load_state_dict(self.theta)
+
                 logging.debug("[interpolator.single_acc_vloss]: Getting validation loss "
                               "and accuracy for alpha = {}".format(alpha_act))
                 val_loss, acc = net.test(self.model, test_loader, self.device)
@@ -152,20 +156,23 @@ class Interpolator:
 
             logging.debug("[interpolator.single_acc_vloss]: Saving results to "
                           "files. ({}, {})".format(loss_res, acc_res))
+
             np.savetxt(loss_res, v_loss_list)
             np.savetxt(acc_res, acc_list)
+            self.model.load_state_dict(self.theta_f)
 
         if not dist.exists():
             logging.info("[interpolate]: Calculating distance for: {} {}".format(layer, idxs))
+
             distance = self.calc_distance(layer + ".weight", idxs)
             logging.info("[interpolate]: Distance: {}".format(distance))
+
             with open(dist, 'w') as f:
                 f.write("{}".format(distance))
 
-
-
         logging.debug("[interpolator.single_acc_vloss]: Saving results to figure {}, {} ...".format(loss_img, acc_img))
-        plot.plot_one_param(self.alpha, np.loadtxt(loss_res), np.loadtxt(acc_res), loss_img, acc_img, trained=False)
+        plot.plot_one_param(self.alpha, np.loadtxt(loss_res), np.loadtxt(acc_res), loss_img, acc_img)
+
         self.model.load_state_dict(self.theta_f)
 
         return
@@ -182,8 +189,10 @@ class Interpolator:
 
         loss_res = Path("{}_{}".format(vvloss_path, layer))
         loss_img = Path("{}_{}".format(vvloss_img_path, layer))
+
         acc_res = Path("{}_{}".format(vacc_path, layer))
         acc_img = Path("{}_{}".format(vacc_img_path, layer))
+
         dist = Path("{}_{}_{}".format(vvloss_path, layer, "distance"))
 
         logging.debug("[interpolator]: Result files:\n{}\n{}".format(loss_res, acc_res))
@@ -192,6 +201,7 @@ class Interpolator:
 
         if not loss_res.exists() or not acc_res.exists():
             logging.debug("[interpolator.vec_acc_vloss]: Result files not found - beginning interpolation.")
+
             v_loss_list = []
             acc_list = []
 
@@ -201,6 +211,7 @@ class Interpolator:
                 self.calc_theta_vec(layer + ".bias", alpha_act)
 
                 self.model.load_state_dict(self.theta)
+
                 logging.debug("[interpolator.vec_acc_vloss]: Getting "
                               "validation loss and accuracy for alpha = {}".format(alpha_act))
                 vloss, acc = net.test(self.model, test_loader, self.device)
@@ -213,12 +224,16 @@ class Interpolator:
 
         if not dist.exists():
             logging.debug("[interpolator]: Calculating distance for {}".format(layer))
+
             distance = self.calc_distance(layer + ".weight")
+            logging.info("[interpolate]: Distance: {}".format(distance))
+
             with open(dist, 'w') as f:
                 f.write("{}".format(distance))
 
         logging.debug("[interpolator.vec_acc_vloss]: Saving results to figure {}, {} ...".format(loss_img, acc_img))
-        plot.plot_one_param(self.alpha, np.loadtxt(loss_res), np.loadtxt(acc_res), loss_img, acc_img, trained=True)
+        plot.plot_one_param(self.alpha, np.loadtxt(loss_res), np.loadtxt(acc_res), loss_img, acc_img, trained=trained)
+
         self.model.load_state_dict(self.theta_f)
 
         return

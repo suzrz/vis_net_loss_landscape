@@ -33,24 +33,45 @@ class Interpolator:
         logging.debug("[interpolate]: init state path: {}".format(init_state_path))
 
     def calc_distance(self, layer, idxs=None):
+        """
+        Method calculates distance between parameters
+
+        :param layer: layer
+        :return: distance
+        """
         if not idxs:
             return torch.dist(self.theta_f[layer], self.theta_i[layer])
         else:
             return torch.dist(self.theta_f[layer][idxs], self.theta_i[layer][idxs])
 
     def calc_theta_single(self, layer, idxs, alpha):
+        """
+        Method calculates interpolation of a single parameter with respect to interpolation coefficient alpha
+
+        :param layer: layer of parameter
+        :param idxs: position of parameter
+        :param alpha: interpolation coefficient
+        """
         logging.debug("[interpolate]: Calculating value of: {} {} for alpha = {}".format(
             layer, idxs, alpha
         ))
         logging.debug("[interpolate]: {} {}".format(layer, idxs))
         logging.debug("[interpolate]: Theta:\n{}".format(self.theta[layer][idxs]))
+
         self.theta[layer][idxs] = (self.theta_i[layer][idxs] * (1.0 - alpha)) + (
                     self.theta_f[layer][idxs] * alpha)
 
     def calc_theta_vec(self, layer, alpha):
+        """
+        Method calculates interpolation of parameters of one layer with respect to interpolation coefficient alpha
+
+        :param layer: layer
+        :param alpha: interpolation coefficient
+        """
         logging.debug("[interpolate]: Calculating value of: {} for alpha = {}".format(
             layer, alpha
         ))
+
         self.theta[layer] = torch.add((torch.mul(self.theta_i[layer], (1.0 - alpha))),
                                       torch.mul(self.theta_f[layer], alpha))
 
@@ -66,6 +87,13 @@ class Interpolator:
         np.savetxt("quadr", approx)
 
     def interpolate_all(self, test_loader):
+        """
+        Method interpolates all parameters of the model and after each interpolation step evaluates the
+        performance of the model
+
+        :param test_loader: test loader object
+        """
+
         if not loss_path.exists() or not acc_path.exists():
             v_loss_list = []
             acc_list = []
@@ -86,6 +114,16 @@ class Interpolator:
             np.savetxt(acc_path, acc_list)
 
     def single_acc_vloss(self, test_loader, layer, idxs, trained=False):
+        """
+        Method interpolates individual parameter of the model and evaluates the model after each interpolation
+        step
+
+        :param test_loader: test loader
+        :param layer: layer
+        :param idxs: position of the parameter
+        :param trained: show trained state TODO: to be deleted
+        """
+
         loss_res = Path("{}_{}_{}".format(svloss_path, layer, convert_list2str(idxs)))
         loss_img = Path("{}_{}_{}".format(svloss_img_path, layer, convert_list2str(idxs)))
         acc_res = Path("{}_{}_{}".format(sacc_path, layer, convert_list2str(idxs)))
@@ -133,6 +171,15 @@ class Interpolator:
         return
 
     def vec_acc_vlos(self, test_loader, layer, trained=False):
+        """
+        Method interpolates parameters of selected layer of the model and evaluates the model after each interpolation
+        step
+
+        :param test_loader: test loader
+        :param layer: layer to be interpolated
+        :param trained: show trained state
+        """
+
         loss_res = Path("{}_{}".format(vvloss_path, layer))
         loss_img = Path("{}_{}".format(vvloss_img_path, layer))
         acc_res = Path("{}_{}".format(vacc_path, layer))
@@ -177,6 +224,10 @@ class Interpolator:
         return
 
     def set_surf_file(self):
+        """
+        Method prepares file with loss function values in point of view of set directions
+        """
+
         xmin, xmax, xnum = self.alpha[0], self.alpha[-1], len(self.alpha)
         ymin, ymax, ynum = self.alpha[0], self.alpha[-1], len(self.alpha)
 
@@ -239,6 +290,12 @@ class Interpolator:
                         fd.flush()
 
     def get_final_loss_acc(self, test_loader):
+        """
+        Method gets final validation loss and accuracy of the model
+
+        :param test_loader: test loader
+        :return: final validation loss, final accuracy
+        """
         if sf_loss_path.exists() and sf_acc_path.exists():
             return np.loadtxt(sf_loss_path), np.loadtxt(sf_acc_path)
 
@@ -256,5 +313,8 @@ class Interpolator:
         return loss, acc
 
     def print_theta(self, layer, idxs):
+        """
+        Method prints theta
+        """
         layer = layer + ".weight"
         print(self.theta[layer][idxs])

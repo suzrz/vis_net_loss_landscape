@@ -209,7 +209,7 @@ def map_distance(directory):
 
 def plot_single(x, layer, opacity_dict, show=False):
     files = os.listdir(single)
-    fig = plt.figure()
+    fig = plt.figure(figsize=(8, 6))
     ax = fig.add_subplot()
     ax.spines["right"].set_visible(False)
     ax.spines["top"].set_visible(False)
@@ -281,9 +281,9 @@ def plot_vec_all_la(x, opacity_dict):
             lab = file.split('_')
             k = "vvloss_{}_distance".format(lab[-1])
             if re.search("loss", file):
-                ax.plot(x, np.loadtxt(os.path.join(vec, file)), label=lab[-1], alpha=opacity_dict[k])
+                ax.plot(x, np.loadtxt(os.path.join(vec, file)), label=lab[-1])
             if re.search("acc", file):
-                ax2.plot(x, np.loadtxt(os.path.join(vec, file)), alpha=opacity_dict[k])
+                ax2.plot(x, np.loadtxt(os.path.join(vec, file)))
 
     ax.plot(x, np.loadtxt(loss_path), label="all", color=color_trained, linewidth=1)
     ax2.plot(x, np.loadtxt(acc_path), color=color_trained, linewidth=1)
@@ -388,7 +388,7 @@ def surface3d_rand_dirs():
         #fig.savefig(result_base + '_' + surf_name + "_3D_surface.pdf",
         #            dpi=300, bbox_inches="tight", format="pdf")
         """
-
+"""
 x = np.linspace(0, 1, 60)
 d = map_distance(single)
 plot_single(x, "conv1", d)
@@ -396,7 +396,7 @@ plot_single(x, "conv2", d)
 plot_single(x, "fc1", d)
 plot_single(x, "fc2", d)
 plot_single(x, "fc3", d)
-
 d = map_distance(vec)
 #plot_vec_in_one(x, "loss", d)
 plot_vec_all_la(x, d)
+"""

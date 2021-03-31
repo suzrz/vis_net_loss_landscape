@@ -33,7 +33,7 @@ def parse_arguments():
                         help="Only two parameters will be interpolated.")
     parser.add_argument("--epochs", type=int, default=14,
                         help="Set number of training epochs (default = 14).")
-    parser.add_argument("--idxs", nargs='+', default=[0, 0, 0, 0],
+    parser.add_argument("--idxs", nargs='+', default=(0, 0, 0, 0),
                         help="Set index of examined parameter (default = [0, 0, 0, 0]). Recommended to set.")
     parser.add_argument("--layer", default="conv1",
                         help="Set layer of examined parameter (default = conv1). Recommended to set.")
@@ -152,7 +152,7 @@ def main():
     interpolate = Interpolator(model, device, alpha, final_state, init_state)  # Create interpolator
 
     #interpolate.print_theta(args.layer, (0, 0))
-    interpolate.single_acc_vloss(test_loader, args.layer, (65, 367))  # examine parameter
+    interpolate.single_acc_vloss(test_loader, args.layer, (5, 0))  # examine parameter
     model.load_state_dict(torch.load(final_state))
     #interpolate.vec_acc_vlos(test_loader, args.layer, trained=args.trained)
     #interpolate.rand_dirs(test_loader)

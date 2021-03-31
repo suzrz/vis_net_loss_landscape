@@ -3,7 +3,6 @@ import copy
 import h5py
 import plot
 import torch
-import logging
 import directions
 import numpy as np
 import scipy.optimize
@@ -37,6 +36,7 @@ class Interpolator:
         Method calculates distance between parameters
 
         :param layer: layer
+        :param idxs: position of parameter
         :return: distance
         """
         if not idxs:
@@ -286,23 +286,23 @@ class Interpolator:
 
         self.model.load_state_dict(self.theta_f)
         if surf.exists():
-                dirs = directions.random_directions(self.model, self.device)
+            dirs = directions.random_directions(self.model, self.device)
 
-                with h5py.File(surf, "r+") as fd:
-                    xcoords = fd["xcoordinates"][:]
-                    ycoords = fd["ycoordinates"][:]
-                    losses = fd["val_loss"][:]
+            with h5py.File(surf, "r+") as fd:
+                xcoords = fd["xcoordinates"][:]
+                ycoords = fd["ycoordinates"][:]
+                losses = fd["val_loss"][:]
 
-                    idxs, coords = self.get_indices(losses, xcoords, ycoords)
+                idxs, coords = self.get_indices(losses, xcoords, ycoords)
 
-                    for count, idx in enumerate(idxs):
-                        coord = coords[count]
+                for count, idx in enumerate(idxs):
+                    coord = coords[count]
 
-                        self.update_weights(dirs, coord)
-                        loss, _ = net.test(self.model, test_loader, self.device)
-                        losses.ravel()[idx] = loss
-                        fd["val_loss"][:] = losses
-                        fd.flush()
+                    self.update_weights(dirs, coord)
+                    loss, _ = net.test(self.model, test_loader, self.device)
+                    losses.ravel()[idx] = loss
+                    fd["val_loss"][:] = losses
+                    fd.flush()
 
     def get_final_loss_acc(self, test_loader):
         """

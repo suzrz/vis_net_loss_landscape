@@ -3,6 +3,8 @@ import logging
 from pathlib import Path
 
 
+logger = logging.getLogger("vis_net")
+
 # general directories
 results = Path(os.path.join(".", "results"))
 imgs = Path(os.path.join(".", "imgs"))
@@ -76,11 +78,16 @@ epochs_acc = Path(os.path.join(prelim, "epochs_acc"))
 # random directions experiment surface file
 surf = Path(os.path.join(results, "surf_file.h5"))
 
+
 def init_dirs():
+    """
+    Function initializes directories
+    """
+    logger.info("Initializing directories")
     dirs = [results, imgs, single, single_img, vec, vec_img, prelim]
 
-    for dir in dirs:
-        logging.debug("[paths]: Searching for {}...".format(dir))
-        if not dir.exists():
-            logging.debug("[paths]: Creating new {} directory...".format(dir))
-            os.makedirs(dir)
+    for d in dirs:
+        logger.debug(f"Searching for {d}")
+        if not d.exists():
+            logger.debug(f"{d} not found. Creating...")
+            os.makedirs(d)

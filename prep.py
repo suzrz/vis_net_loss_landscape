@@ -1,14 +1,8 @@
-import sys
 import net
-import plot
-import copy
 import torch
-import logging
 import argparse
-import data_load
 import numpy as np
 from paths import *
-from interpolate import Interpolator
 from torch import optim as optim
 from torch.optim.lr_scheduler import StepLR
 
@@ -16,8 +10,15 @@ from torch.optim.lr_scheduler import StepLR
 mpl_logger = logging.getLogger("matplotlib")
 mpl_logger.setLevel(logging.WARNING)
 
+logger = logging.getLogger("vis_net")
+
+
 def parse_arguments():
-    """PARSE ARGUMENTS"""
+    """
+    Function parses arguments from command line
+
+    :return: program arguments
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument('--no-cuda', action='store_true', default=False,
                         help="Disables CUDA training.")
@@ -49,17 +50,26 @@ def parse_arguments():
 
 
 def get_net(device, train_loader, test_loader, epochs):
+    """
+    Function prepares a neural network model for experiments
+
+    :param device: device to use
+    :param train_loader: training dataset loader
+    :param test_loader: test dataset loader
+    :param epochs: number of training epochs
+    :return: Net object (NN model)
+    """
     # Create instance of neural network
-    logging.debug("[main]: Getting NN model")
+    logger.debug("[main]: Getting NN model")
     model = net.Net().to(device)
     loss_list = []
     acc_list = []
 
     # Save initial state of network if not saved yet
     if not init_state.exists():
-        logging.info("[main]: No initial state of the model found. Initializing ...")
+        logger.info("[main]: No initial state of the model found. Initializing ...")
         torch.save(model.state_dict(), init_state)
-        logging.debug("[main]: Initial state saved into {}".format(init_state))
+        logger.debug("[main]: Initial state saved into {}".format(init_state))
 
     # Get optimizer and scheduler
     optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.5)  # set optimizer
@@ -71,22 +81,22 @@ def get_net(device, train_loader, test_loader, epochs):
 
     # Train model if not trained yet
     if not final_state.exists():
-        logging.info("[main]: No final state of the model found. Training ...")
+        logger.info("[main]: No final state of the model found. Training ...")
 
         loss, acc = net.test(model, test_loader, device)
         loss_list.append(loss)
         acc_list.append(acc)
 
         for epoch in range(1, epochs):
-            logging.debug("[main]: Epoch {}".format(epoch))
-            logging.debug("[main]: Loss {}".format(loss))
-            logging.debug("[main]: Acc {}".format(acc))
+            logger.debug("[main]: Epoch {}".format(epoch))
+            logger.debug("[main]: Loss {}".format(loss))
+            logger.debug("[main]: Acc {}".format(acc))
             net.train(model, train_loader, optimizer, device, epoch)
             loss, acc = net.test(model, test_loader, device)
             loss_list.append(loss)
             acc_list.append(acc)
             scheduler.step()
-            logging.debug("[main]: Finished training epoch {}".format(epoch))
+            logger.debug("[main]: Finished training epoch {}".format(epoch))
             torch.save(model.state_dict(), os.path.join(results, "state_{}".format(epoch)))
 
         torch.save(model.state_dict(), final_state)  # save final parameters of model
@@ -95,80 +105,6 @@ def get_net(device, train_loader, test_loader, epochs):
         np.savetxt(os.path.join(results, "actual_acc"), acc_list)
 
     model.load_state_dict(torch.load(final_state))
-    logging.debug("[main get_net]: Loaded final parameters in the model.")
+    logger.debug("[main get_net]: Loaded final parameters in the model.")
 
     return model  # return neural network in final (trained) state
-
-
-def main():
-
-
-    if args.debug:
-        lvl = logging.DEBUG
-    else:
-        lvl = logging.INFO
-
-    logging.basicConfig(level=lvl, format="%(asctime)s - %(levelname)s - %(message)s",
-                        filename="main.log")
-
-    logging.debug("[main]: Command line arguments: {}".format(args))
-
-    # Set device
-    if use_cuda:
-        logging.info("[main]: CUDA is enabled.")
-    else:
-        logging.info("[main]: CUDA is disabled.")
-
-
-    # Prepare dataset
-
-    # Get neural network model
-
-    #Preliminary experiments
-    if args.preliminary:
-        logging.info("[main]: Preliminary experiments enabled. Executing...")
-        subs_train = [1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 15000, 20000, 30000, 40000, 50000, 60000]
-        subs_test = [1000, 1500, 2000, 3000, 4000, 5000, 7000, 8000, 9000, 10000]
-        epochs = [2, 5, 10, 15, 17, 20, 22, 25, 27, 30]
-
-        net.pre_train_subset(model, device, subs_train, args.epochs, test_loader)
-        net.pre_test_subset(model, device, subs_test)
-        net.pre_epochs(model, device, epochs)
-
-        plot.plot_impact(subs_train, train_subs_loss, train_subs_acc, xlabel="Size of training data set")
-        plot.plot_impact(epochs, epochs_loss, epochs_acc, annotate=False, xlabel="Number of epochs")
-        plot.plot_box(subs_test, show=True, xlabel="Size of test subset")
-        sys.exit(0)
-
-    logging.info("[main]: Executing interpolation experiments...")
-    model2 = copy.deepcopy(model)
-    interpolate = Interpolator(model, device, alpha, final_state, init_state)  # Create interpolator
-
-    #interpolate.print_theta(args.layer, (0, 0))
-    interpolate.single_acc_vloss(test_loader, args.layer, (5, 0))  # examine parameter
-    model.load_state_dict(torch.load(final_state))
-    #interpolate.vec_acc_vlos(test_loader, args.layer, trained=args.trained)
-    #interpolate.rand_dirs(test_loader)
-    #plot.surface3d_rand_dirs()
-    #interpolate.interpolate_all(test_loader)
-
-
-    #plot.plot_single(alpha, "conv1", True)
-    #plot.plot_single(alpha, "conv2", True)
-    #plot.plot_single(alpha, "fc1", True)
-    #plot.plot_single(alpha, "fc2", True)
-    #plot.plot_single(alpha, "fc3", True)
-    #plot.plot_vec_in_one(alpha, "loss")
-    #plot.plot_vec_in_one(alpha, "acc")
-    """
-    if not args.single_param_only:
-        # prepare files for 3D plot
-        dirs = directions.random_directions(model, device)  # get random directions
-        calculate_loss.double(model, test_loader, dirs, device, args.results_dir)  # calculate validation loss
-        # plot
-        plot.surface3d_rand_dirs(args.results_dir)
-    """
-
-
-if __name__ == "__main__":
-    main()  # run

@@ -5,6 +5,9 @@ from torch import utils as utils
 from torchvision import datasets, transforms
 
 
+logger = logging.getLogger("vis_net")
+
+
 def data_load(train_samples=60000, test_samples=10000):
     """
     Function prepares and loads data
@@ -13,9 +16,9 @@ def data_load(train_samples=60000, test_samples=10000):
     :param test_samples: size of test dataset subset
     :return: train loader, test loader
     """
-    logging.info("[data_load]: Loading data.")
-    logging.info("[data_load]: Training set size: {}".format(train_samples))
-    logging.info("[data_load]: Test set size: {}".format(test_samples))
+    logger.info("Loading data.")
+    logger.info(f"Training set size: {train_samples}")
+    logger.info(f"Test set size: {test_samples}")
 
     # preprocess data
     transform = transforms.Compose([
@@ -23,7 +26,7 @@ def data_load(train_samples=60000, test_samples=10000):
         transforms.ToTensor(),
         transforms.Normalize(0.1307, 0.3081)])
 
-    logging.debug("[data_load]: data transformations: {}".format(transform))
+    logger.debug(f"data transformations: {transform}")
 
     # prepare subsets
     train_set = datasets.MNIST("../data", train=True, download=True,

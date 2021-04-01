@@ -3,8 +3,12 @@ import data_load
 from interpolate import *
 
 
-def run_single(args):
-    # setup
+def run_layers(args):
+    """
+    Function setups and executes experiment of interpolation of parameters
+
+    :param args: experimental setup
+    """
     alpha = np.linspace(args.alpha_start, args.alpha_end, args.alpha_steps)
 
     use_cuda = not args.no_cuda and torch.cuda.is_available()
@@ -16,4 +20,4 @@ def run_single(args):
 
     interpolate = Interpolator(model, device, alpha, final_state, init_state)
 
-    interpolate.single_acc_vloss(test_loader, args.layer, args.idxs)
+    interpolate.vec_acc_vlos(test_loader, args.layer, args.trained)

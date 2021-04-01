@@ -27,10 +27,6 @@ def parse_arguments():
                         help="Set ending point of interpolation (float, default = 1.0).")
     parser.add_argument("--alpha-steps", type=int, default=20,
                         help="Set number of interpolation steps (int, default = 20).")
-    parser.add_argument("--single-param-only", action="store_true",
-                        help="Only one single parameter experiment will be executed.")
-    parser.add_argument("--two-params-only", action="store_true",
-                        help="Only two parameters will be interpolated.")
     parser.add_argument("--epochs", type=int, default=14,
                         help="Set number of training epochs (default = 14).")
     parser.add_argument("--idxs", nargs='+', default=(0, 0, 0, 0),
@@ -41,6 +37,10 @@ def parse_arguments():
                         help="Plot difference between interpolated and actual trained results.")
     parser.add_argument("--preliminary", action="store_true",
                         help="Preliminary experiments will be executed.")
+    parser.add_argument("--single", action="store_true",
+                        help="Individual parameter interpolation.")
+    parser.add_argument("--layers", action="store_true",
+                        help="Interpolation of parameters of layer")
     parser.add_argument("--debug", action="store_true", help="Enables debug logging.")
 
     args = parser.parse_args()
@@ -101,9 +101,7 @@ def get_net(device, train_loader, test_loader, epochs):
 
 
 def main():
-    args = parse_arguments()
 
-    alpha = np.linspace(args.alpha_start, args.alpha_end, args.alpha_steps)  # Prepare interpolation coefficient
 
     if args.debug:
         lvl = logging.DEBUG
@@ -116,20 +114,15 @@ def main():
     logging.debug("[main]: Command line arguments: {}".format(args))
 
     # Set device
-    use_cuda = not args.no_cuda and torch.cuda.is_available()
-    device = torch.device("cuda" if use_cuda else "cpu")
     if use_cuda:
         logging.info("[main]: CUDA is enabled.")
     else:
         logging.info("[main]: CUDA is disabled.")
 
-    init_dirs()
 
     # Prepare dataset
-    train_loader, test_loader = data_load.data_load()  # Get test and train data loader
 
     # Get neural network model
-    model = get_net(device, train_loader, test_loader, args.epochs)
 
     #Preliminary experiments
     if args.preliminary:

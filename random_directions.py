@@ -17,7 +17,7 @@ def run_rand_dirs(args):
 
     model = prep.get_net(device, train_loader, test_loader, args.epochs)
 
-    d = surface.rand_2d(model, device, 6, test_loader)
+    d = surface.rand_2d(model, device, 20, test_loader)
 
     plot.plot_surface_contours(d, True)
-    plot.surface_3d(d, 6, True)
+    plot.surface_3d(d, 20, True)

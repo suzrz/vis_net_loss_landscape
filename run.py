@@ -2,6 +2,7 @@ import prep
 import preliminary
 import layer_params
 import individual_param
+import random_directions
 from paths import *
 
 
@@ -30,3 +31,7 @@ if args.layers:
 if args.preliminary:
     logger.info("Executing preliminary experiments")
     preliminary.run_preliminary(args)
+
+if args.surface:
+    logger.info("Executing random directions experiment")
+    random_directions.run_rand_dirs(args)

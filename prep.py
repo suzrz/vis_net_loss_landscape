@@ -42,6 +42,8 @@ def parse_arguments():
                         help="Individual parameter interpolation.")
     parser.add_argument("--layers", action="store_true",
                         help="Interpolation of parameters of layer")
+    parser.add_argument("--surface", action="store_true",
+                        help="Loss function surface visualization in random directions")
     parser.add_argument("--debug", action="store_true", help="Enables debug logging.")
 
     args = parser.parse_args()

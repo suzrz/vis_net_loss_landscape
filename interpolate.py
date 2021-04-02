@@ -3,7 +3,7 @@ import copy
 import h5py
 import plot
 import torch
-import directions
+import surface
 import numpy as np
 import scipy.optimize
 from paths import *
@@ -293,7 +293,7 @@ class Interpolator:
 
         self.model.load_state_dict(self.theta_f)
         if surf.exists():
-            dirs = directions.random_directions(self.model, self.device)
+            dirs = surface.random_directions(self.model, self.device)
 
             with h5py.File(surf, "r+") as fd:
                 xcoords = fd["xcoordinates"][:]

@@ -37,6 +37,10 @@ vec_img = Path(os.path.join(imgs, "vec"))
 # directory for preliminary experiments results
 prelim = Path(os.path.join(results, "preliminary"))
 
+# directory for random directions experiment
+random_dirs = Path(os.path.join(results, "rand_dirs"))
+random_dirs_img = Path(os.path.join(imgs, "rand_dirs"))
+
 # actual loss and accuracy progress of the model
 actual_loss_path = Path(os.path.join(results, "actual_loss"))
 actual_acc_path = Path(os.path.join(results, "actual_acc"))
@@ -84,7 +88,7 @@ def init_dirs():
     Function initializes directories
     """
     logger.info("Initializing directories")
-    dirs = [results, imgs, single, single_img, vec, vec_img, prelim]
+    dirs = [results, imgs, single, single_img, vec, vec_img, prelim, random_dirs, random_dirs_img]
 
     for d in dirs:
         logger.debug(f"Searching for {d}")

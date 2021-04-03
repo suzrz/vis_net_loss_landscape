@@ -175,6 +175,8 @@ def plot_one_param(alpha, loss, acc, loss_img_path, acc_img_path, loss_only=Fals
             plt.show()
         plt.savefig("{}.pdf".format(acc_img_path), format="pdf")
 
+        plt.close("all")
+
 
 def map_distance(directory):
     """

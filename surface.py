@@ -118,7 +118,7 @@ def rand_2d(model, device, steps, test_loader):
     :return: matrix of values of loss function around the point
     """
     start_p = Parameters([p.to(device) for p in model.parameters()])
-    distance = 1
+    distance = 100
 
     d1 = get_rand_like(start_p, device)
     d2 = get_ortogonal_dir(d1, device)
@@ -128,6 +128,7 @@ def rand_2d(model, device, steps, test_loader):
     d2.model_normalize(start_p)
 
     # scale
+    """
     aux = start_p.model_norm() * distance / steps
     d1 = d1 * (aux / d1.model_norm())
     d2 = d2 * (aux / d2.model_norm())
@@ -140,6 +141,7 @@ def rand_2d(model, device, steps, test_loader):
 
     d1 = d1 / (steps / 2)
     d2 = d2 / (steps / 2)
+    """
 
     result = []
 

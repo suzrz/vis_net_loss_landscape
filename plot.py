@@ -345,7 +345,7 @@ def surface_3d(data, steps, show=False):
 
     ax.set_title("Surface of the loss function")
     if show:
-        plt.show()
+        fig.show()
 
     plt.savefig(Path(os.path.join(random_dirs_img, f"surface_{steps}.pdf"), format="pdf"))
 

@@ -56,7 +56,6 @@ def plot_impact(x, loss, acc, loss_only=False, acc_only=False, annotate=True, xl
             return
         plot_line(x, np.loadtxt(loss), xlabel, "Validation loss", annotate, color_loss)
 
-
     if not loss_only:
         if not acc.exists():
             logging.error("[plot]: No accuracy data found")
@@ -108,7 +107,8 @@ def plot_box(x, loss_only=False, acc_only=False, show=False, xlabel=None):
         plt.savefig(os.path.join(os.path.join(imgs, "subsets_imp"), "test_acc.pdf"), format="pdf")
 
 
-def plot_one_param(alpha, loss, acc, loss_img_path, acc_img_path, loss_only=False, acc_only=False, show=False, trained=False):
+def plot_one_param(alpha, loss, acc, loss_img_path, acc_img_path, loss_only=False,
+                   acc_only=False, show=False, trained=False):
     """
     Plots interpolation progress of parameter
 
@@ -323,6 +323,31 @@ def plot_vec_all_la(x, show=False):
 
     if show:
         plt.show()
+
+
+def plot_surface_contours(data, levels=50, show=False):
+    plt.contour(data, levels)
+    plt.title("Loss Function around trained model")
+
+    if show:
+        plt.show()
+
+    plt.savefig(Path(os.path.join(random_dirs_img, "contour.pdf"), format="pdf"))
+
+
+def surface_3d(data, steps, show=False):
+    fig = plt.figure()
+    ax = plt.axes(projection="3d")
+    X = np.array([[j for j in range(steps)] for i in range(steps)])
+    Y = np.array([[i for _ in range(steps)] for i in range(steps)])
+
+    ax.plot_surface(X, Y, data, rstride=1, cstride=1, cmap="viridis", edgecolor="none")
+
+    ax.set_title("Surface of the loss function")
+    if show:
+        fig.show()
+
+    plt.savefig(Path(os.path.join(random_dirs_img, f"surface_{steps}.pdf"), format="pdf"))
 
 def surface3d_rand_dirs():
     # vmin = 0

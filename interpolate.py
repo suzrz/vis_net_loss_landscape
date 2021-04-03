@@ -3,7 +3,7 @@ import copy
 import h5py
 import plot
 import torch
-import directions
+import surface
 import numpy as np
 import scipy.optimize
 from paths import *
@@ -17,6 +17,10 @@ def convert_list2str(int_list):
     res = int(''.join(map(str, int_list)))
 
     return res
+
+
+def parabola(x, a, b, c):
+    return a*x**2 + b*x + c
 
 
 class Interpolator:
@@ -57,11 +61,37 @@ class Interpolator:
         :param alpha: interpolation coefficient
         """
         logger.debug(f"Calculating: {layer} {idxs} for alpha = {alpha}")
-        logger.debug(f"Modified theta:\n"
-                     f"{self.theta[layer][idxs]}")
 
         self.theta[layer][idxs] = (self.theta_i[layer][idxs] * (1.0 - alpha)) + (
                     self.theta_f[layer][idxs] * alpha)
+
+        logger.debug(f"Modified theta:\n"
+                     f"{self.theta[layer][idxs]}")
+
+    def calc_theta_single_q(self, layer, idxs, alpha, start, mid, end):
+        """
+        Method calculates quadratic interpolation of a single parameter with respect to interpolation coefficient
+        alpha
+
+        :param layer: layer of parameter
+        :param idxs: position of parameter
+        :param alpha: interpolation coefficient value
+        :param start: first point
+        :param mid: second point
+        :param end: ending point
+        """
+        logger.debug(f"Calculating quadr: {layer} {idxs} for alpha = {alpha}")
+        xdata = np.array([start[0], mid[0], end[0]])
+        logger.debug(f"XDATA: {xdata}")
+        ydata = np.array([start[1], mid[1], end[1]])
+        logger.debug(f"YDATA: {ydata}")
+        self.fit_params, self.p_cov = scipy.optimize.curve_fit(parabola, xdata, ydata)
+
+        self.theta[layer][idxs] = torch.tensor(((1.0 - alpha)*self.fit_params[0]**2 + alpha*self.fit_params[1] +
+                                                   self.fit_params[2]) / 100).to(self.device)
+
+        logger.debug(f"Modified theta:\n"
+                     f"{self.theta[layer][idxs]}")
 
     def calc_theta_vec(self, layer, alpha):
         """
@@ -75,16 +105,6 @@ class Interpolator:
         self.theta[layer] = torch.add((torch.mul(self.theta_i[layer], (1.0 - alpha))),
                                       torch.mul(self.theta_f[layer], alpha))
 
-    @staticmethod
-    def parabola(self, x, a, b, c):
-        return a*x**2 + b*x + c
-
-    def quadr(self, alpha, epochs, data):
-        fit_params, pcov = scipy.optimize.curve_fit(self.parabola, epochs, data)
-        approx = self.parabola(alpha, *fit_params)
-        print(approx)
-
-        np.savetxt("quadr", approx)
 
     def interpolate_all(self, test_loader):
         """
@@ -175,6 +195,80 @@ class Interpolator:
 
         logger.debug(f"Saving results to figures {loss_img}, {acc_img} ...")
         plot.plot_one_param(self.alpha, np.loadtxt(loss_res), np.loadtxt(acc_res), loss_img, acc_img)
+
+        self.model.load_state_dict(self.theta_f)
+
+        return
+
+    def single_acc_vloss_q(self, test_loader, layer, idxs):
+        """
+        Method interpolates individual parameter of the model and evaluates the performance of the model when the
+        interpolated parameter replaces its original in the parameters of the model
+
+        :param test_loader: test dataset loader
+        :param layer: layer of parameter
+        :param idxs: position of parameter
+        """
+
+        loss_res = Path("{}_{}_{}_q".format(svloss_path, layer, convert_list2str(idxs)))
+        loss_img = Path("{}_{}_{}_q".format(svloss_img_path, layer, convert_list2str(idxs)))
+
+        acc_res = Path("{}_{}_{}_q".format(sacc_path, layer, convert_list2str(idxs)))
+        acc_img = Path("{}_{}_{}_q".format(sacc_img_path, layer, convert_list2str(idxs)))
+
+        logger.debug(f"Result files:\n"
+                     f"{loss_res}\n"
+                     f"{acc_res}\n")
+        logger.debug(f"Img files:\n"
+                     f"{loss_img}\n"
+                     f"{acc_img}\n")
+
+        if not loss_res.exists() or not acc_res.exists():
+            logger.debug("Files with results not found - beginning interpolation.")
+
+            v_loss_list = []
+            acc_list = []
+
+            start_p = self.theta_i[layer + ".weight"][idxs]
+            mid_p = copy.deepcopy(torch.load(Path(os.path.join(results, "state_4"))))[layer + ".weight"][idxs]
+            end_p = self.theta_f[layer + ".weight"][idxs]
+            logger.debug(f"Start: {start_p}\n"
+                         f"Mid: {mid_p}\n"
+                         f"End: {end_p}")
+
+            start_loss = np.loadtxt(actual_loss_path)[0]
+            mid_loss = np.loadtxt(actual_loss_path)[2]
+            end_loss = np.loadtxt(actual_loss_path)[-1]
+            logger.debug(f"Start loss: {start_loss}\n"
+                         f"Mid loss: {mid_loss}\n"
+                         f"End loss: {end_loss}")
+
+            start = [start_p, start_loss]
+            mid = [mid_p, mid_loss]
+            end = [end_p, end_loss]
+            logger.debug(f"Start: {start}\n"
+                         f"Mid: {mid}\n"
+                         f"End: {end}")
+
+            self.model.load_state_dict(self.theta_f)
+            for alpha_act in self.alpha:
+                self.calc_theta_single_q(layer + ".weight", idxs, alpha_act, start, mid, end)
+
+                self.model.load_state_dict(self.theta)
+
+                logger.debug(f"Getting validation loss and accuracy for alpha = {alpha_act}")
+                val_loss, acc = net.test(self.model, test_loader, self.device)
+                acc_list.append(acc)
+                v_loss_list.append(val_loss)
+
+            logger.debug(f"Saving results to files ({loss_res}, {acc_res})")
+
+            np.savetxt(loss_res, v_loss_list)
+            np.savetxt(acc_res, acc_list)
+            self.model.load_state_dict(self.theta_f)
+
+        logger.debug(f"Saving results to figures {loss_img}, {acc_img} ...")
+        plot.plot_one_param(self.alpha, np.loadtxt(loss_res), np.loadtxt(acc_res), loss_img, acc_img, show=True)
 
         self.model.load_state_dict(self.theta_f)
 
@@ -293,7 +387,7 @@ class Interpolator:
 
         self.model.load_state_dict(self.theta_f)
         if surf.exists():
-            dirs = directions.random_directions(self.model, self.device)
+            dirs = surface.random_directions(self.model, self.device)
 
             with h5py.File(surf, "r+") as fd:
                 xcoords = fd["xcoordinates"][:]

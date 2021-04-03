@@ -87,8 +87,8 @@ class Interpolator:
         logger.debug(f"YDATA: {ydata}")
         self.fit_params, self.p_cov = scipy.optimize.curve_fit(parabola, xdata, ydata)
 
-        self.theta[layer][idxs] = torch.tensor(alpha*self.fit_params[0]**2 + alpha*self.fit_params[1] +
-                                                   self.fit_params[2]).to(self.device)
+        self.theta[layer][idxs] = torch.tensor(((1.0 - alpha)*self.fit_params[0]**2 + alpha*self.fit_params[1] +
+                                                   self.fit_params[2]) / 100).to(self.device)
 
         logger.debug(f"Modified theta:\n"
                      f"{self.theta[layer][idxs]}")

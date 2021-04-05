@@ -1,5 +1,4 @@
 import prep
-import random
 import preliminary
 import itertools
 import layer_params

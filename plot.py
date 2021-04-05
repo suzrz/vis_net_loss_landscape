@@ -46,6 +46,7 @@ def plot_line(x, y, xlabel, ylabel, annotate=False, color="blue"):
 
     fig.tight_layout()
     plt.savefig(os.path.join(os.path.join(imgs), "{}.pdf".format(ylabel)), format="pdf")
+    plt.close("all")
 
 
 def plot_impact(x, loss, acc, loss_only=False, acc_only=False, annotate=True, xlabel=None):
@@ -175,6 +176,8 @@ def plot_one_param(alpha, loss, acc, loss_img_path, acc_img_path, loss_only=Fals
             plt.show()
         plt.savefig("{}.pdf".format(acc_img_path), format="pdf")
 
+        plt.close("all")
+
 
 def map_distance(directory):
     """
@@ -238,6 +241,8 @@ def plot_single(x, layer, opacity_dict, show=False):
     if show:
         plt.show()
 
+    plt.close("all")
+
 
 def plot_vec_in_one(x, metric, opacity_dict, show=False):
     """
@@ -283,6 +288,7 @@ def plot_vec_in_one(x, metric, opacity_dict, show=False):
 
     if show:
         plt.show()
+    plt.close("all")
 
 
 def plot_vec_all_la(x, show=False):
@@ -323,6 +329,7 @@ def plot_vec_all_la(x, show=False):
 
     if show:
         plt.show()
+    plt.close("all")
 
 
 def plot_surface_contours(data, levels=50, show=False):

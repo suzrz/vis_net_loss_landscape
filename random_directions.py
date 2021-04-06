@@ -1,6 +1,6 @@
 import prep
 import data_load
-import surface
+import surface_new
 from interpolate import *
 
 logger = logging.getLogger("vis_net")
@@ -17,7 +17,10 @@ def run_rand_dirs(args):
 
     model = prep.get_net(device, train_loader, test_loader, args.epochs)
 
-    d = surface.rand_2d(model, device, 20, test_loader)
+    #d = surface.rand_2d(model, device, 20, test_loader)
 
-    plot.plot_surface_contours(d, True)
-    plot.surface_3d(d, 20, True)
+    #plot.plot_surface_contours(d, True)
+    #plot.surface_3d(d, 20, True)
+    dirs = surface_new.get_directions(model, device)
+    surface_new.calc_loss(model, test_loader, dirs, device)
+    plot.surface3d_rand_dirs()

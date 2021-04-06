@@ -361,7 +361,8 @@ def surface3d_rand_dirs():
     # vmax = 100
 
     # vlevel = 0.5
-    surf_name = "val_loss"
+    surf = Path(os.path.join(random_dirs, "surf.h5"))
+    surf_name = "loss"
 
     with h5py.File(surf, 'r') as fd:
         x = np.array(fd["xcoordinates"][:])

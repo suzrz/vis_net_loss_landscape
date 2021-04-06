@@ -5,9 +5,10 @@ import plot
 import torch
 import surface
 import numpy as np
-import scipy.optimize
+import scipy.interpolate
 from paths import *
 from pathlib import Path
+from numpy.polynomial import Polynomial
 
 
 logger = logging.getLogger("vis_net")
@@ -85,7 +86,9 @@ class Interpolator:
         logger.debug(f"XDATA: {xdata}")
         ydata = np.array([start[1], mid[1], end[1]])
         logger.debug(f"YDATA: {ydata}")
-        self.fit_params, self.p_cov = scipy.optimize.curve_fit(parabola, xdata, ydata)
+        #self.fit_params, self.p_cov = scipy.optimize.curve_fit(parabola, xdata, ydata)
+        poly = scipy.interpolate.lagrange(xdata, ydata)
+        self.fit_params = Polynomial(poly).coef
 
         self.theta[layer][idxs] = torch.tensor(((1.0 - alpha)*self.fit_params[0]**2 + alpha*self.fit_params[1] +
                                                    self.fit_params[2]) / 100).to(self.device)

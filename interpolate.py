@@ -235,23 +235,27 @@ class Interpolator:
             v_loss_list = []
             acc_list = []
 
-            start_p = self.theta_i[layer + ".weight"][idxs]
-            mid_p = copy.deepcopy(torch.load(Path(os.path.join(results, "state_7"))))[layer + ".weight"][idxs]
-            end_p = self.theta_f[layer + ".weight"][idxs]
-            logger.debug(f"Start: {start_p}\n"
-                         f"Mid: {mid_p}\n"
-                         f"End: {end_p}")
+            start_a = 0
+            mid_a = 0.5
+            end_a = 1
+            logger.debug(f"Start: {start_a}\n"
+                         f"Mid: {mid_a}\n"
+                         f"End: {end_a}")
 
-            start_loss = np.loadtxt(actual_loss_path)[0]
-            mid_loss = np.loadtxt(actual_loss_path)[6]
-            end_loss = np.loadtxt(actual_loss_path)[-1]
-            logger.debug(f"Start loss: {start_loss}\n"
-                         f"Mid loss: {mid_loss}\n"
-                         f"End loss: {end_loss}")
 
-            start = [start_p, start_loss]
-            mid = [mid_p, mid_loss]
-            end = [end_p, end_loss]
+            start_p = self.theta_i[layer + ".weight"][idxs].cpu()
+            mid_p = copy.deepcopy(torch.load(Path(os.path.join(results, "state_7"))))[layer + ".weight"][idxs].cpu()
+            end_p = self.theta_f[layer + ".weight"][idxs].cpu()
+            #start_loss = np.loadtxt(actual_loss_path)[0]
+            #mid_loss = np.loadtxt(actual_loss_path)[6]
+            #end_loss = np.loadtxt(actual_loss_path)[-1]
+            logger.debug(f"Start loss: {start_p}\n"
+                         f"Mid loss: {mid_p}\n"
+                         f"End loss: {end_p}")
+
+            start = [start_a, start_p]
+            mid = [mid_a, mid_p]
+            end = [end_a, end_p]
             logger.debug(f"Start: {start}\n"
                          f"Mid: {mid}\n"
                          f"End: {end}")

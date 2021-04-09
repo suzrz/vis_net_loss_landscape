@@ -393,6 +393,9 @@ def surface3d_rand_dirs():
         """
 
         """HEAT MAP"""
+        im = plt.imshow(Z, cmap="jet")
+        plt.colorbar(im)
+        plt.show()
         """
         fig = plt.figure()
         sns_plot = sns.heatmap(Z, cmap="viridis", cbar=True, vmin=vmin,

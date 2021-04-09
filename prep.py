@@ -46,7 +46,7 @@ def parse_arguments():
                         help="Quadratic interpolation of individual parameter")
     parser.add_argument("--surface", action="store_true",
                         help="Loss function surface visualization in random directions")
-    parser.add_argument("--auto", action="store_true",
+    parser.add_argument("--auto", type=int, default=10,
                         help="Runs the single parameters and layers experiments automatically")
     parser.add_argument("--debug", action="store_true", help="Enables debug logging.")
 

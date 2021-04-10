@@ -414,27 +414,30 @@ class Interpolator:
 
             for alpha_act in self.alpha:
                 for i in idxs:
-                    start_p = self.theta_i[layer + ".weight"][i].cpu()
-                    mid_p = copy.deepcopy(torch.load(Path(os.path.join(results, "state_7"))))[layer + ".weight"][i].cpu()
-                    end_p = self.theta_f[layer + ".weight"][i].cpu()
-                    # start_loss = np.loadtxt(actual_loss_path)[0]
-                    # mid_loss = np.loadtxt(actual_loss_path)[6]
-                    # end_loss = np.loadtxt(actual_loss_path)[-1]
-                    logger.debug(f"Start loss: {start_p}\n"
-                                 f"Mid loss: {mid_p}\n"
-                                 f"End loss: {end_p}")
+                    try:
+                        start_p = self.theta_i[layer + ".weight"][i].cpu()
+                        mid_p = copy.deepcopy(torch.load(Path(os.path.join(results, "state_7"))))[layer + ".weight"][i].cpu()
+                        end_p = self.theta_f[layer + ".weight"][i].cpu()
+                        # start_loss = np.loadtxt(actual_loss_path)[0]
+                        # mid_loss = np.loadtxt(actual_loss_path)[6]
+                        # end_loss = np.loadtxt(actual_loss_path)[-1]
+                        logger.debug(f"Start loss: {start_p}\n"
+                                     f"Mid loss: {mid_p}\n"
+                                     f"End loss: {end_p}")
 
-                    start = [start_a, start_p]
-                    mid = [mid_a, mid_p]
-                    end = [end_a, end_p]
-                    logger.debug(f"Start: {start}\n"
-                                 f"Mid: {mid}\n"
-                                 f"End: {end}")
+                        start = [start_a, start_p]
+                        mid = [mid_a, mid_p]
+                        end = [end_a, end_p]
+                        logger.debug(f"Start: {start}\n"
+                                     f"Mid: {mid}\n"
+                                     f"End: {end}")
 
-                    print(idxs)
+                        print(idxs)
 
-                    self.calc_theta_single_q(layer + ".weight", i, alpha_act, start, mid, end)
+                        self.calc_theta_single_q(layer + ".weight", i, alpha_act, start, mid, end)
                     #self.calc_theta_vec_q(layer + ".bias", alpha_act)  # TODO start, mid, end pro bias
+                    except IndexError:
+                        continue
 
                 self.model.load_state_dict(self.theta)
                 logger.debug(f"Getting validation loss and accuracy for alpha = {alpha_act}")

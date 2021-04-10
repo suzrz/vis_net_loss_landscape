@@ -32,10 +32,12 @@ if args.auto:
     for i in conv1_idxs:
         args.idxs = i
         logger.debug(f"Layer: {args.layer}, idxs: {args.idxs}")
-        individual_param.run_single(args)
-        quadr_interpolation.run_quadr_interpolation(args)
+        if args.single:
+            individual_param.run_single(args)
+        if args.quadratic:
+            quadr_interpolation.run_quadr_interpolation(args)
         count += 1
-        if count > 30:
+        if count > args.auto:
             break
 
     aux = [list(np.arange(0, 6)), list(np.arange(0, 6)), list(np.arange(0, 3)), list(np.arange(0, 3))]
@@ -46,10 +48,12 @@ if args.auto:
     for i in conv2_idxs:
         args.idxs = i
         logger.debug(f"Layer: {args.layer}, idxs: {args.idxs}")
-        individual_param.run_single(args)
-        quadr_interpolation.run_quadr_interpolation(args)
+        if args.single:
+            individual_param.run_single(args)
+        if args.quadratic:
+            quadr_interpolation.run_quadr_interpolation(args)
         count += 1
-        if count > 30:
+        if count > args.auto:
             break
 
     aux = [list(np.arange(0, 120)), list(np.arange(0, 576))]
@@ -60,10 +64,12 @@ if args.auto:
     for i in fc1_idxs:
         args.idxs = i
         logger.debug(f"Layer: {args.layer}, idxs: {args.idxs}")
-        individual_param.run_single(args)
-        quadr_interpolation.run_quadr_interpolation(args)
+        if args.single:
+            individual_param.run_single(args)
+        if args.quadratic:
+            quadr_interpolation.run_quadr_interpolation(args)
         count += 1
-        if count > 30:
+        if count > args.auto:
             break
 
     aux = [list(np.arange(0, 84)), list(np.arange(0, 120))]
@@ -74,10 +80,12 @@ if args.auto:
     for i in fc2_idxs:
         args.idxs = i
         logger.debug(f"Layer: {args.layer}, idxs: {args.idxs}")
-        individual_param.run_single(args)
-        quadr_interpolation.run_quadr_interpolation(args)
+        if args.single:
+            individual_param.run_single(args)
+        if args.quadratic:
+            quadr_interpolation.run_quadr_interpolation(args)
         count += 1
-        if count > 30:
+        if count > args.auto:
             break
 
     aux = [list(np.arange(0, 10)), list(np.arange(0, 84))]
@@ -88,10 +96,12 @@ if args.auto:
     for i in fc3_idxs:
         args.idxs = i
         logger.debug(f"Layer: {args.layer}, idxs: {args.idxs}")
-        individual_param.run_single(args)
-        quadr_interpolation.run_quadr_interpolation(args)
+        if args.single:
+            individual_param.run_single(args)
+        if args.quadratic:
+            quadr_interpolation.run_quadr_interpolation(args)
         count += 1
-        if count > 30:
+        if count > args.auto:
             break
 
 if args.single:

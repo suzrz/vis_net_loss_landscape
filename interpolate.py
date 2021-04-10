@@ -278,7 +278,7 @@ class Interpolator:
             self.model.load_state_dict(self.theta_f)
 
         logger.debug(f"Saving results to figures {loss_img}, {acc_img} ...")
-        plot.plot_one_param(self.alpha, np.loadtxt(loss_res), np.loadtxt(acc_res), loss_img, acc_img, show=True)
+        plot.plot_one_param(self.alpha, np.loadtxt(loss_res), np.loadtxt(acc_res), loss_img, acc_img, show=False)
 
         self.model.load_state_dict(self.theta_f)
 

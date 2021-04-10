@@ -20,20 +20,20 @@ def parse_arguments():
     :return: program arguments
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument('--no-cuda', action='store_true', default=False,
+    parser.add_argument('--no-cuda', action='store_true',
                         help="Disables CUDA training.")
-    parser.add_argument("--alpha-start", type=float, default=-1.,
+    parser.add_argument("--alpha-start", type=float, action="store", default=-1., nargs='?',
                         help="Set starting point of interpolation (float, default = -1.0).")
-    parser.add_argument("--alpha-end", type=float, default=1.,
+    parser.add_argument("--alpha-end", type=float, action="store", default=1., nargs='?',
                         help="Set ending point of interpolation (float, default = 1.0).")
-    parser.add_argument("--alpha-steps", type=int, default=20,
+    parser.add_argument("--alpha-steps", type=int, action="store", default=20, nargs='?',
                         help="Set number of interpolation steps (int, default = 20).")
-    parser.add_argument("--epochs", type=int, default=14,
+    parser.add_argument("--epochs", type=int, action="store", default=14, nargs='?',
                         help="Set number of training epochs (default = 14).")
     parser.add_argument("--idxs", nargs='+', default=(0, 0, 0, 0),
-                        help="Set index of examined parameter (default = [0, 0, 0, 0]). Recommended to set.")
+                        help="Set index of examined parameter (default = [0, 0, 0, 0]).")
     parser.add_argument("--layer", default="conv1",
-                        help="Set layer of examined parameter (default = conv1). Recommended to set.")
+                        help="Set layer of examined parameter (default = conv1).")
     parser.add_argument("--trained", action="store_true",
                         help="Plot difference between interpolated and actual trained results.")
     parser.add_argument("--preliminary", action="store_true",
@@ -46,8 +46,8 @@ def parse_arguments():
                         help="Quadratic interpolation of individual parameter")
     parser.add_argument("--surface", action="store_true",
                         help="Loss function surface visualization in random directions")
-    parser.add_argument("--auto", type=int, default=10,
-                        help="Runs the single parameters and layers experiments automatically")
+    parser.add_argument("--auto", type=int, action="store", default=10, nargs='?',
+                        help="Runs the single parameters and layers experiments automatically (default=10).")
     parser.add_argument("--debug", action="store_true", help="Enables debug logging.")
 
     args = parser.parse_args()

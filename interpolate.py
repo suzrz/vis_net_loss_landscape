@@ -94,8 +94,8 @@ class Interpolator:
         self.fit_params = Polynomial(poly).coef
         logger.debug(f"Coefficients: {self.fit_params}")
 
-        self.theta[layer][idxs] = torch.tensor(((1.0 - alpha)*self.fit_params[0]**2 + alpha*self.fit_params[1] +
-                                                   self.fit_params[2]) / 100).to(self.device)
+        self.theta[layer][idxs] = torch.tensor((self.fit_params[0]*(alpha**2) + self.fit_params[1]*alpha +
+                                                   self.fit_params[2])).to(self.device)
         logger.debug(f"Modified theta:\n"
                      f"{self.theta[layer][idxs]}")
 

@@ -1,4 +1,5 @@
 import copy
+import json
 import torch
 import data_load
 import numpy as np
@@ -54,8 +55,21 @@ class Net(nn.Module):
         output = f.log_softmax(x, dim=1)
         return output
 
+    def get_flat_params(self, device):
+        params = {}
+        for name, param in self.named_parameters():
+            params[name] = param.data
 
-def train(model, train_loader, optimizer, device, epoch):
+        flat_params = torch.Tensor().to(device)
+
+        for _, param in params.items():
+            flat_params = torch.cat((flat_params, torch.flatten(param)))
+
+        return flat_params
+
+
+
+def train(model, train_loader, optimizer, device, epoch, checkpoint_file=True):
     """ Trains the network.
 
     :param model : Neural network model to be trained
@@ -63,10 +77,14 @@ def train(model, train_loader, optimizer, device, epoch):
     :param optimizer : Optimizer
     :param device : Device on which will be the net trained
     :param epoch : Number of actual epoch
+    :param checkpoint_file: creates checkpoint file
+    :return: training loss for according epoch
     """
     model.train()  # put net into train mode
     train_loss = 0
+
     for batch_idx, (data, target) in enumerate(train_loader):
+        optim_path = {"flat_w": [], "loss": []}
         data, target = data.to(device), target.to(device)  # load data
         optimizer.zero_grad()  # zero all gradients
         output = model.forward(data)  # feed data through net
@@ -74,7 +92,19 @@ def train(model, train_loader, optimizer, device, epoch):
         loss = f.nll_loss(output, target)  # compute train loss
         train_loss += f.nll_loss(output, target, reduction="sum").item()
         loss.backward()
-        optimizer.step()
+        optimizer.step()  # TODO here collect data to project trajectory: flat weights, loss
+
+        if checkpoint_file:
+            filename = Path(os.path.join(checkpoints), f"checkpoint_epoch_{epoch}_step_{batch_idx}")
+
+            logger.debug(f"Creating checkpoint file {filename}")
+
+            optim_path["flat_w"].append(model.get_flat_params())
+            optim_path["loss"].append(loss)
+
+            with open(filename, "w+") as fd:
+                json.dump(optim_path, fd)
+
 
     train_loss /= len(train_loader.dataset)
     logger.info(f"Training in epoch {epoch} has finished (loss = {train_loss})")

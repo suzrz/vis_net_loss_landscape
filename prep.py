@@ -103,7 +103,7 @@ def get_net(device, train_loader, test_loader, epochs):
             acc_list.append(acc)
             scheduler.step()
             logger.debug("[main]: Finished training epoch {}".format(epoch))
-            torch.save(model.state_dict(), os.path.join(results, "state_{}".format(epoch)))
+            torch.save(model.state_dict(), os.path.join(checkpoints, "checkpoint_{}".format(epoch)))
 
         torch.save(model.state_dict(), final_state)  # save final parameters of model
 

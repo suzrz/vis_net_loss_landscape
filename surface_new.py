@@ -144,5 +144,22 @@ def calc_loss(model, test_loader, directions, device):
             fd.flush()
 
 
+def sample_path(steps, n_samples=300):
+    samples = []
+
+    if n_samples > len(steps):
+        logger.warn(f"Less steps ({len(steps)} than final samples ({n_samples}). Using whole set of steps.")
+        n_samples = len(steps)
+
+    interval = len(steps) // n_samples
+    count = 0
+    for i in range(len(steps) - 1, -1, -1):
+        if i % interval == 0 and count < n_samples:
+            samples.append(steps[i])
+            count += 1
+
+    return list(reversed(samples))
+
+
 
 

@@ -1,3 +1,4 @@
+import itertools
 import net
 import copy
 import h5py
@@ -93,7 +94,8 @@ class Interpolator:
         self.fit_params = Polynomial(poly).coef
         logger.debug(f"Coefficients: {self.fit_params}")
 
-        self.theta[layer][idxs] = torch.tensor((self.fit_params[0]*(alpha**2) + alpha*self.fit_params[1] +
+
+        self.theta[layer][idxs] = torch.tensor((self.fit_params[0]*(alpha**2) + self.fit_params[1]*alpha +
                                                    self.fit_params[2])).to(self.device)
         logger.debug(f"Modified theta:\n"
                      f"{self.theta[layer][idxs]}")
@@ -111,6 +113,23 @@ class Interpolator:
         self.theta[layer] = torch.add((torch.mul(self.theta_i[layer], (1.0 - alpha))),
                                       torch.mul(self.theta_f[layer], alpha))
 
+    def calc_theta_vec_q(self, layer, alpha, start, mid, end):
+        logger.debug(f"Calculating quadr: {layer} for alpha = {alpha}")
+        xdata = np.array([start[0], mid[0], end[0]])
+        logger.debug(f"XDATA: {xdata}")
+        ydata = np.array([start[1], mid[1], end[1]])
+        logger.debug(f"YDATA: {ydata}")
+        #self.fit_params, self.p_cov = scipy.optimize.curve_fit(parabola, xdata, ydata)
+
+        poly = scipy.interpolate.lagrange(xdata, ydata)
+
+        self.fit_params = Polynomial(poly).coef
+        logger.debug(f"Coefficients: {self.fit_params}")
+
+        self.theta[layer] = torch.tensor(((1.0 - alpha)*self.fit_params[0]**2 + alpha*self.fit_params[1] +
+                                                self.fit_params[2]) / 100).to(self.device)
+        logger.debug(f"Modified theta:\n"
+                     f"{self.theta[layer]}")
 
     def interpolate_all(self, test_loader):
         """
@@ -348,6 +367,97 @@ class Interpolator:
         self.model.load_state_dict(self.theta_f)
 
         return
+
+    def vec_acc_vloss_q(self, test_loader, layer, trained=False):
+        loss_res = Path("{}_{}_q".format(vvloss_path, layer))
+        loss_img = Path("{}_{}_q".format(vvloss_img_path, layer))
+
+        acc_res = Path("{}_{}_q".format(vacc_path, layer))
+        acc_img = Path("{}_{}_q".format(vacc_img_path, layer))
+
+        logger.debug(f"Result files:\n"
+                     f"{loss_res}\n"
+                     f"{acc_res}")
+        logger.debug(f"Img files:\n"
+                     f"{loss_img}\n"
+                     f"{acc_img}")
+
+        if not loss_res.exists() or not acc_res.exists():
+            logger.debug("Result files not found - beginning interpolation.")
+
+            v_loss_list = []
+            acc_list = []
+
+            start_a = 0
+            mid_a = 0.5
+            end_a = 1
+            logger.debug(f"Start: {start_a}\n"
+                         f"Mid: {mid_a}\n"
+                         f"End: {end_a}")
+
+            if layer == "conv1":
+                aux = [list(np.arange(0, 6)), [0], list(np.arange(0, 3)), list(np.arange(0, 3))]
+                idxs = list(itertools.product(*aux))
+            elif layer == "conv2":
+                aux = [list(np.arange(0, 6)), list(np.arange(0, 6)), list(np.arange(0, 3)), list(np.arange(0, 3))]
+                idxs = list(itertools.product(*aux))
+            elif layer == "fc1":
+                aux = [list(np.arange(0, 120)), list(np.arange(0, 576))]
+                idxs = list(itertools.product(*aux))
+            elif layer == "fc2":
+                aux = [list(np.arange(0, 84)), list(np.arange(0, 120))]
+                idxs = list(itertools.product(*aux))
+            elif layer == "fc3":
+                aux = [list(np.arange(0, 10)), list(np.arange(0, 84))]
+                idxs = list(itertools.product(*aux))
+
+            self.model.load_state_dict(self.theta_f)
+
+            for alpha_act in self.alpha:
+                for i in idxs:
+                    try:
+                        start_p = self.theta_i[layer + ".weight"][i].cpu()
+                        mid_p = copy.deepcopy(torch.load(Path(os.path.join(results, "state_7"))))[layer + ".weight"][i].cpu()
+                        end_p = self.theta_f[layer + ".weight"][i].cpu()
+                        # start_loss = np.loadtxt(actual_loss_path)[0]
+                        # mid_loss = np.loadtxt(actual_loss_path)[6]
+                        # end_loss = np.loadtxt(actual_loss_path)[-1]
+                        logger.debug(f"Start loss: {start_p}\n"
+                                     f"Mid loss: {mid_p}\n"
+                                     f"End loss: {end_p}")
+
+                        start = [start_a, start_p]
+                        mid = [mid_a, mid_p]
+                        end = [end_a, end_p]
+                        logger.debug(f"Start: {start}\n"
+                                     f"Mid: {mid}\n"
+                                     f"End: {end}")
+
+                        print(idxs)
+
+                        self.calc_theta_single_q(layer + ".weight", i, alpha_act, start, mid, end)
+                    #self.calc_theta_vec_q(layer + ".bias", alpha_act)  # TODO start, mid, end pro bias
+                    except IndexError:
+                        continue
+
+                self.model.load_state_dict(self.theta)
+                logger.debug(f"Getting validation loss and accuracy for alpha = {alpha_act}")
+
+                vloss, acc = net.test(self.model, test_loader, self.device)
+                v_loss_list.append(vloss)
+                acc_list.append(acc)
+
+            logger.debug(f"Saving results to files ({loss_res}, {acc_res})")
+            np.savetxt(loss_res, v_loss_list)
+            np.savetxt(acc_res, acc_list)
+
+        logger.debug(f"Saving results to figures {loss_img}, {acc_img} ...")
+        plot.plot_one_param(self.alpha, np.loadtxt(loss_res), np.loadtxt(acc_res), loss_img, acc_img, trained=trained)
+
+        self.model.load_state_dict(self.theta_f)
+
+        return
+
 
     def set_surf_file(self):
         """

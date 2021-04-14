@@ -417,7 +417,7 @@ class Interpolator:
                 for i in idxs:
                     try:
                         start_p = self.theta_i[layer + ".weight"][i].cpu()
-                        mid_p = copy.deepcopy(torch.load(Path(os.path.join(results, "state_7"))))[layer + ".weight"][i].cpu()
+                        mid_p = copy.deepcopy(torch.load(Path(os.path.join(checkpoints, "checkpoint_7"))))[layer + ".weight"][i].cpu()
                         end_p = self.theta_f[layer + ".weight"][i].cpu()
                         # start_loss = np.loadtxt(actual_loss_path)[0]
                         # mid_loss = np.loadtxt(actual_loss_path)[6]

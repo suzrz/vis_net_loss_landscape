@@ -20,4 +20,5 @@ def run_quadr_interpolation(args):
 
     interpolate = Interpolator(model, device, alpha, final_state, init_state)
 
-    interpolate.single_acc_vloss_q(test_loader, args.layer, args.idxs)
+    #interpolate.single_acc_vloss_q(test_loader, args.layer, args.idxs)
+    interpolate.vec_acc_vloss_q(test_loader, args.layer)

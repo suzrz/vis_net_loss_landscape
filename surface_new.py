@@ -46,8 +46,8 @@ def set_surf_file(filename):
 
     :param filename: Filename of a surface file
     """
-    xmin, xmax, xnum = -1, 1, 60
-    ymin, ymax, ynum = -1, 1, 60
+    xmin, xmax, xnum = -1, 2, 20
+    ymin, ymax, ynum = -1, 2, 20
 
     if filename.exists():
         return

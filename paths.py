@@ -9,6 +9,8 @@ logger = logging.getLogger("vis_net")
 results = Path(os.path.join(".", "results"))
 imgs = Path(os.path.join(".", "imgs"))
 
+checkpoints = Path(os.path.join(".", "model_states"))
+
 init_state = Path(os.path.join(results, "init_state.pt"))
 final_state = Path(os.path.join(results, "final_state.pt"))
 
@@ -88,7 +90,7 @@ def init_dirs():
     Function initializes directories
     """
     logger.info("Initializing directories")
-    dirs = [results, imgs, single, single_img, vec, vec_img, prelim, random_dirs, random_dirs_img]
+    dirs = [results, imgs, checkpoints, single, single_img, vec, vec_img, prelim, random_dirs, random_dirs_img]
 
     for d in dirs:
         logger.debug(f"Searching for {d}")

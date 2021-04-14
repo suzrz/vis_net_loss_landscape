@@ -1,6 +1,6 @@
 import copy
-import json
 import torch
+import pickle
 import data_load
 import numpy as np
 from paths import *
@@ -95,15 +95,15 @@ def train(model, train_loader, optimizer, device, epoch, checkpoint_file=True):
         optimizer.step()  # TODO here collect data to project trajectory: flat weights, loss
 
         if checkpoint_file:
-            filename = Path(os.path.join(checkpoints), f"checkpoint_epoch_{epoch}_step_{batch_idx}")
+            filename = Path(os.path.join(checkpoints), f"checkpoint_epoch_{epoch}_step_{batch_idx}.pkl")
 
             logger.debug(f"Creating checkpoint file {filename}")
 
-            optim_path["flat_w"].append(model.get_flat_params())
+            optim_path["flat_w"].append(model.get_flat_params(device))
             optim_path["loss"].append(loss)
 
-            with open(filename, "w+") as fd:
-                json.dump(optim_path, fd)
+            with open(filename, "wb") as fd:
+                pickle.dump(optim_path, fd)
 
 
     train_loss /= len(train_loader.dataset)

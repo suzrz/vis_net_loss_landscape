@@ -93,8 +93,8 @@ class Interpolator:
         self.fit_params = Polynomial(poly).coef
         logger.debug(f"Coefficients: {self.fit_params}")
 
-        self.theta[layer][idxs] = torch.tensor(((1.0 - alpha)*self.fit_params[0]**2 + alpha*self.fit_params[1] +
-                                                   self.fit_params[2]) / 100).to(self.device)
+        self.theta[layer][idxs] = torch.tensor((self.fit_params[0]*(alpha**2) + alpha*self.fit_params[1] +
+                                                   self.fit_params[2])).to(self.device)
         logger.debug(f"Modified theta:\n"
                      f"{self.theta[layer][idxs]}")
 
@@ -244,7 +244,7 @@ class Interpolator:
 
 
             start_p = self.theta_i[layer + ".weight"][idxs].cpu()
-            mid_p = copy.deepcopy(torch.load(Path(os.path.join(results, "state_7"))))[layer + ".weight"][idxs].cpu()
+            mid_p = copy.deepcopy(torch.load(Path(os.path.join(checkpoints, "checkpoint_7"))))[layer + ".weight"][idxs].cpu()
             end_p = self.theta_f[layer + ".weight"][idxs].cpu()
             #start_loss = np.loadtxt(actual_loss_path)[0]
             #mid_loss = np.loadtxt(actual_loss_path)[6]

@@ -3,8 +3,10 @@ import h5py
 import torch
 import numpy as np
 from paths import *
+from sklearn.decomposition import PCA
 
 logger = logging.getLogger("vis_net")
+
 
 def get_random_direction(model, device):
     """
@@ -145,7 +147,14 @@ def calc_loss(model, test_loader, directions, device):
 
 
 def sample_path(steps, n_samples=300):
-    samples = []
+    """
+    Function takes n_samples from steps dictionary
+
+    :param steps: dictionary of sgd steps with members flat_w [] and loss []
+    :param n_samples: number of samples to take
+    :return: sampled dict
+    """
+    samples = {"flat_w": [], "loss": []}
 
     if n_samples > len(steps):
         logger.warn(f"Less steps ({len(steps)} than final samples ({n_samples}). Using whole set of steps.")
@@ -155,11 +164,27 @@ def sample_path(steps, n_samples=300):
     count = 0
     for i in range(len(steps) - 1, -1, -1):
         if i % interval == 0 and count < n_samples:
-            samples.append(steps[i])
+            samples["flat_w"].append(steps["flat_w"][i])
+            samples["loss"].append(steps["loss"][i])
             count += 1
 
-    return list(reversed(samples))
+    samples["flat_w"] = reversed(samples["flat_w"])
+    samples["loss"] = reversed(samples["loss"])
+    return samples
 
 
+def pca_dim_reduction(params, directions):
+    optim_path_np = []
+    for tensor in params:
+        optim_path_np.append(np.array(tensor.cpu()))
 
+    pca = PCA(n_components=2)
+    path_2d = pca.fit_transform(optim_path_np)
+    reduced_dirs = pca.components_
 
+    return {
+        "optim_path": optim_path_np,
+        "path_2d": path_2d,
+        "reduced_dirs": reduced_dirs,
+        "pcvariances": pca.explained_variance_ratio_
+    }

@@ -21,6 +21,16 @@ def run_rand_dirs(args):
 
     #plot.plot_surface_contours(d, True)
     #plot.surface_3d(d, 20, True)
-    dirs = surface_new.get_directions(model, device)
-    surface_new.calc_loss(model, test_loader, dirs, device)
-    plot.surface3d_rand_dirs()
+    #dirs = surface_new.get_directions(model, device)
+    #surface_new.calc_loss(model, test_loader, dirs, device)
+    #plot.surface3d_rand_dirs()
+
+    steps = surface_new.get_steps()
+    print(len(steps))
+    sampled = surface_new.sample_path(steps)
+
+    optim_path = sampled["flat_w"]
+    print(optim_path)
+    loss_path = sampled["loss"]
+
+    dim_red = surface_new.pca_dim_reduction(optim_path)

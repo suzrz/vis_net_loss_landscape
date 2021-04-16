@@ -67,6 +67,20 @@ class Net(nn.Module):
 
         return flat_params
 
+    def load_from_flat_params(self, f_params):
+        shapes = []
+        for name, param in self.named_parameters():
+            shapes.append((name, param.shape, param.numel()))
+
+        state = {}
+        c = 0
+        for shape in shapes:
+            name, tsize, tnum = shape
+            param = f_params[c : c + tnum].reshape(tsize)
+            state[name] = torch.nn.Parameter(param)
+            c += tnum
+
+        self.load_state_dict(state, strict=True)
 
 
 def train(model, train_loader, optimizer, device, epoch, checkpoint_file=True):

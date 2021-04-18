@@ -25,12 +25,4 @@ def run_rand_dirs(args):
     #surface_new.calc_loss(model, test_loader, dirs, device)
     #plot.surface3d_rand_dirs()
 
-    steps = surface_new.get_steps()
-    print(len(steps))
-    sampled = surface_new.sample_path(steps)
-
-    optim_path = sampled["flat_w"]
-    print(optim_path)
-    loss_path = sampled["loss"]
-
-    dim_red = surface_new.pca_dim_reduction(optim_path)
+    surface_new.get_loss_grid(model, device, test_loader)

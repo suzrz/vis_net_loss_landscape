@@ -198,11 +198,10 @@ def sample_path(steps, n_samples=300):
         n_samples = len(steps)
 
     interval = len(steps["flat_w"]) // n_samples
+    logger.debug(f"Samples interval: {interval}")
     count = 0
-    for i in range(len(steps) - 1, -1, -1):
+    for i in range(len(steps["flat_w"]) - 1, -1, -1):
         if i % interval == 0 and count < n_samples:
-            print(type(steps["flat_w"][i]))
-            print(steps["flat_w"][i])
             samples["flat_w"].append(steps["flat_w"][i])
             samples["loss"].append(steps["loss"][i])
             count += 1
@@ -213,6 +212,7 @@ def sample_path(steps, n_samples=300):
 
 
 def pca_dim_reduction(params):
+    logger.debug("PCA dimension reduction")
     optim_path_np = []
     for tensor in params:
         optim_path_np.append(np.array(tensor[0].cpu()))
@@ -220,6 +220,8 @@ def pca_dim_reduction(params):
     pca = PCA(n_components=2)
     path_2d = pca.fit_transform(optim_path_np)
     reduced_dirs = pca.components_
+    logger.debug(f"Reduced directions: {reduced_dirs}")
+    logger.debug(f"PCA variances: {pca.explained_variance_ratio_}")
 
     return {
         "optim_path": optim_path_np,
@@ -265,10 +267,21 @@ def compute_loss_2d(model, test_loader, device, params_grid):
 
 def get_loss_grid(model, device, test_loader, resolution=50):
     grid_file = Path(os.path.join(pca_dirs, "loss_grid"))
+    logger.info(f"Surface grid file {grid_file}")
 
     steps = get_steps(checkpoints)
+    logger.debug(f"Steps len: {len(steps)}, type: {type(steps)}\n"
+                 f"Steps flat_w len: {len(steps['flat_w'])}\n"
+                 f"Steps loss len: {len(steps['loss'])}")
     sampled_optim_path = sample_path(steps)
-    optim_path, loss_path = zip(*[(path["flat_w"], path["loss"]) for path in sampled_optim_path])
+    logger.debug(f"Sampled len: {len(sampled_optim_path)}, type: {type(sampled_optim_path)}\n"
+                 f"Sample flat_w len: {len(sampled_optim_path['flat_w'])}\b"
+                 f"Sample loss len: {len(sampled_optim_path['loss'])}")
+
+    optim_path = sampled_optim_path["flat_w"]
+    logger.debug(f"Optim path len: {len(optim_path)}")
+    loss_path = sampled_optim_path["loss"]
+    logger.debug(f"Loss path len : {len(loss_path)}")
 
     reduced_dict = pca_dim_reduction(optim_path)
     path_2d = reduced_dict["path_2d"]
@@ -288,7 +301,7 @@ def get_loss_grid(model, device, test_loader, resolution=50):
     for i in range(-resolution, resolution):
         r = []
         for j in range(-resolution, resolution):
-            updated = optim_point.cpu() + (i * d1 * alpha) + (j * d2 * alpha)
+            updated = optim_point[0].cpu() + (i * d1 * alpha) + (j * d2 * alpha)
             r.append(updated)
         grid.append(r)
 

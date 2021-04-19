@@ -295,6 +295,7 @@ def get_loss_grid(model, device, test_loader, resolution=50):
     optim_point_2d = path_2d[-1]
 
     alpha = calc_step(resolution, path_2d)
+    logger.debug(f"Step size: {alpha}")
 
     grid = []
     # prepare grid
@@ -314,3 +315,28 @@ def get_loss_grid(model, device, test_loader, resolution=50):
     else:
         with open(grid_file, "rb") as fd:
             loss, argmin, loss_min = pickle.load(fd)
+
+    coords = get_coords(alpha, resolution, optim_point_2d)
+
+    return {
+        "path_2d": path_2d,
+        "loss_grid": loss,
+        "argmin": argmin,
+        "loss_min": loss_min,
+        "coords": coords,
+        "pcvariances": pcvariances
+    }
+
+
+def convert_coord(idx, ref_p, step_size):
+    return idx * step_size + ref_p
+
+
+def get_coords(step_size, resolution, optim_point2d):
+    converted_x = []
+    converted_y = []
+    for i in range(-resolution, resolution):
+        converted_x.append(convert_coord(i, optim_point2d[0], step_size))
+        converted_y.append(convert_coord(i, optim_point2d[1], step_size))
+
+    return converted_x, converted_y

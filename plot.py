@@ -342,6 +342,23 @@ def plot_surface_contours(data, levels=50, show=False):
     plt.savefig(Path(os.path.join(random_dirs_img, "contour.pdf"), format="pdf"))
 
 
+def contour_path(steps, loss_grid, coords, pcvariances):
+    f = Path(os.path.join(pca_dirs_img, "loss_contour_path.pdf"))
+
+    _, ax = plt.subplots()
+    coords_x, coords_y = coords
+
+    im = ax.contourf(coords_x, coords_y, loss_grid, levels=35, alpha=0.9)
+    w1s = [step[0] for step in steps]
+    w2s = [step[1] for step in steps]
+    (pathline,) = ax.plot(w1s, w2s, color='r', lw=1)
+    (point, ) = ax.plot(steps[0][0], steps[0][1], "ro")
+    plt.colorbar(im)
+    plt.show()
+
+    plt.savefig(f, format="pdf")
+
+
 def surface_3d(data, steps, show=False):
     fig = plt.figure()
     ax = plt.axes(projection="3d")

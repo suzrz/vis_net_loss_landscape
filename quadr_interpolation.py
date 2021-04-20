@@ -18,7 +18,10 @@ def run_quadr_interpolation(args):
 
     model = prep.get_net(device, train_loader, test_loader, args.epochs)
 
-    interpolate = Interpolator(model, device, alpha, final_state, init_state)
+    interpolate_s = Interpolator(model, device, alpha, final_state, init_state)
 
-    #interpolate.single_acc_vloss_q(test_loader, args.layer, args.idxs)
-    interpolate.vec_acc_vloss_q(test_loader, args.layer)
+    interpolate_s.single_acc_vloss_q(test_loader, args.layer, args.idxs)
+
+    alpha_vec = np.linspace(0, 1, args.alpha_steps)
+    interpolate_v = Interpolator(model, device, alpha_vec, final_state, init_state)
+    interpolate_v.vec_acc_vloss_q(test_loader, args.layer)

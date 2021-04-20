@@ -1,4 +1,5 @@
 import prep
+import pickle
 import data_load
 import surface_new
 from interpolate import *
@@ -21,6 +22,10 @@ def run_rand_dirs(args):
 
     #plot.plot_surface_contours(d, True)
     #plot.surface_3d(d, 20, True)
-    dirs = surface_new.get_directions(model, device)
-    surface_new.calc_loss(model, test_loader, dirs, device)
-    plot.surface3d_rand_dirs()
+    #dirs = surface_new.get_directions(model, device)
+    #surface_new.calc_loss(model, test_loader, dirs, device)
+    #plot.surface3d_rand_dirs()
+
+    data = surface_new.get_loss_grid(model, device, test_loader)
+
+    plot.contour_path(data["path_2d"], data["loss_grid"], data["coords"], data["pcvariances"])

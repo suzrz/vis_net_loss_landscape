@@ -22,6 +22,7 @@ logging.basicConfig(level=lvl, format="%(asctime)s - %(name)s - %(levelname)s - 
 
 init_dirs()
 
+args.auto = False  # TODO vyresit proc se pokazde spousti (mam tam default hodnotu...)
 if args.auto:
     logger.info("Executing experiments automatically")
     aux = [list(np.arange(0, 6)), [0], list(np.arange(0, 3)), list(np.arange(0, 3))]

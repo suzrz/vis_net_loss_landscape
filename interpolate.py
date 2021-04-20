@@ -95,8 +95,11 @@ class Interpolator:
         logger.debug(f"Coefficients: {self.fit_params}")
 
 
-        self.theta[layer][idxs] = torch.tensor((self.fit_params[0]*(alpha**2) + self.fit_params[1]*alpha +
+        try:
+            self.theta[layer][idxs] = torch.tensor((self.fit_params[0]*(alpha**2) + self.fit_params[1]*alpha +
                                                    self.fit_params[2])).to(self.device)
+        except IndexError:
+            return
         logger.debug(f"Modified theta:\n"
                      f"{self.theta[layer][idxs]}")
 

@@ -26,6 +26,7 @@ init_dirs()
 
 if args.auto:
     logger.info("Executing experiments automatically")
+
     aux = [list(np.arange(0, 6)), [0], list(np.arange(0, 3)), list(np.arange(0, 3))]
     conv1_idxs = list(itertools.product(*aux))
     conv1_idxs = random.sample(conv1_idxs, args.auto_n)

@@ -28,4 +28,5 @@ def run_layers(args):
 
     interpolate = Interpolator(model, device, alpha, final_state, init_state)
 
-    interpolate.vec_acc_vlos(test_loader, args.layer, args.trained)
+    interpolate.interpolate_all(test_loader)
+    #interpolate.vec_acc_vlos(test_loader, args.layer, args.trained)

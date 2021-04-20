@@ -127,7 +127,7 @@ def plot_one_param(alpha, loss, acc, loss_img_path, acc_img_path, loss_only=Fals
         fig, ax = plt.subplots()
         trained_loss = np.loadtxt(os.path.join(results, "actual_loss"))
 
-        ax.plot(alpha, loss, "x-", color=color_loss, label="Validation loss with one parameter modified",
+        ax.plot(alpha, loss, ".-", color=color_loss, label="Validation loss with one parameter modified",
                 linewidth=1)
         ax.set_xlabel(r"$\alpha$")
         ax.set_ylabel("Validation loss")
@@ -228,7 +228,7 @@ def plot_single(x, layer, opacity_dict, show=False):
     ax.spines["top"].set_visible(False)
 
     for file in files:
-        if re.search(layer, file) and re.search("loss", file) and not re.search("distance", file):
+        if re.search(layer, file) and re.search("loss", file) and not re.search("distance", file) and not re.search("q", file):
             k = file + "_distance"  # key for opacity dictionary
             lab = file.split("_")  # get label (parameter position)
             ax.plot(x, np.loadtxt(os.path.join(single, file)), label=lab[-1], alpha=opacity_dict[k], color="blueviolet")
@@ -291,7 +291,7 @@ def plot_vec_in_one(x, metric, opacity_dict, show=False):
     plt.close("all")
 
 
-def plot_vec_all_la(x, show=False):
+def plot_vec_all_la(x, distance_dict, show=False):
     """
     Function plots all performance of the model with modified layers in one figure
 
@@ -314,10 +314,14 @@ def plot_vec_all_la(x, show=False):
     for file in files:
         if not re.search("distance", file):
             lab = file.split('_')
-            if re.search("loss", file):
-                ax.plot(x, np.loadtxt(os.path.join(vec, file)), label=lab[-1])
-            if re.search("acc", file):
-                ax2.plot(x, np.loadtxt(os.path.join(vec, file)))
+            k = file + "_distance"
+            try:
+                if re.search("loss", file):
+                    ax.plot(x, np.loadtxt(os.path.join(vec, file)), label=lab[-1], lw=1)
+                if re.search("acc", file):
+                    ax2.plot(x, np.loadtxt(os.path.join(vec, file)), lw=1)
+            except KeyError:
+                continue
 
     ax.plot(x, np.loadtxt(loss_path), label="all", color=color_trained, linewidth=1)
     ax2.plot(x, np.loadtxt(acc_path), color=color_trained, linewidth=1)
@@ -430,3 +434,16 @@ def surface3d_rand_dirs():
         #fig.savefig(result_base + '_' + surf_name + "_3D_surface.pdf",
         #            dpi=300, bbox_inches="tight", format="pdf")
         """
+
+
+x = np.linspace(-1.5, 1.5, 40)
+d = map_distance(single)
+plot_single(x, "conv1", d, True)
+plot_single(x, "conv2", d, True)
+plot_single(x, "fc1", d, True)
+plot_single(x, "fc2", d, True)
+plot_single(x, "fc3", d, True)
+
+x_v = np.linspace(0, 1, 40)
+d = map_distance(vec)
+plot_vec_all_la(x_v, d, True)

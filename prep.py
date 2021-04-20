@@ -46,8 +46,10 @@ def parse_arguments():
                         help="Quadratic interpolation of individual parameter")
     parser.add_argument("--surface", action="store_true",
                         help="Loss function surface visualization in random directions")
-    parser.add_argument("--auto", type=int, action="store", default=10, nargs='?',
-                        help="Runs the single parameters and layers experiments automatically (default=10).")
+    parser.add_argument("--auto", action="store_true",
+                        help="Runs the single parameters and layers experiments automatically.")
+    parser.add_argument("--auto-n", type=int, action="store", default=10, nargs='?',
+                        help="Sets number of examined parameters (default = 10).")
     parser.add_argument("--debug", action="store_true", help="Enables debug logging.")
 
     args = parser.parse_args()
@@ -114,3 +116,22 @@ def get_net(device, train_loader, test_loader, epochs):
     logger.debug("[main get_net]: Loaded final parameters in the model.")
 
     return model  # return neural network in final (trained) state
+
+
+def sample(indexes, n_samples=30):
+    samples = []
+
+    if (n_samples > len(indexes)):
+        logger.warning(f"Number of samples {n_samples} is bigger than len of sampled list {len(indexes)}. Using full set...")
+        return indexes
+
+    interval = len(indexes) // n_samples
+    logger.debug(f"Samples interval: {interval}")
+    count = 0
+    for i in range(len(indexes) - 1):
+        if i % interval == 0 and count < n_samples:
+            samples.append(indexes[i])
+            count += 1
+
+    return samples
+

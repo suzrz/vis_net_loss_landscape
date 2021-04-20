@@ -200,7 +200,7 @@ def sample_path(steps, n_samples=300):
     interval = len(steps["flat_w"]) // n_samples
     logger.debug(f"Samples interval: {interval}")
     count = 0
-    for i in range(len(steps["flat_w"]) - 1, -1, -1):
+    for i in range(len(steps["flat_w"]) - 1, -1, -1):  # TODO investigate
         if i % interval == 0 and count < n_samples:
             samples["flat_w"].append(steps["flat_w"][i])
             samples["loss"].append(steps["loss"][i])

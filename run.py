@@ -1,4 +1,6 @@
 import prep
+import sys
+import random
 import preliminary
 import itertools
 import layer_params
@@ -22,14 +24,13 @@ logging.basicConfig(level=lvl, format="%(asctime)s - %(name)s - %(levelname)s - 
 
 init_dirs()
 
-args.auto = False  # TODO vyresit proc se pokazde spousti (mam tam default hodnotu...)
 if args.auto:
     logger.info("Executing experiments automatically")
     aux = [list(np.arange(0, 6)), [0], list(np.arange(0, 3)), list(np.arange(0, 3))]
     conv1_idxs = list(itertools.product(*aux))
+    conv1_idxs = random.sample(conv1_idxs, args.auto_n)
     args.layer = "conv1"
     layer_params.run_layers(args)
-    count = 0
     for i in conv1_idxs:
         args.idxs = i
         logger.debug(f"Layer: {args.layer}, idxs: {args.idxs}")
@@ -37,15 +38,12 @@ if args.auto:
             individual_param.run_single(args)
         if args.quadratic:
             quadr_interpolation.run_quadr_interpolation(args)
-        count += 1
-        if count > args.auto:
-            break
 
     aux = [list(np.arange(0, 6)), list(np.arange(0, 6)), list(np.arange(0, 3)), list(np.arange(0, 3))]
     conv2_idxs = list(itertools.product(*aux))
+    conv2_idxs = random.sample(conv2_idxs, args.auto_n)
     args.layer = "conv2"
     layer_params.run_layers(args)
-    count = 0
     for i in conv2_idxs:
         args.idxs = i
         logger.debug(f"Layer: {args.layer}, idxs: {args.idxs}")
@@ -53,13 +51,10 @@ if args.auto:
             individual_param.run_single(args)
         if args.quadratic:
             quadr_interpolation.run_quadr_interpolation(args)
-        count += 1
-        if count > args.auto:
-            break
 
     aux = [list(np.arange(0, 120)), list(np.arange(0, 576))]
     fc1_idxs = list(itertools.product(*aux))
-    count = 0
+    fc1_idxs = random.sample(fc1_idxs, args.auto_n)
     args.layer = "fc1"
     layer_params.run_layers(args)
     for i in fc1_idxs:
@@ -69,13 +64,10 @@ if args.auto:
             individual_param.run_single(args)
         if args.quadratic:
             quadr_interpolation.run_quadr_interpolation(args)
-        count += 1
-        if count > args.auto:
-            break
 
     aux = [list(np.arange(0, 84)), list(np.arange(0, 120))]
     fc2_idxs = list(itertools.product(*aux))
-    count = 0
+    fc2_idxs = random.sample(fc2_idxs, args.auto_n)
     args.layer = "fc2"
     layer_params.run_layers(args)
     for i in fc2_idxs:
@@ -85,13 +77,10 @@ if args.auto:
             individual_param.run_single(args)
         if args.quadratic:
             quadr_interpolation.run_quadr_interpolation(args)
-        count += 1
-        if count > args.auto:
-            break
 
     aux = [list(np.arange(0, 10)), list(np.arange(0, 84))]
     fc3_idxs = list(itertools.product(*aux))
-    count = 0
+    fc3_idxs = random.sample(fc3_idxs, args.auto_n)
     args.layer = "fc3"
     layer_params.run_layers(args)
     for i in fc3_idxs:
@@ -101,9 +90,8 @@ if args.auto:
             individual_param.run_single(args)
         if args.quadratic:
             quadr_interpolation.run_quadr_interpolation(args)
-        count += 1
-        if count > args.auto:
-            break
+
+    sys.exit(0)
 
 if args.single:
     logger.info("Executing interpolation of individual parameter experiment")

@@ -1,5 +1,6 @@
 import sys
 import net
+import plot
 import torch
 import random
 import itertools
@@ -56,6 +57,9 @@ def parse_arguments():
                         help="Runs the single parameters and layers experiments automatically.")
     parser.add_argument("--auto-n", type=int, action="store", default=10, nargs='?',
                         help="Sets number of examined parameters (default = 10).")
+    parser.add_argument("--show", action="store_true",
+                        help="Enables showing the plots. Warning: If a big number of parameters is examined, there can"
+                             "be a lot of plots.")
     parser.add_argument("--debug", action="store_true", help="Enables debug logging.")
 
     args = parser.parse_args()
@@ -145,8 +149,8 @@ def sample(indexes, n_samples=30):
 def _run_interpolation(idxs, args):
     if args.single:
         layer_params.run_layers(args)
-    #if args.quadratic:
-    #    q_interpolation_layers.run_quadr_interpol_layers(args)
+    if args.quadratic:
+        q_interpolation_layers.run_quadr_interpol_layers(args)
 
     for i in idxs:
         args.idxs = i
@@ -215,6 +219,22 @@ def run_all(args):
     args.layer = "fc3"
 
     _run_interpolation(fc3_idxs, args)
+
+    # prepare x-axis and opacity dictionary for plotting all parameters of a layer
+    x = np.linspace(args.alpha_start, args.alpha_end, args.alpha_steps)
+    d = plot.map_distance(single)
+
+    # plot parameters of each layer in one plot
+    plot.plot_single(x, "conv1", d)
+    plot.plot_single(x, "conv2", d)
+    plot.plot_single(x, "fc1", d)
+    plot.plot_single(x, "fc2", d)
+    plot.plot_single(x, "fc3", d)
+
+    # plot all layers in one
+    xv = np.linspace(0, 1, args.alpha_steps, args.show)
+    dv = plot.map_distance(vec)
+    plot.plot_vec_all_la(x, dv, args.show)
 
     sys.exit(0)
 

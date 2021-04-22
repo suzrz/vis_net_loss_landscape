@@ -5,8 +5,8 @@ from interpolate import *
 logger = logging.getLogger("vis_net")
 
 
-def run_quadr_interpolation(args):
-    logger.info("Running quadratic interpolation of parameters")
+def run_quadr_interpol_layers(args):
+    logger.info("Running quadratic interpolation on the level of layers")
 
     alpha = np.linspace(args.alpha_start, args.alpha_end, args.alpha_steps)
 
@@ -20,4 +20,4 @@ def run_quadr_interpolation(args):
 
     interpolate = Interpolator(model, device, alpha, final_state, init_state)
 
-    interpolate.single_acc_vloss_q(test_loader, args.layer, args.idxs)
+    interpolate.vec_acc_vloss_q(test_loader, args.layer)

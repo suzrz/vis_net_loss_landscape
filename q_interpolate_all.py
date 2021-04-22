@@ -4,7 +4,7 @@ from interpolate import *
 
 
 def run_complete_quadratic_interpolation(args):
-    alpha = np.linspace(args.alpha_start, args.alpha_end, args.alpha_steps)
+    alpha = np.linspace(0, 1, args.alpha_steps)
 
     use_cuda = not args.no_cuda and torch.cuda.is_available()
     device = torch.device("cuda" if use_cuda else "cpu")

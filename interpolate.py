@@ -118,19 +118,17 @@ class Interpolator:
 
     def calc_theta_vec_q(self, layer, alpha, start, mid, end):
         logger.debug(f"Calculating quadr: {layer} for alpha = {alpha}")
-        xdata = np.array([start[0], mid[0], end[0]])
+        xdata = [start[0], mid[0], end[0]]
         logger.debug(f"XDATA: {xdata}")
-        ydata = np.array([start[1], mid[1], end[1]])
+
+        ydata = [start[1], mid[1], end[1]]
         logger.debug(f"YDATA: {ydata}")
-        #self.fit_params, self.p_cov = scipy.optimize.curve_fit(parabola, xdata, ydata)
 
-        poly = scipy.interpolate.lagrange(xdata, ydata)
+        self.theta[layer] = \
+            start[1] * (((alpha - mid[0]) * (alpha - end[0])) / ((start[0] - mid[0]) * (start[0] - end[0]))) + \
+            mid[1] * (((alpha - start[0]) * (alpha - end[0])) / ((mid[0] - start[0]) * (mid[0] - end[0]))) + \
+            end[1] * (((alpha - start[0]) * (alpha - mid[0])) / ((end[0] - start[0]) * (end[0] - mid[0])))
 
-        self.fit_params = Polynomial(poly).coef
-        logger.debug(f"Coefficients: {self.fit_params}")
-
-        self.theta[layer] = torch.tensor(self.fit_params[0]*(alpha**2) + alpha*self.fit_params[1] +
-                                                self.fit_params[2]).to(self.device)
         logger.debug(f"Modified theta:\n"
                      f"{self.theta[layer]}")
 

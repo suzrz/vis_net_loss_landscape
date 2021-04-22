@@ -1,11 +1,17 @@
+import sys
 import net
 import torch
+import random
+import itertools
 import argparse
 import numpy as np
+import individual_param
+import quadr_interpolation
+import layer_params
+import q_interpolation_layers
 from paths import *
 from torch import optim as optim
 from torch.optim.lr_scheduler import StepLR
-
 
 mpl_logger = logging.getLogger("matplotlib")
 mpl_logger.setLevel(logging.WARNING)
@@ -134,4 +140,81 @@ def sample(indexes, n_samples=30):
             count += 1
 
     return samples
+
+
+def _run_interpolation(idxs, args):
+    if args.single:
+        layer_params.run_layers(args)
+    if args.quadratic:
+        q_interpolation_layers.run_quadr_interpol_layers(args)
+
+    for i in idxs:
+        args.idxs = i
+        logger.debug(f"layer: {args.layer}, idxs: {idxs}")
+        if args.single:
+            individual_param.run_single(args)
+        if args.quadratic:
+            quadr_interpolation.run_quadr_interpolation(args)
+
+
+def run_all(args):
+    """
+        Runs linear and quadratic interpolation automatically over all layers
+        and chosen number of parameters.
+
+        Warning: Works only for model architecture specified in net.py
+
+        :param args: experiment parameters
+    """
+    """-------------- CONV1 --------------"""
+    aux = [list(np.arange(0, 6)), [0], list(np.arange(0, 3)), list(np.arange(0, 3))]
+    conv1_idxs = list(itertools.product(*aux))
+    conv1_idxs = random.sample(conv1_idxs, args.auto_n)
+    logger.debug(f"Number of parameters to be examined in layer conv1: {len(conv1_idxs)}")
+
+    args.layer = "conv1"
+
+    _run_interpolation(conv1_idxs, args)
+
+    """-------------- CONV2 --------------"""
+    aux = [list(np.arange(0, 6)), list(np.arange(0, 6)), list(np.arange(0, 3)), list(np.arange(0, 3))]
+    conv2_idxs = list(itertools.product(*aux))
+    conv2_idxs = random.sample(conv2_idxs, args.auto_n)
+    logger.debug(f"Number of parameters to be examined in conv2 layer: {len(conv2_idxs)}")
+
+    args.layer = "conv2"
+
+    _run_interpolation(conv2_idxs, args)
+
+    """-------------- FC1 --------------"""
+    aux = [list(np.arange(0, 120)), list(np.arange(0, 576))]
+    fc1_idxs = list(itertools.product(*aux))
+    fc1_idxs = random.sample(fc1_idxs, args.auto_n)
+    logger.debug(f"Number of parameters to be examined in fc1 layer: {len(fc1_idxs)}")
+
+    args.layer = "fc1"
+
+    _run_interpolation(fc1_idxs, args)
+
+    """-------------- FC2 --------------"""
+    aux = [list(np.arange(0, 84)), list(np.arange(0, 120))]
+    fc2_idxs = list(itertools.product(*aux))
+    fc2_idxs = random.sample(fc2_idxs, args.auto_n)
+    logger.debug(f"Number of parameters to be examined in fc2 layer: {len(fc2_idxs)}")
+
+    args.layer = "fc2"
+
+    _run_interpolation(fc2_idxs, args)
+
+    """-------------- FC3 --------------"""
+    aux = [list(np.arange(0, 10)), list(np.arange(0, 84))]
+    fc3_idxs = list(itertools.product(*aux))
+    fc3_idxs = random.sample(fc3_idxs, args.auto_n)
+    logger.debug(f"Number of parameters to be examined in fc3 layer: {len(fc3_idxs)}")
+
+    args.layer = "fc3"
+
+    _run_interpolation(fc3_idxs, args)
+
+    sys.exit(0)
 

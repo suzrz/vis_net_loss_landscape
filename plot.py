@@ -434,16 +434,3 @@ def surface3d_rand_dirs():
         #fig.savefig(result_base + '_' + surf_name + "_3D_surface.pdf",
         #            dpi=300, bbox_inches="tight", format="pdf")
         """
-
-
-x = np.linspace(-1.5, 1.5, 40)
-d = map_distance(single)
-plot_single(x, "conv1", d, True)
-plot_single(x, "conv2", d, True)
-plot_single(x, "fc1", d, True)
-plot_single(x, "fc2", d, True)
-plot_single(x, "fc3", d, True)
-
-x_v = np.linspace(0, 1, 40)
-d = map_distance(vec)
-plot_vec_all_la(x_v, d, True)

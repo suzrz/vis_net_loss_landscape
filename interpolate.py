@@ -139,7 +139,7 @@ class Interpolator:
         Method interpolates all parameters of the model and after each interpolation step evaluates the
         performance of the model
 
-        :param test_loader: test loader object
+        :param test_loader: test loader loader
         """
 
         if not loss_path.exists() or not acc_path.exists():
@@ -160,6 +160,48 @@ class Interpolator:
 
             np.savetxt(loss_path, v_loss_list)
             np.savetxt(acc_path, acc_list)
+            self.model.load_state_dict(self.theta_f)
+
+    def q_interpolate_all(self, test_loader):
+        """
+        Method interpolates all parameters of the model using the quadratic interpolation
+        and after each interpolation step evaluates the performance of the model.
+
+        :param test_loader: test data set loader
+        """
+        if not q_loss_path.exists() or not q_acc_path.exists():
+            v_loss_list = []
+            acc_list = []
+            layers = ["conv1.weight", "conv1.bias", "conv2.weight", "conv2.bias", "fc1.weight",
+                      "fc1.bias", "fc2.weight", "fc2.bias", "fc3.weight", "fc3.bias"]
+            start_a = 0
+            mid_a = 0.5
+            end_a = 1
+            logger.debug(f"Start: {start_a}\n"
+                         f"Mid: {mid_a}\n"
+                         f"End: {end_a}")
+
+            self.model.load_state_dict(self.theta_f)
+            for alpha_act in self.alpha:
+                for layer in layers:
+                    start_p = self.theta_i[layer].cpu()
+                    mid_p = copy.deepcopy(
+                        torch.load(os.path.join(checkpoints, "checkpoint_7"))[layer]).cpu()
+                    end_p = self.theta_f[layer].cpu()
+
+                    start = [start_a, start_p]
+                    mid = [mid_a, mid_p]
+                    end = [end_a, end_p]
+
+                    self.calc_theta_vec_q(layer, alpha_act, start, mid, end)
+                    self.model.load_state_dict(self.theta)
+
+                loss, acc = net.test(self.model, test_loader, self.device)
+                v_loss_list.append(loss)
+                acc_list.append(acc)
+
+            np.savetxt(q_loss_path, v_loss_list)
+            np.savetxt(q_acc_path, acc_list)
             self.model.load_state_dict(self.theta_f)
 
     def single_acc_vloss(self, test_loader, layer, idxs):
@@ -268,9 +310,7 @@ class Interpolator:
             start_p = self.theta_i[layer + ".weight"][idxs].cpu()
             mid_p = copy.deepcopy(torch.load(Path(os.path.join(checkpoints, "checkpoint_7"))))[layer + ".weight"][idxs].cpu()
             end_p = self.theta_f[layer + ".weight"][idxs].cpu()
-            #start_loss = np.loadtxt(actual_loss_path)[0]
-            #mid_loss = np.loadtxt(actual_loss_path)[6]
-            #end_loss = np.loadtxt(actual_loss_path)[-1]
+
             logger.debug(f"Start loss: {start_p}\n"
                          f"Mid loss: {mid_p}\n"
                          f"End loss: {end_p}")
@@ -444,12 +484,23 @@ class Interpolator:
                     except IndexError:
                         continue
             """
+            start_a = 0
+            mid_a = 0.5
+            end_a = 1
+            logger.debug(f"Start: {start_a}\n"
+                         f"Mid: {mid_a}\n"
+                         f"End: {end_a}")
+
             start_p = self.theta_i[layer + ".weight"].cpu()
             mid_p = copy.deepcopy(torch.load(os.path.join(checkpoints, "checkpoint_7"))[layer + ".weight"]).cpu()
             end_p = self.theta_f[layer + ".weight"].cpu()
 
+            start = [start_a, start_p]
+            mid = [mid_a, mid_p]
+            end = [end_a, end_p]
+
             for alpha_act in self.alpha:
-                self.calc_theta_vec(layer+".weight", alpha_act)
+                self.calc_theta_vec_q(layer+".weight", alpha_act, start, mid, end)
 
                 self.model.load_state_dict(self.theta)
                 logger.debug(f"Getting validation loss and accuracy for alpha = {alpha_act}")

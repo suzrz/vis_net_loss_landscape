@@ -145,8 +145,8 @@ def sample(indexes, n_samples=30):
 def _run_interpolation(idxs, args):
     if args.single:
         layer_params.run_layers(args)
-    if args.quadratic:
-        q_interpolation_layers.run_quadr_interpol_layers(args)
+    #if args.quadratic:
+    #    q_interpolation_layers.run_quadr_interpol_layers(args)
 
     for i in idxs:
         args.idxs = i

@@ -4,6 +4,8 @@ import layer_params
 import individual_param
 import random_directions
 import quadr_interpolation
+import l_interpolate_all
+import q_interpolate_all
 from paths import *
 
 logger = logging.getLogger("vis_net")
@@ -19,6 +21,10 @@ logging.basicConfig(level=lvl, format="%(asctime)s - %(name)s - %(levelname)s - 
                     filename="vis_net.log")
 
 init_dirs()
+
+logger.info(f"Executing interpolation of whole model.")
+l_interpolate_all.run_complete_interpolation(args)
+#q_interpolate_all.run_complete_quadratic_interpolation(args)
 
 if args.auto:
     logger.info("Executing experiments automatically")

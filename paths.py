@@ -59,6 +59,10 @@ sf_acc_path = Path(os.path.join(results, "final_acc"))
 loss_path = Path(os.path.join(results), "loss_all")
 acc_path = Path(os.path.join(results), "acc_all")
 
+# quadratic interpolation
+q_loss_path = Path(os.path.join(results), "q_loss_all")
+q_acc_path = Path(os.path.join(results), "q_acc_all")
+
 # single loss experiments paths
 svloss_path = Path(os.path.join(single, "svloss"))  # results\svloss
 svloss_img_path = Path(os.path.join(single_img, "svloss"))

@@ -312,15 +312,16 @@ def plot_vec_all_la(x, distance_dict, show=False):
     ax2.set_xlabel(r"$\alpha$")
 
     for file in files:
-        if not re.search("distance", file):
+        if not re.search("distance", file) and not re.search("q", file):
             lab = file.split('_')
             k = file + "_distance"
             try:
                 if re.search("loss", file):
-                    ax.plot(x, np.loadtxt(os.path.join(vec, file)), label=lab[-1], lw=1)
+                    ax.plot(x, np.loadtxt(os.path.join(vec, file)), label=lab[-1], lw=1, alpha=distance_dict[k])
                 if re.search("acc", file):
-                    ax2.plot(x, np.loadtxt(os.path.join(vec, file)), lw=1)
+                    ax2.plot(x, np.loadtxt(os.path.join(vec, file)), lw=1, alpha=distance_dict[k])
             except KeyError:
+                logger.warning(f"Missing key {k} in opacity dict, will not plot line for {file}")
                 continue
 
     ax.plot(x, np.loadtxt(loss_path), label="all", color=color_trained, linewidth=1)
@@ -335,6 +336,33 @@ def plot_vec_all_la(x, distance_dict, show=False):
         plt.show()
     plt.close("all")
 
+
+def plot_lin_quad_real(show=False):
+    alpha = np.linspace(0, 1, 40)
+    epochs = np.arange(0, 14)
+
+    lin = np.loadtxt(loss_path)
+    quadr = np.loadtxt(q_loss_path)
+    real = np.loadtxt(actual_loss_path)
+
+    fig, ax1 = plt.subplots()
+
+    ax2 = ax1.twiny()
+
+    c1, = ax1.plot(alpha, lin, label="Linear interpolation", color="orange")
+    c2, = ax1.plot(alpha, quadr, label="Quadratic interpolation", color="blue")
+    c3, = ax2.plot(epochs, real, label="Real values", color="black")
+
+    curves = [c1, c2, c3]
+    ax2.legend(curves, [curve.get_label() for curve in curves])
+
+    ax1.set_xlabel(r"$\alpha$")
+    ax2.set_xlabel("Epochs")
+    ax1.set_ylabel("Validation Loss")
+
+    plt.savefig(os.path.join(vec_img, "lin_quadr_real.pdf"), format="pdf")
+    if show:
+        plt.show()
 
 def plot_surface_contours(data, levels=50, show=False):
     plt.contour(data, levels)

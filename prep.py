@@ -236,5 +236,7 @@ def run_all(args):
     dv = plot.map_distance(vec)
     plot.plot_vec_all_la(x, dv, args.show)
 
+    plot.plot_lin_quad_real(args.show)
+
     sys.exit(0)
 

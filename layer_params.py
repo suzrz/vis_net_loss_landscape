@@ -12,7 +12,7 @@ def run_layers(args):
 
     :param args: experimental setup
     """
-    alpha = np.linspace(args.alpha_start, args.alpha_end, args.alpha_steps)
+    alpha = np.linspace(0, 1, args.alpha_steps)
     logger.debug(f"Interpolation coefficient alpha "
                  f"start: {args.alpha_start}"
                  f"end: {args.alpha_end}"
@@ -28,4 +28,5 @@ def run_layers(args):
 
     interpolate = Interpolator(model, device, alpha, final_state, init_state)
 
-    interpolate.vec_acc_vlos(test_loader, args.layer, args.trained)
+    interpolate.interpolate_all(test_loader)
+    #interpolate.vec_acc_vlos(test_loader, args.layer, args.trained)

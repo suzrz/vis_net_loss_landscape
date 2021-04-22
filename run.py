@@ -24,7 +24,7 @@ init_dirs()
 
 logger.info(f"Executing interpolation of whole model.")
 l_interpolate_all.run_complete_interpolation(args)
-#q_interpolate_all.run_complete_quadratic_interpolation(args)
+q_interpolate_all.run_complete_quadratic_interpolation(args)
 
 if args.auto:
     logger.info("Executing experiments automatically")

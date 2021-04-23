@@ -6,10 +6,14 @@ import matplotlib.pyplot as plt
 from paths import *
 from matplotlib import cm
 from mpl_toolkits.mplot3d import Axes3D
+from matplotlib.font_manager import FontProperties
 
 color_loss = "red"
 color_trained = "dimgrey"
 color_acc = "blue"
+
+font = FontProperties()
+font.set_size(15)
 
 
 def plot_line(x, y, xlabel, ylabel, annotate=False, color="blue"):
@@ -18,10 +22,10 @@ def plot_line(x, y, xlabel, ylabel, annotate=False, color="blue"):
 
     if xlabel:
         logging.debug("[plot]: xlabel = {}".format(xlabel))
-        ax.set_xlabel(xlabel)
+        ax.set_xlabel(xlabel, fontproperties=font)
     if ylabel:
         logging.debug("[plot]: ylabel = {}".format(ylabel))
-        ax.set_ylabel(ylabel)
+        ax.set_ylabel(ylabel, fontproperties=font)
 
     ax.plot(x, y, ".-", color=color, linewidth=1)
 
@@ -76,8 +80,8 @@ def plot_box(x, loss_only=False, acc_only=False, show=False, xlabel=None):
 
         loss = np.loadtxt(epochs_loss)
 
-        ax.set_ylabel("Validation loss")
-        ax.set_xlabel(xlabel)
+        ax.set_ylabel("Validation loss", fontproperties=font)
+        ax.set_xlabel(xlabel, fontproperties=font)
         ax.set_xticklabels(x)
         ax.spines["right"].set_visible(False)
         ax.spines["top"].set_visible(False)
@@ -96,8 +100,8 @@ def plot_box(x, loss_only=False, acc_only=False, show=False, xlabel=None):
 
         acc = np.loadtxt(epochs_acc)
 
-        ax.set_ylabel("Accuracy")
-        ax.set_xlabel(xlabel)
+        ax.set_ylabel("Accuracy", fontproperties=font)
+        ax.set_xlabel(xlabel, fontproperties=font)
         ax.set_xticklabels(x)
         ax.spines["right"].set_visible(False)
         ax.spines["top"].set_visible(False)
@@ -129,8 +133,8 @@ def plot_one_param(alpha, loss, acc, loss_img_path, acc_img_path, loss_only=Fals
 
         ax.plot(alpha, loss, ".-", color=color_loss, label="Validation loss with one parameter modified",
                 linewidth=1)
-        ax.set_xlabel(r"$\alpha$")
-        ax.set_ylabel("Validation loss")
+        ax.set_xlabel(r"$\alpha$", fontproperties=font)
+        ax.set_ylabel("Validation loss", fontproperties=font)
         ax.spines["right"].set_visible(False)
         ax.spines["top"].set_visible(False)
         ax.tick_params(axis='x', colors=color_loss)
@@ -142,7 +146,7 @@ def plot_one_param(alpha, loss, acc, loss_img_path, acc_img_path, loss_only=Fals
             ax2 = ax.twiny()
             ax2.plot(range(len(trained_loss)), trained_loss, "-", color=color_trained, linewidth=1, linestyle="dashed")
             ax2.xaxis.tick_top()
-            ax2.set_xlabel("Epochs")
+            ax2.set_xlabel("Epochs", fontproperties=font)
             ax2.xaxis.set_label_position("top")
             ax2.tick_params(axis='x', colors=color_trained)
 
@@ -155,8 +159,8 @@ def plot_one_param(alpha, loss, acc, loss_img_path, acc_img_path, loss_only=Fals
         trained_accuracy = np.loadtxt(os.path.join(results, "actual_acc"))
 
         ax.plot(alpha, acc, ".-", color=color_acc, label="Accuracy with one parameter modified", linewidth=1)
-        ax.set_xlabel(r"$\alpha$")
-        ax.set_ylabel("Accuracy")
+        ax.set_xlabel(r"$\alpha$", fontproperties=font)
+        ax.set_ylabel("Accuracy", fontproperties=font)
         ax.spines["right"].set_visible(False)
         ax.spines["top"].set_visible(False)
         ax.tick_params(axis='x', colors=color_acc)
@@ -168,7 +172,7 @@ def plot_one_param(alpha, loss, acc, loss_img_path, acc_img_path, loss_only=Fals
             ax2.plot(range(len(trained_accuracy)), trained_accuracy, "-", color=color_trained, linewidth=1,
                      linestyle="dashed")
             ax2.xaxis.tick_top()
-            ax2.set_xlabel("Epochs")
+            ax2.set_xlabel("Epochs", fontproperties=font)
             ax2.xaxis.set_label_position("top")
             ax2.tick_params(axis='x', colors=color_trained)
 
@@ -221,6 +225,7 @@ def plot_single(x, layer, opacity_dict, show=False):
     """
     files = os.listdir(single)
 
+
     fig = plt.figure(figsize=(8, 6))
     ax = fig.add_subplot()
 
@@ -233,8 +238,8 @@ def plot_single(x, layer, opacity_dict, show=False):
             lab = file.split("_")  # get label (parameter position)
             ax.plot(x, np.loadtxt(os.path.join(single, file)), label=lab[-1], alpha=opacity_dict[k], color="blueviolet")
 
-    ax.set_ylabel("Validation loss")
-    ax.set_xlabel(r"$\alpha$")
+    ax.set_ylabel("Validation loss", fontproperties=font)
+    ax.set_xlabel(r"$\alpha$", fontproperties=font)
 
     plt.savefig("{}.pdf".format(os.path.join(single_img, layer)), format="pdf")
 
@@ -268,8 +273,8 @@ def plot_vec_in_one(x, metric, opacity_dict, show=False):
             k = file + "_distance"
             lab = file.split('_')
             ax.plot(x, np.loadtxt(os.path.join(vec, file)), label=lab[-1], alpha=opacity_dict[k])
-            ax.set_xlabel(r"$\alpha$")
-            ax.set_ylabel(label)
+            ax.set_xlabel(r"$\alpha$", fontproperties=font)
+            ax.set_ylabel(label, fontproperties=font)
 
     actual = actual_loss_path if metric == "loss" else actual_acc_path
     actual = np.loadtxt(actual)
@@ -291,7 +296,7 @@ def plot_vec_in_one(x, metric, opacity_dict, show=False):
     plt.close("all")
 
 
-def plot_vec_all_la(x, distance_dict, show=False):
+def plot_vec_all_la(x, show=False):
     """
     Function plots all performance of the model with modified layers in one figure
 
@@ -317,9 +322,9 @@ def plot_vec_all_la(x, distance_dict, show=False):
             k = file + "_distance"
             try:
                 if re.search("loss", file):
-                    ax.plot(x, np.loadtxt(os.path.join(vec, file)), label=lab[-1], lw=1, alpha=distance_dict[k])
+                    ax.plot(x, np.loadtxt(os.path.join(vec, file)), label=lab[-1], lw=1)
                 if re.search("acc", file):
-                    ax2.plot(x, np.loadtxt(os.path.join(vec, file)), lw=1, alpha=distance_dict[k])
+                    ax2.plot(x, np.loadtxt(os.path.join(vec, file)), lw=1)
             except KeyError:
                 logger.warning(f"Missing key {k} in opacity dict, will not plot line for {file}")
                 continue
@@ -356,13 +361,14 @@ def plot_lin_quad_real(show=False):
     curves = [c1, c2, c3]
     ax2.legend(curves, [curve.get_label() for curve in curves])
 
-    ax1.set_xlabel(r"$\alpha$")
-    ax2.set_xlabel("Epochs")
-    ax1.set_ylabel("Validation Loss")
+    ax1.set_xlabel(r"$\alpha$", fontproperties=font)
+    ax2.set_xlabel("Epochs", fontproperties=font)
+    ax1.set_ylabel("Validation Loss", fontproperties=font)
 
     plt.savefig(os.path.join(vec_img, "lin_quadr_real.pdf"), format="pdf")
     if show:
         plt.show()
+    plt.close("all")
 
 def plot_surface_contours(data, levels=50, show=False):
     plt.contour(data, levels)
@@ -372,6 +378,7 @@ def plot_surface_contours(data, levels=50, show=False):
         plt.show()
 
     plt.savefig(Path(os.path.join(random_dirs_img, "contour.pdf"), format="pdf"))
+    plt.close("all")
 
 
 def contour_path(steps, loss_grid, coords, pcvariances):
@@ -389,6 +396,7 @@ def contour_path(steps, loss_grid, coords, pcvariances):
     plt.show()
 
     plt.savefig(f, format="pdf")
+    plt.close("all")
 
 
 def surface_3d(data, steps, show=False):
@@ -404,6 +412,7 @@ def surface_3d(data, steps, show=False):
         fig.show()
 
     plt.savefig(Path(os.path.join(random_dirs_img, f"surface_{steps}.pdf"), format="pdf"))
+    plt.close("all")
 
 def surface3d_rand_dirs():
     # vmin = 0

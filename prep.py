@@ -233,8 +233,7 @@ def run_all(args):
 
     # plot all layers in one
     xv = np.linspace(0, 1, args.alpha_steps, args.show)
-    dv = plot.map_distance(vec)
-    plot.plot_vec_all_la(x, dv, args.show)
+    plot.plot_vec_all_la(x, args.show)
 
     plot.plot_lin_quad_real(args.show)
 

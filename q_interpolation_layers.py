@@ -18,6 +18,6 @@ def run_quadr_interpol_layers(args):
 
     model = prep.get_net(device, train_loader, test_loader, args.epochs)
 
-    interpolate = Interpolator(model, device, alpha, final_state, init_state)
+    interpolate = Examinator1D(model, device, alpha, final_state, init_state)
 
-    interpolate.vec_acc_vloss_q(test_loader, args.layer)
+    interpolate.layers_quadratic(test_loader, args.layer)

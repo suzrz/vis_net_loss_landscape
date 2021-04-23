@@ -25,7 +25,7 @@ def parabola(x, a, b, c):
     return a*x**2 + b*x + c
 
 
-class Interpolator:
+class Examinator1D:
     def __init__(self, model, device, alpha, final_state_path, init_state_path):
         self.model = model
         self.device = device
@@ -41,9 +41,9 @@ class Interpolator:
         logger.debug(f"Final state path: {final_state_path}")
         logger.debug(f"Init state path: {init_state_path}")
 
-    def calc_distance(self, layer, idxs=None):
+    def __calc_distance(self, layer, idxs=None):
         """
-        Method calculates distance between parameters
+        Method calculates distance between initial and final parameters
 
         :param layer: layer
         :param idxs: position of parameter
@@ -54,7 +54,7 @@ class Interpolator:
         else:
             return torch.dist(self.theta_f[layer][idxs], self.theta_i[layer][idxs])
 
-    def calc_theta_single(self, layer, idxs, alpha):
+    def __calc_theta_single(self, layer, idxs, alpha):
         """
         Method calculates interpolation of a single parameter with respect to interpolation coefficient alpha
 
@@ -70,7 +70,7 @@ class Interpolator:
         logger.debug(f"Modified theta:\n"
                      f"{self.theta[layer][idxs]}")
 
-    def calc_theta_single_q(self, layer, idxs, alpha, start, mid, end):
+    def __calc_theta_single_q(self, layer, idxs, alpha, start, mid, end):
         """
         Method calculates quadratic interpolation of a single parameter with respect to interpolation coefficient
         alpha
@@ -104,7 +104,7 @@ class Interpolator:
                      f"{self.theta[layer][idxs]}")
 
 
-    def calc_theta_vec(self, layer, alpha):
+    def __calc_theta_vec(self, layer, alpha):
         """
         Method calculates interpolation of parameters of one layer with respect to interpolation coefficient alpha
 
@@ -116,7 +116,7 @@ class Interpolator:
         self.theta[layer] = torch.add((torch.mul(self.theta_i[layer], (1.0 - alpha))),
                                       torch.mul(self.theta_f[layer], alpha))
 
-    def calc_theta_vec_q(self, layer, alpha, start, mid, end):
+    def __calc_theta_vec_q(self, layer, alpha, start, mid, end):
         logger.debug(f"Calculating quadr: {layer} for alpha = {alpha}")
         xdata = [start[0], mid[0], end[0]]
         logger.debug(f"XDATA: {xdata}")
@@ -132,7 +132,7 @@ class Interpolator:
         logger.debug(f"Modified theta:\n"
                      f"{self.theta[layer]}")
 
-    def interpolate_all(self, test_loader):
+    def interpolate_all_linear(self, test_loader):
         """
         Method interpolates all parameters of the model and after each interpolation step evaluates the
         performance of the model
@@ -149,7 +149,7 @@ class Interpolator:
             self.model.load_state_dict(self.theta_f)
             for alpha_act in self.alpha:
                 for layer in layers:
-                    self.calc_theta_vec(layer, alpha_act)
+                    self.__calc_theta_vec(layer, alpha_act)
                     self.model.load_state_dict(self.theta)
 
                 loss, acc = net.test(self.model, test_loader, self.device)
@@ -160,7 +160,7 @@ class Interpolator:
             np.savetxt(acc_path, acc_list)
             self.model.load_state_dict(self.theta_f)
 
-    def q_interpolate_all(self, test_loader):
+    def interpolate_all_quadratic(self, test_loader):
         """
         Method interpolates all parameters of the model using the quadratic interpolation
         and after each interpolation step evaluates the performance of the model.
@@ -184,14 +184,14 @@ class Interpolator:
                 for layer in layers:
                     start_p = self.theta_i[layer].cpu()
                     mid_p = copy.deepcopy(
-                        torch.load(os.path.join(checkpoints, "checkpoint_7"))[layer]).cpu()
+                        torch.load(os.path.join(checkpoints, "checkpoint_6"))[layer]).cpu()
                     end_p = self.theta_f[layer].cpu()
 
                     start = [start_a, start_p]
                     mid = [mid_a, mid_p]
                     end = [end_a, end_p]
 
-                    self.calc_theta_vec_q(layer, alpha_act, start, mid, end)
+                    self.__calc_theta_vec_q(layer, alpha_act, start, mid, end)
                     self.model.load_state_dict(self.theta)
 
                 loss, acc = net.test(self.model, test_loader, self.device)
@@ -202,7 +202,7 @@ class Interpolator:
             np.savetxt(q_acc_path, acc_list)
             self.model.load_state_dict(self.theta_f)
 
-    def single_acc_vloss(self, test_loader, layer, idxs):
+    def individual_param_linear(self, test_loader, layer, idxs):
         """
         Method interpolates individual parameter of the model and evaluates the model after each interpolation
         step
@@ -237,7 +237,7 @@ class Interpolator:
 
             self.model.load_state_dict(self.theta_f)
             for alpha_act in self.alpha:
-                self.calc_theta_single(layer + ".weight", idxs, alpha_act)
+                self.__calc_theta_single(layer + ".weight", idxs, alpha_act)
 
                 self.model.load_state_dict(self.theta)
 
@@ -255,7 +255,7 @@ class Interpolator:
         if not dist.exists():
             logger.info(f"Calculating distance for: {layer} {idxs}")
 
-            distance = self.calc_distance(layer + ".weight", idxs)
+            distance = self.__calc_distance(layer + ".weight", idxs)
             logger.info(f"Distance: {distance}")
 
             with open(dist, 'w') as f:
@@ -268,7 +268,7 @@ class Interpolator:
 
         return
 
-    def single_acc_vloss_q(self, test_loader, layer, idxs):
+    def individual_param_quadratic(self, test_loader, layer, idxs):
         """
         Method interpolates individual parameter of the model and evaluates the performance of the model when the
         interpolated parameter replaces its original in the parameters of the model
@@ -322,7 +322,7 @@ class Interpolator:
 
             self.model.load_state_dict(self.theta_f)
             for alpha_act in self.alpha:
-                self.calc_theta_single_q(layer + ".weight", idxs, alpha_act, start, mid, end)
+                self.__calc_theta_single_q(layer + ".weight", idxs, alpha_act, start, mid, end)
 
                 self.model.load_state_dict(self.theta)
 
@@ -344,7 +344,7 @@ class Interpolator:
 
         return
 
-    def vec_acc_vlos(self, test_loader, layer, trained=False):
+    def layers_linear(self, test_loader, layer, trained=False):
         """
         Method interpolates parameters of selected layer of the model and evaluates the model after each interpolation
         step
@@ -379,8 +379,8 @@ class Interpolator:
 
             self.model.load_state_dict(self.theta_f)
             for alpha_act in self.alpha:
-                self.calc_theta_vec(layer + ".weight", alpha_act)
-                self.calc_theta_vec(layer + ".bias", alpha_act)
+                self.__calc_theta_vec(layer + ".weight", alpha_act)
+                self.__calc_theta_vec(layer + ".bias", alpha_act)
 
                 self.model.load_state_dict(self.theta)
                 logger.debug(f"Getting validation loss and accuracy for alpha = {alpha_act}")
@@ -396,7 +396,7 @@ class Interpolator:
         if not dist.exists():
             logger.info(f"Calculating distance for: {layer}")
 
-            distance = self.calc_distance(layer + ".weight")
+            distance = self.__calc_distance(layer + ".weight")
             logger.info(f"Distance: {distance}")
 
             with open(dist, 'w') as f:
@@ -409,7 +409,7 @@ class Interpolator:
 
         return
 
-    def vec_acc_vloss_q(self, test_loader, layer, trained=False):
+    def layers_quadratic(self, test_loader, layer, trained=False):
         loss_res = Path("{}_{}_q".format(vvloss_path, layer))
         loss_img = Path("{}_{}_q".format(vvloss_img_path, layer))
 
@@ -436,59 +436,6 @@ class Interpolator:
                          f"Mid: {mid_a}\n"
                          f"End: {end_a}")
 
-            """
-            if layer == "conv1":
-                aux = [list(np.arange(0, 6)), [0], list(np.arange(0, 3)), list(np.arange(0, 3))]
-                idxs = list(itertools.product(*aux))
-            elif layer == "conv2":
-                aux = [list(np.arange(0, 6)), list(np.arange(0, 6)), list(np.arange(0, 3)), list(np.arange(0, 3))]
-                idxs = list(itertools.product(*aux))
-            elif layer == "fc1":
-                aux = [list(np.arange(0, 120)), list(np.arange(0, 576))]
-                idxs = list(itertools.product(*aux))
-            elif layer == "fc2":
-                aux = [list(np.arange(0, 84)), list(np.arange(0, 120))]
-                idxs = list(itertools.product(*aux))
-            elif layer == "fc3":
-                aux = [list(np.arange(0, 10)), list(np.arange(0, 84))]
-                idxs = list(itertools.product(*aux))
-
-            self.model.load_state_dict(self.theta_f)
-
-            for alpha_act in self.alpha:
-                for i in idxs:
-                    try:
-                        start_p = self.theta_i[layer + ".weight"][i].cpu()
-                        mid_p = copy.deepcopy(torch.load(Path(os.path.join(checkpoints, "checkpoint_7"))))[layer + ".weight"][i].cpu()
-                        end_p = self.theta_f[layer + ".weight"][i].cpu()
-                        # start_loss = np.loadtxt(actual_loss_path)[0]
-                        # mid_loss = np.loadtxt(actual_loss_path)[6]
-                        # end_loss = np.loadtxt(actual_loss_path)[-1]
-                        logger.debug(f"Start loss: {start_p}\n"
-                                     f"Mid loss: {mid_p}\n"
-                                     f"End loss: {end_p}")
-
-                        start = [start_a, start_p]
-                        mid = [mid_a, mid_p]
-                        end = [end_a, end_p]
-                        logger.debug(f"Start: {start}\n"
-                                     f"Mid: {mid}\n"
-                                     f"End: {end}")
-
-                        print(idxs)
-
-                        self.calc_theta_single_q(layer + ".weight", i, alpha_act, start, mid, end)
-                    #self.calc_theta_vec_q(layer + ".bias", alpha_act)  # TODO start, mid, end pro bias
-                    except IndexError:
-                        continue
-            """
-            start_a = 0
-            mid_a = 0.5
-            end_a = 1
-            logger.debug(f"Start: {start_a}\n"
-                         f"Mid: {mid_a}\n"
-                         f"End: {end_a}")
-
             start_p = self.theta_i[layer + ".weight"].cpu()
             mid_p = copy.deepcopy(torch.load(os.path.join(checkpoints, "checkpoint_6"))[layer + ".weight"]).cpu()
             end_p = self.theta_f[layer + ".weight"].cpu()
@@ -498,7 +445,7 @@ class Interpolator:
             end = [end_a, end_p]
 
             for alpha_act in self.alpha:
-                self.calc_theta_vec_q(layer+".weight", alpha_act, start, mid, end)
+                self.__calc_theta_vec_q(layer + ".weight", alpha_act, start, mid, end)
 
                 self.model.load_state_dict(self.theta)
                 logger.debug(f"Getting validation loss and accuracy for alpha = {alpha_act}")
@@ -517,100 +464,3 @@ class Interpolator:
         self.model.load_state_dict(self.theta_f)
 
         return
-
-
-    def set_surf_file(self):
-        """
-        Method prepares file with loss function values in point of view of set directions
-        """
-
-        xmin, xmax, xnum = self.alpha[0], self.alpha[-1], len(self.alpha)
-        ymin, ymax, ynum = self.alpha[0], self.alpha[-1], len(self.alpha)
-
-        with h5py.File(surf, 'a') as fd:
-            xcoord = np.linspace(xmin, xmax, xnum)
-            fd["xcoordinates"] = xcoord
-
-            ycoord = np.linspace(ymin, ymax, ynum)
-            fd["ycoordinates"] = ycoord
-
-            shape = (len(xcoord), len(ycoord))
-            losses = -np.ones(shape=shape)
-
-            fd["val_loss"] = losses
-
-            return
-
-    def get_indices(self, vals, xcoords, ycoords):
-        idxs = np.array(range(vals.size))
-        idxs = idxs[vals.ravel() <= 0]
-
-        xcoords_mesh, ycoords_mesh = np.meshgrid(xcoords, ycoords)
-        s1 = xcoords_mesh.ravel()[idxs]
-        s2 = ycoords_mesh.ravel()[idxs]
-
-        return idxs, np.c_[s1, s2]
-
-    def update_weights(self, directions, step):
-        dx = directions[0]
-        dy = directions[1]
-        theta_i = [p.data for p in self.model.parameters()]
-
-        changes = [d0 * step[0] + d1 * step[1] for (d0, d1) in zip(dx, dy)]
-
-        for (p, w, d) in zip(self.model.parameters(), theta_i, changes):
-            p.data = w.to(self.device) + d.clone().detach().requires_grad_(True)
-
-    def rand_dirs(self, test_loader):
-        if not surf.exists():
-            self.set_surf_file()
-
-        self.model.load_state_dict(self.theta_f)
-        if surf.exists():
-            dirs = surface.random_directions(self.model, self.device)
-
-            with h5py.File(surf, "r+") as fd:
-                xcoords = fd["xcoordinates"][:]
-                ycoords = fd["ycoordinates"][:]
-                losses = fd["val_loss"][:]
-
-                idxs, coords = self.get_indices(losses, xcoords, ycoords)
-
-                for count, idx in enumerate(idxs):
-                    coord = coords[count]
-
-                    self.update_weights(dirs, coord)
-                    loss, _ = net.test(self.model, test_loader, self.device)
-                    losses.ravel()[idx] = loss
-                    fd["val_loss"][:] = losses
-                    fd.flush()
-
-    def get_final_loss_acc(self, test_loader):
-        """
-        Method gets final validation loss and accuracy of the model
-
-        :param test_loader: test loader
-        :return: final validation loss, final accuracy
-        """
-        if sf_loss_path.exists() and sf_acc_path.exists():
-            return np.loadtxt(sf_loss_path), np.loadtxt(sf_acc_path)
-
-        if not self.model.load_state_dict(self.theta_f):
-            print("[interpolator.get_final_loss_acc]: loading final state parameters has failed")
-            return None
-
-        loss, acc = net.test(self.model, test_loader, self.device)
-        loss = np.broadcast_to(loss, self.alpha.shape)
-        acc = np.broadcast_to(acc, self.alpha.shape)
-
-        np.savetxt(sf_loss_path, loss)
-        np.savetxt(sf_acc_path, acc)
-
-        return loss, acc
-
-    def print_theta(self, layer, idxs):
-        """
-        Method prints theta
-        """
-        layer = layer + ".weight"
-        print(self.theta[layer][idxs])

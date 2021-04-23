@@ -25,6 +25,6 @@ def run_single(args):
 
     model = prep.get_net(device, train_loader, test_loader, args.epochs)  # setup model
 
-    interpolate = Interpolator(model, device, alpha, final_state, init_state)  # get interpolator instance
+    interpolate = Examinator1D(model, device, alpha, final_state, init_state)  # get interpolator instance
 
-    interpolate.single_acc_vloss(test_loader, args.layer, args.idxs)  # execute the experiment
+    interpolate.individual_param_linear(test_loader, args.layer, args.idxs)  # execute the experiment

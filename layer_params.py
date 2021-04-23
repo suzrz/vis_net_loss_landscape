@@ -26,7 +26,7 @@ def run_layers(args):
 
     model = prep.get_net(device, train_loader, test_loader, args.epochs)
 
-    interpolate = Interpolator(model, device, alpha, final_state, init_state)
+    interpolate = Examinator1D(model, device, alpha, final_state, init_state)
 
-    interpolate.interpolate_all(test_loader)
-    #interpolate.vec_acc_vlos(test_loader, args.layer, args.trained)
+    interpolate.interpolate_all_linear(test_loader)
+    interpolate.layers_linear(test_loader, args.layer, args.trained)

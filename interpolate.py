@@ -490,7 +490,7 @@ class Interpolator:
                          f"End: {end_a}")
 
             start_p = self.theta_i[layer + ".weight"].cpu()
-            mid_p = copy.deepcopy(torch.load(os.path.join(checkpoints, "checkpoint_7"))[layer + ".weight"]).cpu()
+            mid_p = copy.deepcopy(torch.load(os.path.join(checkpoints, "checkpoint_6"))[layer + ".weight"]).cpu()
             end_p = self.theta_f[layer + ".weight"].cpu()
 
             start = [start_a, start_p]

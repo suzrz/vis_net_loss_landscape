@@ -29,7 +29,7 @@ linear.run_complete(args, device)
 quadratic.run_complete(args, device)
 
 if args.auto:
-    logger.info("Executing experiments automatically")
+    logger.info("Executing 1D experiments automatically")
     prep.run_all(args, device)
 
 if args.single:

@@ -28,11 +28,11 @@ def parse_arguments():
     parser.add_argument('--no-cuda', action='store_true',
                         help="Disables CUDA training.")
     parser.add_argument("--alpha-start", type=float, action="store", default=-1., nargs='?',
-                        help="Set starting point of interpolation (float, default = -1.0).")
+                        help="Set starting point of interpolation (float, default = -0.5).")
     parser.add_argument("--alpha-end", type=float, action="store", default=1., nargs='?',
-                        help="Set ending point of interpolation (float, default = 1.0).")
+                        help="Set ending point of interpolation (float, default = 1.5).")
     parser.add_argument("--alpha-steps", type=int, action="store", default=20, nargs='?',
-                        help="Set number of interpolation steps (int, default = 20).")
+                        help="Set number of interpolation steps (int, default = 40).")
     parser.add_argument("--epochs", type=int, action="store", default=14, nargs='?',
                         help="Set number of training epochs (default = 14).")
     parser.add_argument("--idxs", nargs='+', default=(0, 0, 0, 0),
@@ -40,23 +40,25 @@ def parse_arguments():
     parser.add_argument("--layer", default="conv1",
                         help="Set layer of examined parameter (default = conv1).")
     parser.add_argument("--trained", action="store_true",
-                        help="Plot difference between interpolated and actual trained results.")
+                        help="Plot difference between interpolated and actual trained results. "
+                             "Available only for layer level experiments.")
     parser.add_argument("--preliminary", action="store_true",
-                        help="Preliminary experiments will be executed.")
+                        help="Preliminary experiments execution.")
     parser.add_argument("--single", action="store_true",
-                        help="Individual parameter interpolation.")
+                        help="Individual parameter examination.")
     parser.add_argument("--layers", action="store_true",
-                        help="Interpolation of parameters of layer")
+                        help="Layer level examination.")
     parser.add_argument("--quadratic", action="store_true",
-                        help="Quadratic interpolation of individual parameter")
+                        help="Examination on both parameter and layer levels using the quadratic path.")
     parser.add_argument("--surface", action="store_true",
-                        help="Loss function surface visualization in random directions")
+                        help="Loss function surface visualization.")
     parser.add_argument("--res", type=int, action="store", default=3, nargs='?',
                         help="Sets the resolution of 2D examination (default = 3).")
     parser.add_argument("--auto", action="store_true",
-                        help="Runs the single parameters and layers experiments automatically.")
+                        help="Runs the 1D experiments automatically.")
     parser.add_argument("--auto-n", type=int, action="store", default=10, nargs='?',
-                        help="Sets number of examined parameters (default = 10).")
+                        help="Sets number of examined parameters for "
+                             "auto execution of the 1D experiments (default = 10).")
     parser.add_argument("--show", action="store_true",
                         help="Enables showing the plots. Warning: If a big number of parameters is examined, there can"
                              "be a lot of plots.")

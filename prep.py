@@ -3,13 +3,11 @@ import net
 import plot
 import torch
 import random
+import linear
 import itertools
 import argparse
 import numpy as np
-import individual_param
-import quadr_interpolation
-import layer_params
-import q_interpolation_layers
+import quadratic
 from paths import *
 from torch import optim as optim
 from torch.optim.lr_scheduler import StepLR
@@ -53,6 +51,8 @@ def parse_arguments():
                         help="Quadratic interpolation of individual parameter")
     parser.add_argument("--surface", action="store_true",
                         help="Loss function surface visualization in random directions")
+    parser.add_argument("--res", type=int, action="store", default=3, nargs='?',
+                        help="Sets the resolution of 2D examination (default = 3).")
     parser.add_argument("--auto", action="store_true",
                         help="Runs the single parameters and layers experiments automatically.")
     parser.add_argument("--auto-n", type=int, action="store", default=10, nargs='?',
@@ -131,8 +131,9 @@ def get_net(device, train_loader, test_loader, epochs):
 def sample(indexes, n_samples=30):
     samples = []
 
-    if (n_samples > len(indexes)):
-        logger.warning(f"Number of samples {n_samples} is bigger than len of sampled list {len(indexes)}. Using full set...")
+    if n_samples > len(indexes):
+        logger.warning(f"Number of samples {n_samples} is bigger than "
+                       f"len of sampled list {len(indexes)}. Using full set...")
         return indexes
 
     interval = len(indexes) // n_samples
@@ -146,22 +147,29 @@ def sample(indexes, n_samples=30):
     return samples
 
 
-def _run_interpolation(idxs, args):
+def _run_interpolation(idxs, args, device):
+    """
+    Runs the interpolation on both levels.
+
+    :param idxs: list of positions of the examined parameters
+    :param args: experiment configuration
+    :param device: device to be used
+    """
     if args.single:
-        layer_params.run_layers(args)
+        linear.run_layers(args, device)
     if args.quadratic:
-        q_interpolation_layers.run_quadr_interpol_layers(args)
+        quadratic.run_layers(args, device)
 
     for i in idxs:
         args.idxs = i
         logger.debug(f"layer: {args.layer}, idxs: {idxs}")
         if args.single:
-            individual_param.run_single(args)
+            linear.run_single(args, device)
         if args.quadratic:
-            quadr_interpolation.run_quadr_interpolation(args)
+            quadratic.run_individual(args, device)
 
 
-def run_all(args):
+def run_all(args, device):
     """
         Runs linear and quadratic interpolation automatically over all layers
         and chosen number of parameters.
@@ -169,6 +177,7 @@ def run_all(args):
         Warning: Works only for model architecture specified in net.py
 
         :param args: experiment parameters
+        :param device: device to be used
     """
     """-------------- CONV1 --------------"""
     aux = [list(np.arange(0, 6)), [0], list(np.arange(0, 3)), list(np.arange(0, 3))]
@@ -178,7 +187,7 @@ def run_all(args):
 
     args.layer = "conv1"
 
-    _run_interpolation(conv1_idxs, args)
+    _run_interpolation(conv1_idxs, args, device)
 
     """-------------- CONV2 --------------"""
     aux = [list(np.arange(0, 6)), list(np.arange(0, 6)), list(np.arange(0, 3)), list(np.arange(0, 3))]
@@ -188,7 +197,7 @@ def run_all(args):
 
     args.layer = "conv2"
 
-    _run_interpolation(conv2_idxs, args)
+    _run_interpolation(conv2_idxs, args, device)
 
     """-------------- FC1 --------------"""
     aux = [list(np.arange(0, 120)), list(np.arange(0, 576))]
@@ -198,7 +207,7 @@ def run_all(args):
 
     args.layer = "fc1"
 
-    _run_interpolation(fc1_idxs, args)
+    _run_interpolation(fc1_idxs, args, device)
 
     """-------------- FC2 --------------"""
     aux = [list(np.arange(0, 84)), list(np.arange(0, 120))]
@@ -208,7 +217,7 @@ def run_all(args):
 
     args.layer = "fc2"
 
-    _run_interpolation(fc2_idxs, args)
+    _run_interpolation(fc2_idxs, args, device)
 
     """-------------- FC3 --------------"""
     aux = [list(np.arange(0, 10)), list(np.arange(0, 84))]
@@ -218,7 +227,7 @@ def run_all(args):
 
     args.layer = "fc3"
 
-    _run_interpolation(fc3_idxs, args)
+    _run_interpolation(fc3_idxs, args, device)
 
     # prepare x-axis and opacity dictionary for plotting all parameters of a layer
     x = np.linspace(args.alpha_start, args.alpha_end, args.alpha_steps)
@@ -233,9 +242,8 @@ def run_all(args):
 
     # plot all layers in one
     xv = np.linspace(0, 1, args.alpha_steps, args.show)
-    plot.plot_vec_all_la(x, args.show)
+    plot.plot_vec_all_la(xv, args.show)
 
     plot.plot_lin_quad_real(args.show)
 
     sys.exit(0)
-

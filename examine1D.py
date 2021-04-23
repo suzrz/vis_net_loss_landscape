@@ -1,10 +1,7 @@
-import itertools
 import net
 import copy
-import h5py
 import plot
 import torch
-import surface
 import numpy as np
 import scipy.interpolate
 from paths import *
@@ -16,13 +13,15 @@ logger = logging.getLogger("vis_net")
 
 
 def convert_list2str(int_list):
+    """
+    Helper function. Converts list of ints to char string.
+
+    :param int_list: list to be converted
+    :return: converted string
+    """
     res = int(''.join(map(str, int_list)))
 
     return res
-
-
-def parabola(x, a, b, c):
-    return a*x**2 + b*x + c
 
 
 class Examinator1D:
@@ -87,13 +86,11 @@ class Examinator1D:
         logger.debug(f"XDATA: {xdata}")
         ydata = np.array([start[1], mid[1], end[1]])
         logger.debug(f"YDATA: {ydata}")
-        #self.fit_params, self.p_cov = scipy.optimize.curve_fit(parabola, xdata, ydata)
 
         poly = scipy.interpolate.lagrange(xdata, ydata)
 
         self.fit_params = Polynomial(poly).coef
         logger.debug(f"Coefficients: {self.fit_params}")
-
 
         try:
             self.theta[layer][idxs] = torch.tensor((self.fit_params[0]*(alpha**2) + self.fit_params[1]*alpha +
@@ -103,10 +100,10 @@ class Examinator1D:
         logger.debug(f"Modified theta:\n"
                      f"{self.theta[layer][idxs]}")
 
-
     def __calc_theta_vec(self, layer, alpha):
         """
-        Method calculates interpolation of parameters of one layer with respect to interpolation coefficient alpha
+        Method calculates the value of parameters on the level of layer at an interpolation point alpha,
+        using the linear interpolation.
 
         :param layer: layer
         :param alpha: interpolation coefficient
@@ -117,6 +114,16 @@ class Examinator1D:
                                       torch.mul(self.theta_f[layer], alpha))
 
     def __calc_theta_vec_q(self, layer, alpha, start, mid, end):
+        """
+        Method calculates value of the parameters on the level of layer at an interpolation point alpha,
+        using the quadratic interpolation.
+
+        :param layer: examined layer
+        :param alpha: actual interpolation coefficient value
+        :param start: first known point
+        :param mid: second known point
+        :param end: last known point
+        """
         logger.debug(f"Calculating quadr: {layer} for alpha = {alpha}")
         xdata = [start[0], mid[0], end[0]]
         logger.debug(f"XDATA: {xdata}")
@@ -304,9 +311,9 @@ class Examinator1D:
                          f"Mid: {mid_a}\n"
                          f"End: {end_a}")
 
-
             start_p = self.theta_i[layer + ".weight"][idxs].cpu()
-            mid_p = copy.deepcopy(torch.load(Path(os.path.join(checkpoints, "checkpoint_7"))))[layer + ".weight"][idxs].cpu()
+            mid_p = copy.deepcopy(torch.load(Path(os.path.join(checkpoints,
+                                                               "checkpoint_7"))))[layer + ".weight"][idxs].cpu()
             end_p = self.theta_f[layer + ".weight"][idxs].cpu()
 
             logger.debug(f"Start loss: {start_p}\n"
@@ -410,6 +417,13 @@ class Examinator1D:
         return
 
     def layers_quadratic(self, test_loader, layer, trained=False):
+        """
+        Method examines the parameters on the level of layers using the quadratic interpolation.
+
+        :param test_loader: test data set loader
+        :param layer: layer to be examined
+        :param trained: show actual state in the result
+        """
         loss_res = Path("{}_{}_q".format(vvloss_path, layer))
         loss_img = Path("{}_{}_q".format(vvloss_img_path, layer))
 

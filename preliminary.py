@@ -1,6 +1,6 @@
 import prep
 import data_load
-from interpolate import *
+from examine1D import *
 
 
 logger = logging.getLogger("vis_net")

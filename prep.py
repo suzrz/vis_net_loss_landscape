@@ -3,13 +3,11 @@ import net
 import plot
 import torch
 import random
+import linear
 import itertools
 import argparse
 import numpy as np
-import individual_param
-import quadr_interpolation
-import layer_params
-import q_interpolation_layers
+import quadratic
 from paths import *
 from torch import optim as optim
 from torch.optim.lr_scheduler import StepLR
@@ -29,12 +27,12 @@ def parse_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument('--no-cuda', action='store_true',
                         help="Disables CUDA training.")
-    parser.add_argument("--alpha-start", type=float, action="store", default=-1., nargs='?',
-                        help="Set starting point of interpolation (float, default = -1.0).")
-    parser.add_argument("--alpha-end", type=float, action="store", default=1., nargs='?',
-                        help="Set ending point of interpolation (float, default = 1.0).")
-    parser.add_argument("--alpha-steps", type=int, action="store", default=20, nargs='?',
-                        help="Set number of interpolation steps (int, default = 20).")
+    parser.add_argument("--alpha-start", type=float, action="store", default=-0.5, nargs='?',
+                        help="Set starting point of interpolation (float, default = -0.5).")
+    parser.add_argument("--alpha-end", type=float, action="store", default=1.5, nargs='?',
+                        help="Set ending point of interpolation (float, default = 1.5).")
+    parser.add_argument("--alpha-steps", type=int, action="store", default=40, nargs='?',
+                        help="Set number of interpolation steps (int, default = 40).")
     parser.add_argument("--epochs", type=int, action="store", default=14, nargs='?',
                         help="Set number of training epochs (default = 14).")
     parser.add_argument("--idxs", nargs='+', default=(0, 0, 0, 0),
@@ -42,21 +40,25 @@ def parse_arguments():
     parser.add_argument("--layer", default="conv1",
                         help="Set layer of examined parameter (default = conv1).")
     parser.add_argument("--trained", action="store_true",
-                        help="Plot difference between interpolated and actual trained results.")
+                        help="Plot difference between interpolated and actual trained results. "
+                             "Available only for layer level experiments.")
     parser.add_argument("--preliminary", action="store_true",
-                        help="Preliminary experiments will be executed.")
+                        help="Preliminary experiments execution.")
     parser.add_argument("--single", action="store_true",
-                        help="Individual parameter interpolation.")
+                        help="Individual parameter examination.")
     parser.add_argument("--layers", action="store_true",
-                        help="Interpolation of parameters of layer")
+                        help="Layer level examination.")
     parser.add_argument("--quadratic", action="store_true",
-                        help="Quadratic interpolation of individual parameter")
+                        help="Examination on both parameter and layer levels using the quadratic path.")
     parser.add_argument("--surface", action="store_true",
-                        help="Loss function surface visualization in random directions")
+                        help="Loss function surface visualization.")
+    parser.add_argument("--res", type=int, action="store", default=3, nargs='?',
+                        help="Sets the resolution of 2D examination (default = 3).")
     parser.add_argument("--auto", action="store_true",
-                        help="Runs the single parameters and layers experiments automatically.")
+                        help="Runs the 1D experiments automatically.")
     parser.add_argument("--auto-n", type=int, action="store", default=10, nargs='?',
-                        help="Sets number of examined parameters (default = 10).")
+                        help="Sets number of examined parameters for "
+                             "auto execution of the 1D experiments (default = 10).")
     parser.add_argument("--show", action="store_true",
                         help="Enables showing the plots. Warning: If a big number of parameters is examined, there can"
                              "be a lot of plots.")
@@ -131,8 +133,9 @@ def get_net(device, train_loader, test_loader, epochs):
 def sample(indexes, n_samples=30):
     samples = []
 
-    if (n_samples > len(indexes)):
-        logger.warning(f"Number of samples {n_samples} is bigger than len of sampled list {len(indexes)}. Using full set...")
+    if n_samples > len(indexes):
+        logger.warning(f"Number of samples {n_samples} is bigger than "
+                       f"len of sampled list {len(indexes)}. Using full set...")
         return indexes
 
     interval = len(indexes) // n_samples
@@ -146,22 +149,29 @@ def sample(indexes, n_samples=30):
     return samples
 
 
-def _run_interpolation(idxs, args):
+def _run_interpolation(idxs, args, device):
+    """
+    Runs the interpolation on both levels.
+
+    :param idxs: list of positions of the examined parameters
+    :param args: experiment configuration
+    :param device: device to be used
+    """
     if args.single:
-        layer_params.run_layers(args)
+        linear.run_layers(args, device)
     if args.quadratic:
-        q_interpolation_layers.run_quadr_interpol_layers(args)
+        quadratic.run_layers(args, device)
 
     for i in idxs:
         args.idxs = i
         logger.debug(f"layer: {args.layer}, idxs: {idxs}")
         if args.single:
-            individual_param.run_single(args)
+            linear.run_single(args, device)
         if args.quadratic:
-            quadr_interpolation.run_quadr_interpolation(args)
+            quadratic.run_individual(args, device)
 
 
-def run_all(args):
+def run_all(args, device):
     """
         Runs linear and quadratic interpolation automatically over all layers
         and chosen number of parameters.
@@ -169,6 +179,7 @@ def run_all(args):
         Warning: Works only for model architecture specified in net.py
 
         :param args: experiment parameters
+        :param device: device to be used
     """
     """-------------- CONV1 --------------"""
     aux = [list(np.arange(0, 6)), [0], list(np.arange(0, 3)), list(np.arange(0, 3))]
@@ -178,7 +189,7 @@ def run_all(args):
 
     args.layer = "conv1"
 
-    _run_interpolation(conv1_idxs, args)
+    _run_interpolation(conv1_idxs, args, device)
 
     """-------------- CONV2 --------------"""
     aux = [list(np.arange(0, 6)), list(np.arange(0, 6)), list(np.arange(0, 3)), list(np.arange(0, 3))]
@@ -188,7 +199,7 @@ def run_all(args):
 
     args.layer = "conv2"
 
-    _run_interpolation(conv2_idxs, args)
+    _run_interpolation(conv2_idxs, args, device)
 
     """-------------- FC1 --------------"""
     aux = [list(np.arange(0, 120)), list(np.arange(0, 576))]
@@ -198,7 +209,7 @@ def run_all(args):
 
     args.layer = "fc1"
 
-    _run_interpolation(fc1_idxs, args)
+    _run_interpolation(fc1_idxs, args, device)
 
     """-------------- FC2 --------------"""
     aux = [list(np.arange(0, 84)), list(np.arange(0, 120))]
@@ -208,7 +219,7 @@ def run_all(args):
 
     args.layer = "fc2"
 
-    _run_interpolation(fc2_idxs, args)
+    _run_interpolation(fc2_idxs, args, device)
 
     """-------------- FC3 --------------"""
     aux = [list(np.arange(0, 10)), list(np.arange(0, 84))]
@@ -218,24 +229,23 @@ def run_all(args):
 
     args.layer = "fc3"
 
-    _run_interpolation(fc3_idxs, args)
+    _run_interpolation(fc3_idxs, args, device)
 
     # prepare x-axis and opacity dictionary for plotting all parameters of a layer
     x = np.linspace(args.alpha_start, args.alpha_end, args.alpha_steps)
-    d = plot.map_distance(single)
+    d = plot._map_distance(single)
 
     # plot parameters of each layer in one plot
-    plot.plot_single(x, "conv1", d)
-    plot.plot_single(x, "conv2", d)
-    plot.plot_single(x, "fc1", d)
-    plot.plot_single(x, "fc2", d)
-    plot.plot_single(x, "fc3", d)
+    plot.plot_params_by_layer(x, "conv1", d)
+    plot.plot_params_by_layer(x, "conv2", d)
+    plot.plot_params_by_layer(x, "fc1", d)
+    plot.plot_params_by_layer(x, "fc2", d)
+    plot.plot_params_by_layer(x, "fc3", d)
 
     # plot all layers in one
     xv = np.linspace(0, 1, args.alpha_steps, args.show)
-    plot.plot_vec_all_la(x, args.show)
+    plot.plot_vec_all_la(xv, args.show)
 
     plot.plot_lin_quad_real(args.show)
 
     sys.exit(0)
-

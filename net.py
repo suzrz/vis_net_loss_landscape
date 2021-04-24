@@ -12,6 +12,7 @@ from torch.optim.lr_scheduler import StepLR
 
 logger = logging.getLogger("vis_net")
 
+
 class Net(nn.Module):
     """
     Neural network class
@@ -76,7 +77,7 @@ class Net(nn.Module):
         c = 0
         for shape in shapes:
             name, tsize, tnum = shape
-            param = f_params[c : c + tnum].reshape(tsize)
+            param = f_params[c: c + tnum].reshape(tsize)
             state[name] = torch.nn.Parameter(param)
             c += tnum
 
@@ -118,7 +119,6 @@ def train(model, train_loader, optimizer, device, epoch, checkpoint_file=True):
 
             with open(filename, "wb") as fd:
                 pickle.dump(optim_path, fd)
-
 
     train_loss /= len(train_loader.dataset)
     logger.info(f"Training in epoch {epoch} has finished (loss = {train_loss})")

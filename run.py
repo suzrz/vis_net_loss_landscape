@@ -1,11 +1,9 @@
 import prep
+import torch
 import preliminary
-import layer_params
-import individual_param
-import random_directions
-import quadr_interpolation
-import l_interpolate_all
-import q_interpolate_all
+import PCA_directions
+import linear
+import quadratic
 from paths import *
 
 logger = logging.getLogger("vis_net")
@@ -22,25 +20,30 @@ logging.basicConfig(level=lvl, format="%(asctime)s - %(name)s - %(levelname)s - 
 
 init_dirs()
 
+use_cuda = not args.no_cuda and torch.cuda.is_available()
+device = torch.device("cuda" if use_cuda else "cpu")
+logger.debug(f"Device: {device}")
+
 logger.info(f"Executing interpolation of whole model.")
-l_interpolate_all.run_complete_interpolation(args)
-q_interpolate_all.run_complete_quadratic_interpolation(args)
+linear.run_complete(args, device)
+quadratic.run_complete(args, device)
 
 if args.auto:
-    logger.info("Executing experiments automatically")
-    prep.run_all(args)
+    logger.info("Executing 1D experiments automatically")
+    prep.run_all(args, device)
 
 if args.single:
     logger.info("Executing interpolation of individual parameter experiment")
-    individual_param.run_single(args)
+    linear.run_single(args, device)
 
 if args.layers:
     logger.info("Executing interpolation of parameters of a layer experiment")
-    layer_params.run_layers(args)
+    linear.run_layers(args, device)
 
 if args.quadratic:
     logger.info("Executing quadratic interpolation of individual parameter")
-    quadr_interpolation.run_quadr_interpolation(args)
+    quadratic.run_individual(args, device)
+    quadratic.run_layers(args, device)
 
 if args.preliminary:
     logger.info("Executing preliminary experiments")
@@ -48,4 +51,4 @@ if args.preliminary:
 
 if args.surface:
     logger.info("Executing random directions experiment")
-    random_directions.run_rand_dirs(args)
+    PCA_directions.run_pca_surface(args, device)

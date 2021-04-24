@@ -1,11 +1,8 @@
 import re
-import h5py
 import copy
 import numpy as np
 import matplotlib.pyplot as plt
 from paths import *
-from matplotlib import cm
-from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.font_manager import FontProperties
 
 color_loss = "red"
@@ -16,7 +13,17 @@ font = FontProperties()
 font.set_size(15)
 
 
-def plot_line(x, y, xlabel, ylabel, annotate=False, color="blue"):
+def _plot_line(x, y, xlabel, ylabel, annotate=False, color="blue"):
+    """
+    Helper function to plot annotated line.
+
+    :param x: x-axis data
+    :param y: y-axis data
+    :param xlabel: label for x-axis
+    :param ylabel: label for y-axis
+    :param annotate: annotate last three values
+    :param color: color of the plot
+    """
     logging.debug("[plot]: plotting line")
     fig, ax = plt.subplots(figsize=(6.4, 2))
 
@@ -54,21 +61,41 @@ def plot_line(x, y, xlabel, ylabel, annotate=False, color="blue"):
 
 
 def plot_impact(x, loss, acc, loss_only=False, acc_only=False, annotate=True, xlabel=None):
+    """
+    Function plots results of the training subset size and number of epochs preliminary experiments.
+
+    :param x: x ticks
+    :param loss: validation loss data
+    :param acc: accuracy data
+    :param loss_only: plot only loss
+    :param acc_only: plot only acc
+    :param annotate: annotate last three values
+    :param xlabel: xlabel
+    """
     logging.debug("[plot]: Plotting preliminary experiments results")
     if not acc_only:
         if not loss.exists():
             logging.error("[plot]: No loss data found")
             return
-        plot_line(x, np.loadtxt(loss), xlabel, "Validation loss", annotate, color_loss)
+        _plot_line(x, np.loadtxt(loss), xlabel, "Validation loss", annotate, color_loss)
 
     if not loss_only:
         if not acc.exists():
             logging.error("[plot]: No accuracy data found")
             return
-        plot_line(x, np.loadtxt(acc), xlabel, "Accuracy", annotate, color_acc)
+        _plot_line(x, np.loadtxt(acc), xlabel, "Accuracy", annotate, color_acc)
 
 
 def plot_box(x, loss_only=False, acc_only=False, show=False, xlabel=None):
+    """
+    Function plots box plot representation of test data set subset size preliminary experiment.
+
+    :param x: data
+    :param loss_only: plot only validation loss examination
+    :param acc_only: plot only accuracy examination
+    :param show: show the plot
+    :param xlabel: xlabel to be shown
+    """
     logging.info("[plot]: Plotting preliminary experiments results (test subset size)")
 
     if not acc_only:
@@ -78,7 +105,7 @@ def plot_box(x, loss_only=False, acc_only=False, show=False, xlabel=None):
             logging.error("[plot]: No loss data found")
             return
 
-        loss = np.loadtxt(epochs_loss)
+        loss = np.loadtxt(epochs_loss)  # TODO probably test_subs_loss???
 
         ax.set_ylabel("Validation loss", fontproperties=font)
         ax.set_xlabel(xlabel, fontproperties=font)
@@ -98,7 +125,7 @@ def plot_box(x, loss_only=False, acc_only=False, show=False, xlabel=None):
             logging.error("[plot]: No accuracy data found")
             return
 
-        acc = np.loadtxt(epochs_acc)
+        acc = np.loadtxt(epochs_acc)  # TODO probably test_subs_acc???
 
         ax.set_ylabel("Accuracy", fontproperties=font)
         ax.set_xlabel(xlabel, fontproperties=font)
@@ -112,78 +139,31 @@ def plot_box(x, loss_only=False, acc_only=False, show=False, xlabel=None):
         plt.savefig(os.path.join(os.path.join(imgs, "subsets_imp"), "test_acc.pdf"), format="pdf")
 
 
-def plot_one_param(alpha, loss, acc, loss_img_path, acc_img_path, loss_only=False,
-                   acc_only=False, show=False, trained=False):
+def plot_metric(alpha, ydata, img_path, metric):
     """
-    Plots interpolation progress of parameter
+    Function plots result of experiment focused on specified metric.
 
     :param alpha: interpolation coefficient
-    :param loss: validation loss data
-    :param acc: accuracy data
-    :param loss_img_path: path of validation loss image
-    :param acc_img_path: path of accuracy image
-    :param loss_only: plot only loss TODO: consider to delete
-    :param acc_only: plot only accuracy TODO: considet to delete
-    :param show: show the plots
-    :param trained: plot actual state of the model
+    :param ydata: results of the experiment to be plotted
+    :param img_path: path to where save the graph
+    :param metric: observed metric
     """
-    if not acc_only:
-        fig, ax = plt.subplots()
-        trained_loss = np.loadtxt(os.path.join(results, "actual_loss"))
+    ylab = "Validation loss" if metric == "loss" else "Accuracy"
+    clr = color_loss if metric == "loss" else color_acc
 
-        ax.plot(alpha, loss, ".-", color=color_loss, label="Validation loss with one parameter modified",
-                linewidth=1)
-        ax.set_xlabel(r"$\alpha$", fontproperties=font)
-        ax.set_ylabel("Validation loss", fontproperties=font)
-        ax.spines["right"].set_visible(False)
-        ax.spines["top"].set_visible(False)
-        ax.tick_params(axis='x', colors=color_loss)
+    fig, ax = plt.subplots(figsize=(8, 6))
 
-        if trained:
-            ax.spines["right"].set_visible(True)
-            ax.spines["top"].set_visible(True)
+    ax.plot(alpha, ydata, ".-", color=clr, linewidth=1)
+    ax.set_xlabel(r"$\alpha$", fontproperties=font)
+    ax.set_ylabel(ylab, fontproperties=font)
+    ax.spines["right"].set_visible(False)
+    ax.spines["top"].set_visible(False)
 
-            ax2 = ax.twiny()
-            ax2.plot(range(len(trained_loss)), trained_loss, "-", color=color_trained, linewidth=1, linestyle="dashed")
-            ax2.xaxis.tick_top()
-            ax2.set_xlabel("Epochs", fontproperties=font)
-            ax2.xaxis.set_label_position("top")
-            ax2.tick_params(axis='x', colors=color_trained)
-
-        if show:
-            plt.show()
-        plt.savefig("{}.pdf".format(loss_img_path), format="pdf")
-
-    if not loss_only:
-        fig, ax = plt.subplots()
-        trained_accuracy = np.loadtxt(os.path.join(results, "actual_acc"))
-
-        ax.plot(alpha, acc, ".-", color=color_acc, label="Accuracy with one parameter modified", linewidth=1)
-        ax.set_xlabel(r"$\alpha$", fontproperties=font)
-        ax.set_ylabel("Accuracy", fontproperties=font)
-        ax.spines["right"].set_visible(False)
-        ax.spines["top"].set_visible(False)
-        ax.tick_params(axis='x', colors=color_acc)
-
-        if trained:
-            ax.spines["right"].set_visible(True)
-            ax.spines["top"].set_visible(True)
-            ax2 = ax.twiny()
-            ax2.plot(range(len(trained_accuracy)), trained_accuracy, "-", color=color_trained, linewidth=1,
-                     linestyle="dashed")
-            ax2.xaxis.tick_top()
-            ax2.set_xlabel("Epochs", fontproperties=font)
-            ax2.xaxis.set_label_position("top")
-            ax2.tick_params(axis='x', colors=color_trained)
-
-        if show:
-            plt.show()
-        plt.savefig("{}.pdf".format(acc_img_path), format="pdf")
-
-        plt.close("all")
+    plt.savefig(f"{img_path}.pdf", format="pdf")
+    plt.close("all")
 
 
-def map_distance(directory):
+def _map_distance(directory):
     """
     Maps calculated distances to values from interval <0, 1>
 
@@ -201,8 +181,8 @@ def map_distance(directory):
     result = copy.deepcopy(distances)
 
     # get max and min values
-    mx = distances[max(distances, key=lambda key: distances[key])]
-    mn = distances[min(distances, key=lambda key: distances[key])]
+    mx = distances[max(distances, key=lambda k: distances[k])]
+    mn = distances[min(distances, key=lambda k: distances[k])]
 
     for key, value in distances.items():
         # map the distances
@@ -214,9 +194,9 @@ def map_distance(directory):
     return result
 
 
-def plot_single(x, layer, opacity_dict, show=False):
+def plot_params_by_layer(x, layer, opacity_dict, show=False):
     """
-    Function plots all examined parameter of a layer in one plot
+    Function plots all examined parameters of a layer in one plot
 
     :param x: data for x-axis (usually interpolation coefficient)
     :param layer: examined layer
@@ -225,7 +205,6 @@ def plot_single(x, layer, opacity_dict, show=False):
     """
     files = os.listdir(single)
 
-
     fig = plt.figure(figsize=(8, 6))
     ax = fig.add_subplot()
 
@@ -233,7 +212,8 @@ def plot_single(x, layer, opacity_dict, show=False):
     ax.spines["top"].set_visible(False)
 
     for file in files:
-        if re.search(layer, file) and re.search("loss", file) and not re.search("distance", file) and not re.search("q", file):
+        if re.search(layer, file) and re.search("loss", file) and not \
+                re.search("distance", file) and not re.search("q", file):
             k = file + "_distance"  # key for opacity dictionary
             lab = file.split("_")  # get label (parameter position)
             ax.plot(x, np.loadtxt(os.path.join(single, file)), label=lab[-1], alpha=opacity_dict[k], color="blueviolet")
@@ -246,53 +226,6 @@ def plot_single(x, layer, opacity_dict, show=False):
     if show:
         plt.show()
 
-    plt.close("all")
-
-
-def plot_vec_in_one(x, metric, opacity_dict, show=False):
-    """
-    Function plots selected metric of all layers and actual performance of the model in one plot
-
-    :param x: data for x-axis (interpolation coefficient)
-    :param metric: metric to be observed ("loss" or "acc)
-    :param opacity_dict: dictionary with travelled distance of parameters of a layer
-    :param show: show plot
-    """
-    files = os.listdir(vec)
-
-    fig = plt.figure()
-    ax = fig.add_subplot()
-
-    label = "Validation loss" if metric == "loss" else "Accuracy"
-
-    ax.spines["right"].set_visible(False)
-    ax.spines["top"].set_visible(False)
-
-    for file in files:
-        if re.search(metric, file) and not re.search("distance", file):
-            k = file + "_distance"
-            lab = file.split('_')
-            ax.plot(x, np.loadtxt(os.path.join(vec, file)), label=lab[-1], alpha=opacity_dict[k])
-            ax.set_xlabel(r"$\alpha$", fontproperties=font)
-            ax.set_ylabel(label, fontproperties=font)
-
-    actual = actual_loss_path if metric == "loss" else actual_acc_path
-    actual = np.loadtxt(actual)
-
-    ax2 = ax.twiny()
-    ax2.plot(range(len(actual)), actual, '-', color=color_trained, label="actual", linewidth=1, linestyle="dashed")
-    ax2.spines["right"].set_visible(False)
-    ax2.spines["top"].set_visible(False)
-    ax2.set_xticks([])
-    ax2.set_xticks([], minor=True)
-
-    fig.legend(loc="lower center", ncol=6, mode="expand")
-    fig.subplots_adjust(bottom=0.17)
-
-    plt.savefig("{}_{}.pdf".format(vec_img, "all"), format="pdf")
-
-    if show:
-        plt.show()
     plt.close("all")
 
 
@@ -370,19 +303,9 @@ def plot_lin_quad_real(show=False):
         plt.show()
     plt.close("all")
 
-def plot_surface_contours(data, levels=50, show=False):
-    plt.contour(data, levels)
-    plt.title("Loss Function around trained model")
-
-    if show:
-        plt.show()
-
-    plt.savefig(Path(os.path.join(random_dirs_img, "contour.pdf"), format="pdf"))
-    plt.close("all")
-
 
 def contour_path(steps, loss_grid, coords, pcvariances):
-    f = Path(os.path.join(pca_dirs_img, "loss_contour_path.pdf"))
+    f = Path()
 
     _, ax = plt.subplots()
     coords_x, coords_y = coords
@@ -393,81 +316,11 @@ def contour_path(steps, loss_grid, coords, pcvariances):
     (pathline,) = ax.plot(w1s, w2s, color='r', lw=1)
     (point, ) = ax.plot(steps[0][0], steps[0][1], "ro")
     plt.colorbar(im)
+    ax.set_xlabel(f"PCA 0 {pcvariances[0]:.2%}")
+    ax.set_ylabel(f"PCA 1 {pcvariances[1]:.2%}")
+
+    plt.savefig(os.path.join(pca_dirs_img, "loss_contour_path.pdf"), format="pdf")
+
     plt.show()
 
-    plt.savefig(f, format="pdf")
     plt.close("all")
-
-
-def surface_3d(data, steps, show=False):
-    fig = plt.figure()
-    ax = plt.axes(projection="3d")
-    X = np.array([[j for j in range(steps)] for i in range(steps)])
-    Y = np.array([[i for _ in range(steps)] for i in range(steps)])
-
-    ax.plot_surface(X, Y, data, rstride=1, cstride=1, cmap="viridis", edgecolor="none")
-
-    ax.set_title("Surface of the loss function")
-    if show:
-        fig.show()
-
-    plt.savefig(Path(os.path.join(random_dirs_img, f"surface_{steps}.pdf"), format="pdf"))
-    plt.close("all")
-
-def surface3d_rand_dirs():
-    # vmin = 0
-    # vmax = 100
-
-    # vlevel = 0.5
-    surf = Path(os.path.join(random_dirs, "surf.h5"))
-    surf_name = "loss"
-
-    with h5py.File(surf, 'r') as fd:
-        x = np.array(fd["xcoordinates"][:])
-        y = np.array(fd["ycoordinates"][:])
-
-        X, Y = np.meshgrid(x, y)
-        Z = np.array(fd[surf_name][:])
-
-        """3D"""
-        fig = plt.figure()
-        ax = Axes3D(fig)
-        ax.set_xlabel("x")
-        ax.set_ylabel("y")
-        ax.set_zlabel("f(x, y)")
-        surface = ax.plot_surface(X, Y, Z, linewidth=0, antialiased=False, cmap=cm.jet)
-        fig.colorbar(surface, shrink=0.5, aspect=5)
-        plt.show()
-
-        """COUNTOURS"""
-        """
-        fig = plt.figure()
-        CS = plt.contour(X, Y, Z, cmap="summer",
-                         levels=np.arange(vmin, vmax, vlevel))
-        plt.clabel(CS, inline=1, fontsize=8)
-        #plt.savefig(result_base + '_' + surf_name + "_2D_contour" + ".pdf",
-        #            dpi=300, bbox_inches="tight", format="pdf")
-        plt.show()
-        """
-
-        """HEAT MAP"""
-        im = plt.imshow(Z, cmap="jet")
-        plt.colorbar(im)
-        plt.show()
-        """
-        fig = plt.figure()
-        sns_plot = sns.heatmap(Z, cmap="viridis", cbar=True, vmin=vmin,
-                               vmax=vmax, xticklabels=False, yticklabels=False)
-        sns_plot.invert_yaxis()
-        #sns_plot.get_figure().savefig(result_base + '_' + surf_name + "_2D_heat.pdf",
-        #                              dpi=300, bbox_inches="tight", format="pdf")
-        plt.show()
-        """
-        """SAVE 3D"""
-        """
-        plt.figure()
-        ax = Axes3D(fig)
-        ax.plot_surface(X, Y, Z, linewidth=0, antialiased=True)
-        #fig.savefig(result_base + '_' + surf_name + "_3D_surface.pdf",
-        #            dpi=300, bbox_inches="tight", format="pdf")
-        """

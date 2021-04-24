@@ -30,7 +30,7 @@ def run_layers(args, device):
     """
     logger.info("Running quadratic interpolation on the level of layers")
 
-    alpha = np.linspace(args.alpha_start, args.alpha_end, args.alpha_steps)
+    alpha = np.linspace(0, 1, args.alpha_steps)
 
     train_loader, test_loader = data_load.data_load()
 

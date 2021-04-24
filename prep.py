@@ -27,11 +27,11 @@ def parse_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument('--no-cuda', action='store_true',
                         help="Disables CUDA training.")
-    parser.add_argument("--alpha-start", type=float, action="store", default=-1., nargs='?',
+    parser.add_argument("--alpha-start", type=float, action="store", default=-0.5, nargs='?',
                         help="Set starting point of interpolation (float, default = -0.5).")
-    parser.add_argument("--alpha-end", type=float, action="store", default=1., nargs='?',
+    parser.add_argument("--alpha-end", type=float, action="store", default=1.5, nargs='?',
                         help="Set ending point of interpolation (float, default = 1.5).")
-    parser.add_argument("--alpha-steps", type=int, action="store", default=20, nargs='?',
+    parser.add_argument("--alpha-steps", type=int, action="store", default=40, nargs='?',
                         help="Set number of interpolation steps (int, default = 40).")
     parser.add_argument("--epochs", type=int, action="store", default=14, nargs='?',
                         help="Set number of training epochs (default = 14).")
@@ -233,14 +233,14 @@ def run_all(args, device):
 
     # prepare x-axis and opacity dictionary for plotting all parameters of a layer
     x = np.linspace(args.alpha_start, args.alpha_end, args.alpha_steps)
-    d = plot.map_distance(single)
+    d = plot._map_distance(single)
 
     # plot parameters of each layer in one plot
-    plot.plot_single(x, "conv1", d)
-    plot.plot_single(x, "conv2", d)
-    plot.plot_single(x, "fc1", d)
-    plot.plot_single(x, "fc2", d)
-    plot.plot_single(x, "fc3", d)
+    plot.plot_params_by_layer(x, "conv1", d)
+    plot.plot_params_by_layer(x, "conv2", d)
+    plot.plot_params_by_layer(x, "fc1", d)
+    plot.plot_params_by_layer(x, "fc2", d)
+    plot.plot_params_by_layer(x, "fc3", d)
 
     # plot all layers in one
     xv = np.linspace(0, 1, args.alpha_steps, args.show)

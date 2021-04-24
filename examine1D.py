@@ -269,7 +269,9 @@ class Examinator1D:
                 f.write("{}".format(distance))
 
         logger.debug(f"Saving results to figures {loss_img}, {acc_img} ...")
-        plot.plot_one_param(self.alpha, np.loadtxt(loss_res), np.loadtxt(acc_res), loss_img, acc_img)
+
+        plot.plot_metric(self.alpha, np.loadtxt(loss_res), loss_img, "loss")
+        plot.plot_metric(self.alpha, np.loadtxt(acc_res), acc_img, "acc")
 
         self.model.load_state_dict(self.theta_f)
 
@@ -345,7 +347,8 @@ class Examinator1D:
             self.model.load_state_dict(self.theta_f)
 
         logger.debug(f"Saving results to figures {loss_img}, {acc_img} ...")
-        plot.plot_one_param(self.alpha, np.loadtxt(loss_res), np.loadtxt(acc_res), loss_img, acc_img, show=False)
+        plot.plot_metric(self.alpha, np.loadtxt(loss_res), loss_img, "loss")
+        plot.plot_metric(self.alpha, np.loadtxt(acc_res), acc_img, "acc")
 
         self.model.load_state_dict(self.theta_f)
 
@@ -410,7 +413,8 @@ class Examinator1D:
                 f.write("{}".format(distance))
 
         logger.debug(f"Saving results to figures {loss_img}, {acc_img} ...")
-        plot.plot_one_param(self.alpha, np.loadtxt(loss_res), np.loadtxt(acc_res), loss_img, acc_img, trained=trained)
+        plot.plot_metric(self.alpha, np.loadtxt(loss_res), loss_img, "loss")
+        plot.plot_metric(self.alpha, np.loadtxt(acc_res), acc_img, "acc")
 
         self.model.load_state_dict(self.theta_f)
 
@@ -473,7 +477,8 @@ class Examinator1D:
             np.savetxt(acc_res, acc_list)
 
         logger.debug(f"Saving results to figures {loss_img}, {acc_img} ...")
-        plot.plot_one_param(self.alpha, np.loadtxt(loss_res), np.loadtxt(acc_res), loss_img, acc_img, trained=trained)
+        plot.plot_metric(self.alpha, np.loadtxt(loss_res), loss_img, "loss")
+        plot.plot_metric(self.alpha, np.loadtxt(acc_res), acc_img, "acc")
 
         self.model.load_state_dict(self.theta_f)
 

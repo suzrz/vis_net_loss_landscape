@@ -458,12 +458,22 @@ class Examinator1D:
             mid_p = copy.deepcopy(torch.load(os.path.join(checkpoints, "checkpoint_6"))[layer + ".weight"]).cpu()
             end_p = self.theta_f[layer + ".weight"].cpu()
 
-            start = [start_a, start_p]
-            mid = [mid_a, mid_p]
-            end = [end_a, end_p]
+            start_w = [start_a, start_p]
+            mid_w = [mid_a, mid_p]
+            end_w = [end_a, end_p]
+
+            start_pb = self.theta_i[layer + ".bias"].cpu()
+            mid_pb = copy.deepcopy(torch.load(os.path.join(checkpoints, "checkpoint_6"))[layer + ".bias"]).cpu()
+            end_pb = self.theta_f[layer + ".bias"].cpu()
+
+            start_b = [start_a, start_pb]
+            mid_b = [mid_a, mid_pb]
+            end_b = [end_a, end_pb]
+
 
             for alpha_act in self.alpha:
-                self.__calc_theta_vec_q(layer + ".weight", alpha_act, start, mid, end)
+                self.__calc_theta_vec_q(layer + ".weight", alpha_act, start_w, mid_w, end_w)
+                self.__calc_theta_vec_q(layer + ".bias", alpha_act, start_b, mid_b, end_b)
 
                 self.model.load_state_dict(self.theta)
                 logger.debug(f"Getting validation loss and accuracy for alpha = {alpha_act}")

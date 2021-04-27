@@ -247,5 +247,6 @@ def run_all(args, device):
     plot.plot_vec_all_la(xv, args.show)
 
     plot.plot_lin_quad_real(args.show)
+    plot.plot_individual_lin_quad(np.linspace(args.alpha_start, args.alpha_end, args.alpha_steps))
 
     sys.exit(0)

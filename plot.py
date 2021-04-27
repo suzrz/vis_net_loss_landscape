@@ -303,6 +303,52 @@ def plot_lin_quad_real(show=False):
         plt.show()
     plt.close("all")
 
+def plot_individual_lin_quad(x):
+    """
+    Function plots comparison between linear and quadratic interpolation on the level of individual parameter.
+
+    :param x: x-axis data
+    """
+    data = {}
+    for fil in os.listdir(single):  # get all linear interpolation results
+        if re.search("svloss", fil) and not re.search("q", fil) and not re.search("distance", fil):
+            data[fil] = ""
+
+    for fil in os.listdir(single):  # get all quadratic interpolation results
+        if re.search("svloss", fil) and re.search("q", fil):
+            k = fil[:-2]
+            try:
+                data[k] = fil
+            except KeyError:
+                continue
+
+    for key, value in data.items():
+        l = Path(os.path.join(single, key))
+        print(l)
+        q = Path(os.path.join(single, value))
+        print(q)
+
+        l = np.loadtxt(l)
+        q = np.loadtxt(q)
+
+        fig = plt.figure(figsize=(8.5, 6))
+        ax = fig.add_subplot()
+
+        ax.spines["right"].set_visible(False)
+        ax.spines["top"].set_visible(False)
+
+        ax.plot(x, l, color="orange", label="Linear")
+        ax.plot(x, q, color="blue", label="Quadratic")
+
+        ax.set_xlabel(r"$\alpha$", fontproperties=font)
+        ax.set_ylabel("Validation loss", fontproperties=font)
+
+        ax.legend(loc="upper right")
+
+        plt.savefig(os.path.join(single_img, f"{key}_comparison.pdf"), format="pdf")
+        plt.close("all")
+
+
 
 def contour_path(steps, loss_grid, coords, pcvariances):
     f = Path()

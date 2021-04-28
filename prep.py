@@ -52,8 +52,10 @@ def parse_arguments():
                         help="Examination on both parameter and layer levels using the quadratic path.")
     parser.add_argument("--surface", action="store_true",
                         help="Loss function surface visualization.")
+    parser.add_argument("--path", action="store_true",
+                        help="Optimizer path visualization")
     parser.add_argument("--res", type=int, action="store", default=3, nargs='?',
-                        help="Sets the resolution of 2D examination (default = 3).")
+                        help="Sets the resolution the path visualization (default = 3).")
     parser.add_argument("--auto", action="store_true",
                         help="Runs the 1D experiments automatically.")
     parser.add_argument("--auto-n", type=int, action="store", default=10, nargs='?',

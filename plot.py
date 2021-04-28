@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from paths import *
 from matplotlib.font_manager import FontProperties
+from mpl_toolkits.mplot3d import Axes3D
 
 color_loss = "red"
 color_trained = "dimgrey"
@@ -351,12 +352,18 @@ def plot_individual_lin_quad(x):
 
 
 def contour_path(steps, loss_grid, coords, pcvariances):
-    f = Path()
+    """
+    Function plots a SGD path on loss grid
 
+    :param steps: SGD steps
+    :param loss_grid: validation loss surface
+    :param coords: coordinates for the grid
+    :param pcvariances: chosen pca variances
+    """
     _, ax = plt.subplots()
     coords_x, coords_y = coords
 
-    im = ax.contourf(coords_x, coords_y, loss_grid, levels=35, alpha=0.9)
+    im = ax.contourf(coords_x, coords_y, loss_grid, levels=40, alpha=0.9)
     w1s = [step[0] for step in steps]
     w2s = [step[1] for step in steps]
     (pathline,) = ax.plot(w1s, w2s, color='r', lw=1)
@@ -367,6 +374,21 @@ def contour_path(steps, loss_grid, coords, pcvariances):
 
     plt.savefig(os.path.join(pca_dirs_img, "loss_contour_path.pdf"), format="pdf")
 
-    plt.show()
+    plt.close("all")
+
+
+def surface_contour(loss_grid, coords):
+    """
+    Function plots the loss surface around a trained model
+
+    :param loss_grid: validation loss grid
+    :param coords: coordinates
+    """
+    _, ax = plt.subplots()
+
+    im = ax.contourf(coords[0], coords[1], loss_grid, levels=45, alpha=0.9)
+    plt.colorbar(im)
+
+    plt.savefig(os.path.join(pca_dirs_img, "loss_surface.pdf"), format="pdf")
 
     plt.close("all")

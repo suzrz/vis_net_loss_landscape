@@ -2,6 +2,7 @@ import prep
 import torch
 import preliminary
 import PCA_directions
+import random_directions
 import linear
 import quadratic
 from paths import *
@@ -51,4 +52,8 @@ if args.preliminary:
 
 if args.surface:
     logger.info("Executing random directions experiment")
+    random_directions.run_rand_dirs(args)
+
+if args.path:
+    logger.info("Executing optimizer path visualization using PCA directions")
     PCA_directions.run_pca_surface(args, device)

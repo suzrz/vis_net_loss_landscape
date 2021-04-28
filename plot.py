@@ -1,5 +1,6 @@
 import re
 import copy
+import h5py
 import numpy as np
 import matplotlib.pyplot as plt
 from paths import *
@@ -392,3 +393,47 @@ def surface_contour(loss_grid, coords):
     plt.savefig(os.path.join(pca_dirs_img, "loss_surface.pdf"), format="pdf")
 
     plt.close("all")
+
+def surface3d_rand_dirs():
+    # vmin = 0
+    # vmax = 100
+
+    # vlevel = 0.5
+    surf = Path(os.path.join(random_dirs, "surf.h5"))
+    surf_name = "loss"
+
+    with h5py.File(surf, 'r') as fd:
+        x = np.array(fd["xcoordinates"][:])
+        y = np.array(fd["ycoordinates"][:])
+
+        X, Y = np.meshgrid(x, y)
+        Z = np.array(fd[surf_name][:])
+
+        """3D"""
+        fig = plt.figure()
+        ax = Axes3D(fig)
+        ax.set_xlabel("x")
+        ax.set_ylabel("y")
+        ax.set_zlabel("f(x, y)")
+        surface = ax.plot_surface(X, Y, Z, linewidth=0, antialiased=False, cmap="plasma")
+        fig.colorbar(surface, shrink=0.5, aspect=5)
+        plt.show()
+        plt.savefig(os.path.join(random_dirs_img, "surface_3d.pdf"), format="pdf")
+
+
+def surface_heatmap_rand_dirs():
+    surf = Path(os.path.join(random_dirs, "surf.h5"))
+    surf_name = "loss"
+
+    with h5py.File(surf, 'r') as fd:
+        x = np.array(fd["xcoordinates"][:])
+        y = np.array(fd["ycoordinates"][:])
+
+        X, Y = np.meshgrid(x, y)
+        Z = np.array(fd[surf_name][:])
+
+        """HEAT MAP"""
+        im = plt.imshow(Z, cmap="plasma")
+        plt.colorbar(im)
+        plt.show()
+        plt.savefig(os.path.join(random_dirs_img, "surface_heatmap.pdf"), format="pdf")

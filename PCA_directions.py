@@ -25,3 +25,4 @@ def run_pca_surface(args, device):
     data = examine.get_loss_grid(test_loader, resolution=args.res)
 
     plot.contour_path(data["path_2d"], data["loss_grid"], data["coords"], data["pcvariances"])
+    plot.surface_contour(data["loss_grid"], data["coords"])

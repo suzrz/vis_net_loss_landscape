@@ -16,7 +16,7 @@ def run_complete(args, device):
 
     model = prep.get_net(device, train_loader, test_loader, args.epochs)
 
-    interpolate = Examinator1D(model, device, alpha, final_state, init_state)
+    interpolate = Quadratic(model, device, alpha, final_state, init_state)
 
     interpolate.interpolate_all_quadratic(test_loader)
 
@@ -36,7 +36,7 @@ def run_layers(args, device):
 
     model = prep.get_net(device, train_loader, test_loader, args.epochs)
 
-    interpolate = Examinator1D(model, device, alpha, final_state, init_state)
+    interpolate = Quadratic(model, device, alpha, final_state, init_state)
 
     interpolate.layers_quadratic(test_loader, args.layer)
 
@@ -56,6 +56,6 @@ def run_individual(args, device):
 
     model = prep.get_net(device, train_loader, test_loader, args.epochs)
 
-    interpolate = Examinator1D(model, device, alpha, final_state, init_state)
+    interpolate = Quadratic(model, device, alpha, final_state, init_state)
 
     interpolate.individual_param_quadratic(test_loader, args.layer, args.idxs)

@@ -1,10 +1,9 @@
-import net
+from lib import net, plot
 import copy
-import plot
 import torch
 import numpy as np
 import scipy.interpolate
-from paths import *
+from lib.paths import *
 from pathlib import Path
 from numpy.polynomial import Polynomial
 

@@ -1,10 +1,10 @@
 import re
 import sys
-import net
+from lib import net
 import torch
 import pickle
 import numpy as np
-from paths import *
+from lib.paths import *
 from sklearn.decomposition import PCA
 
 logger = logging.getLogger("vis_net")

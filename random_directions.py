@@ -1,7 +1,5 @@
-import prep
-import data_load
-import examine_surface
-from examine1D import *
+from lib import examine_surface, data_load, prep
+from lib.examine1D import *
 
 logger = logging.getLogger("vis_net")
 

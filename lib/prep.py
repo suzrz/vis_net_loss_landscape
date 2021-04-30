@@ -1,6 +1,6 @@
+import re
 import sys
-import net
-import plot
+from lib import net, plot
 import torch
 import random
 import linear
@@ -8,7 +8,7 @@ import itertools
 import argparse
 import numpy as np
 import quadratic
-from paths import *
+from lib.paths import *
 from torch import optim as optim
 from torch.optim.lr_scheduler import StepLR
 
@@ -58,12 +58,11 @@ def parse_arguments():
                         help="Sets the resolution the path visualization (default = 3).")
     parser.add_argument("--auto", action="store_true",
                         help="Runs the 1D experiments automatically.")
-    parser.add_argument("--auto-n", type=int, action="store", default=10, nargs='?',
+    parser.add_argument("--auto-n", type=int, action="store", default=1, nargs='?',
                         help="Sets number of examined parameters for "
-                             "auto execution of the 1D experiments (default = 10).")
-    parser.add_argument("--show", action="store_true",
-                        help="Enables showing the plots. Warning: If a big number of parameters is examined, there can"
-                             "be a lot of plots.")
+                             "auto execution of the 1D experiments (default = 1).")
+    parser.add_argument("--plot", action="store_true",
+                        help="Plot available data.")
     parser.add_argument("--debug", action="store_true", help="Enables debug logging.")
 
     args = parser.parse_args()
@@ -183,6 +182,9 @@ def run_all(args, device):
         :param args: experiment parameters
         :param device: device to be used
     """
+    linear.run_complete(args, device)
+    quadratic.run_complete(args, device)
+
     """-------------- CONV1 --------------"""
     aux = [list(np.arange(0, 6)), [0], list(np.arange(0, 3)), list(np.arange(0, 3))]
     conv1_idxs = list(itertools.product(*aux))
@@ -235,7 +237,7 @@ def run_all(args, device):
 
     # prepare x-axis and opacity dictionary for plotting all parameters of a layer
     x = np.linspace(args.alpha_start, args.alpha_end, args.alpha_steps)
-    d = plot._map_distance(single)
+    d = plot.map_distance(single)
 
     # plot parameters of each layer in one plot
     plot.plot_params_by_layer(x, "conv1", d)
@@ -252,3 +254,39 @@ def run_all(args, device):
     plot.plot_individual_lin_quad(np.linspace(args.alpha_start, args.alpha_end, args.alpha_steps))
 
     sys.exit(0)
+
+
+def plot_available(args):
+    individual_files = os.listdir(single)
+    layer_files = os.listdir(vec)
+
+    alpha_i = np.linspace(args.alpha_start, args.alpha_end, args.alpha_steps)
+    alpha_l = np.linspace(0, 1, args.alpha_steps)
+
+    for fil in individual_files:
+        if not re.search("distance", fil):
+            if re.search("loss", fil):
+                plot.plot_metric(alpha_i, np.loadtxt(fil), os.path.join(single_img, fil), "loss")
+            if re.search("acc", fil):
+                plot.plot_metric(alpha_i, np.loadtxt(fil), os.path.join(single_img, fil), "acc")
+
+    for fil in layer_files:
+        if not re.search("distance", fil):
+            if re.search("loss", fil):
+                plot.plot_metric(alpha_l, np.loadtxt(fil), os.path.join(fil), "loss")
+            if re.search("acc", fil):
+                plot.plot_metric(alpha_l, np.loadtxt(fil), os.path.join(fil), "acc")
+
+    d = plot.map_distance(single)
+
+    # plot parameters of each layer in one plot
+    plot.plot_params_by_layer(alpha_i, "conv1", d)
+    plot.plot_params_by_layer(alpha_i, "conv2", d)
+    plot.plot_params_by_layer(alpha_i, "fc1", d)
+    plot.plot_params_by_layer(alpha_i, "fc2", d)
+    plot.plot_params_by_layer(alpha_i, "fc3", d)
+
+    plot.plot_vec_all_la(alpha_l, args.show)
+
+    plot.plot_lin_quad_real(args.show)
+    plot.plot_individual_lin_quad(np.linspace(args.alpha_start, args.alpha_end, args.alpha_steps))

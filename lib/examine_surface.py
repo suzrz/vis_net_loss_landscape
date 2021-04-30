@@ -1,8 +1,8 @@
-import net
+from lib import net
 import h5py
 import torch
 import numpy as np
-from paths import *
+from lib.paths import *
 
 logger = logging.getLogger("vis_net")
 

@@ -1,10 +1,9 @@
-import net
+from lib import net, plot
 import copy
-import plot
 import torch
 import numpy as np
 import scipy.interpolate
-from paths import *
+from lib.paths import *
 from pathlib import Path
 from numpy.polynomial import Polynomial
 
@@ -53,6 +52,8 @@ class Examinator1D:
         else:
             return torch.dist(self.theta_f[layer][idxs], self.theta_i[layer][idxs])
 
+
+class Linear(Examinator1D):
     def __calc_theta_single(self, layer, idxs, alpha):
         """
         Method calculates interpolation of a single parameter with respect to interpolation coefficient alpha
@@ -69,37 +70,6 @@ class Examinator1D:
         logger.debug(f"Modified theta:\n"
                      f"{self.theta[layer][idxs]}")
 
-    def __calc_theta_single_q(self, layer, idxs, alpha, start, mid, end):
-        """
-        Method calculates quadratic interpolation of a single parameter with respect to interpolation coefficient
-        alpha
-
-        :param layer: layer of parameter
-        :param idxs: position of parameter
-        :param alpha: interpolation coefficient value
-        :param start: first point
-        :param mid: second point
-        :param end: ending point
-        """
-        logger.debug(f"Calculating quadr: {layer} {idxs} for alpha = {alpha}")
-        xdata = np.array([start[0], mid[0], end[0]])
-        logger.debug(f"XDATA: {xdata}")
-        ydata = np.array([start[1], mid[1], end[1]])
-        logger.debug(f"YDATA: {ydata}")
-
-        poly = scipy.interpolate.lagrange(xdata, ydata)
-
-        self.fit_params = Polynomial(poly).coef
-        logger.debug(f"Coefficients: {self.fit_params}")
-
-        try:
-            self.theta[layer][idxs] = torch.tensor((self.fit_params[0]*(alpha**2) + self.fit_params[1]*alpha +
-                                                   self.fit_params[2])).to(self.device)
-        except IndexError:
-            return
-        logger.debug(f"Modified theta:\n"
-                     f"{self.theta[layer][idxs]}")
-
     def __calc_theta_vec(self, layer, alpha):
         """
         Method calculates the value of parameters on the level of layer at an interpolation point alpha,
@@ -112,32 +82,6 @@ class Examinator1D:
 
         self.theta[layer] = torch.add((torch.mul(self.theta_i[layer], (1.0 - alpha))),
                                       torch.mul(self.theta_f[layer], alpha))
-
-    def __calc_theta_vec_q(self, layer, alpha, start, mid, end):
-        """
-        Method calculates value of the parameters on the level of layer at an interpolation point alpha,
-        using the quadratic interpolation.
-
-        :param layer: examined layer
-        :param alpha: actual interpolation coefficient value
-        :param start: first known point
-        :param mid: second known point
-        :param end: last known point
-        """
-        logger.debug(f"Calculating quadr: {layer} for alpha = {alpha}")
-        xdata = [start[0], mid[0], end[0]]
-        logger.debug(f"XDATA: {xdata}")
-
-        ydata = [start[1], mid[1], end[1]]
-        logger.debug(f"YDATA: {ydata}")
-
-        self.theta[layer] = \
-            start[1] * (((alpha - mid[0]) * (alpha - end[0])) / ((start[0] - mid[0]) * (start[0] - end[0]))) + \
-            mid[1] * (((alpha - start[0]) * (alpha - end[0])) / ((mid[0] - start[0]) * (mid[0] - end[0]))) + \
-            end[1] * (((alpha - start[0]) * (alpha - mid[0])) / ((end[0] - start[0]) * (end[0] - mid[0])))
-
-        logger.debug(f"Modified theta:\n"
-                     f"{self.theta[layer]}")
 
     def interpolate_all_linear(self, test_loader):
         """
@@ -165,48 +109,6 @@ class Examinator1D:
 
             np.savetxt(loss_path, v_loss_list)
             np.savetxt(acc_path, acc_list)
-            self.model.load_state_dict(self.theta_f)
-
-    def interpolate_all_quadratic(self, test_loader):
-        """
-        Method interpolates all parameters of the model using the quadratic interpolation
-        and after each interpolation step evaluates the performance of the model.
-
-        :param test_loader: test data set loader
-        """
-        if not q_loss_path.exists() or not q_acc_path.exists():
-            v_loss_list = []
-            acc_list = []
-            layers = ["conv1.weight", "conv1.bias", "conv2.weight", "conv2.bias", "fc1.weight",
-                      "fc1.bias", "fc2.weight", "fc2.bias", "fc3.weight", "fc3.bias"]
-            start_a = 0
-            mid_a = 0.5
-            end_a = 1
-            logger.debug(f"Start: {start_a}\n"
-                         f"Mid: {mid_a}\n"
-                         f"End: {end_a}")
-
-            self.model.load_state_dict(self.theta_f)
-            for alpha_act in self.alpha:
-                for layer in layers:
-                    start_p = self.theta_i[layer].cpu()
-                    mid_p = copy.deepcopy(
-                        torch.load(os.path.join(checkpoints, "checkpoint_6"))[layer]).cpu()
-                    end_p = self.theta_f[layer].cpu()
-
-                    start = [start_a, start_p]
-                    mid = [mid_a, mid_p]
-                    end = [end_a, end_p]
-
-                    self.__calc_theta_vec_q(layer, alpha_act, start, mid, end)
-                    self.model.load_state_dict(self.theta)
-
-                loss, acc = net.test(self.model, test_loader, self.device)
-                v_loss_list.append(loss)
-                acc_list.append(acc)
-
-            np.savetxt(q_loss_path, v_loss_list)
-            np.savetxt(q_acc_path, acc_list)
             self.model.load_state_dict(self.theta_f)
 
     def individual_param_linear(self, test_loader, layer, idxs):
@@ -276,6 +178,173 @@ class Examinator1D:
         self.model.load_state_dict(self.theta_f)
 
         return
+
+    def layers_linear(self, test_loader, layer, trained=False):
+        """
+        Method interpolates parameters of selected layer of the model and evaluates the model after each interpolation
+        step
+
+        :param test_loader: test loader
+        :param layer: layer to be interpolated
+        :param trained: show trained state
+        """
+
+        loss_res = Path("{}_{}".format(vvloss_path, layer))
+        loss_img = Path("{}_{}".format(vvloss_img_path, layer))
+
+        acc_res = Path("{}_{}".format(vacc_path, layer))
+        acc_img = Path("{}_{}".format(vacc_img_path, layer))
+
+        dist = Path("{}_{}_{}".format(vvloss_path, layer, "distance"))
+
+        logger.debug(f"Result files:\n"
+                     f"{loss_res}\n"
+                     f"{acc_res}")
+        logger.debug(f"Img files:\n"
+                     f"{loss_img}\n"
+                     f"{acc_img}")
+        logger.debug(f"Dist file:\n"
+                     f"{dist}")
+
+        if not loss_res.exists() or not acc_res.exists():
+            logger.debug("Result files not found - beginning interpolation.")
+
+            v_loss_list = []
+            acc_list = []
+
+            self.model.load_state_dict(self.theta_f)
+            for alpha_act in self.alpha:
+                self.__calc_theta_vec(layer + ".weight", alpha_act)
+                self.__calc_theta_vec(layer + ".bias", alpha_act)
+
+                self.model.load_state_dict(self.theta)
+                logger.debug(f"Getting validation loss and accuracy for alpha = {alpha_act}")
+
+                vloss, acc = net.test(self.model, test_loader, self.device)
+                v_loss_list.append(vloss)
+                acc_list.append(acc)
+
+            logger.debug(f"Saving results to files ({loss_res}, {acc_res})")
+            np.savetxt(loss_res, v_loss_list)
+            np.savetxt(acc_res, acc_list)
+
+        if not dist.exists():
+            logger.info(f"Calculating distance for: {layer}")
+
+            distance = self.__calc_distance(layer + ".weight")
+            logger.info(f"Distance: {distance}")
+
+            with open(dist, 'w') as f:
+                f.write("{}".format(distance))
+
+        logger.debug(f"Saving results to figures {loss_img}, {acc_img} ...")
+        plot.plot_metric(self.alpha, np.loadtxt(loss_res), loss_img, "loss")
+        plot.plot_metric(self.alpha, np.loadtxt(acc_res), acc_img, "acc")
+
+        self.model.load_state_dict(self.theta_f)
+
+        return
+
+
+class Quadratic(Examinator1D):
+    def __calc_theta_single_q(self, layer, idxs, alpha, start, mid, end):
+        """
+        Method calculates quadratic interpolation of a single parameter with respect to interpolation coefficient
+        alpha
+
+        :param layer: layer of parameter
+        :param idxs: position of parameter
+        :param alpha: interpolation coefficient value
+        :param start: first point
+        :param mid: second point
+        :param end: ending point
+        """
+        logger.debug(f"Calculating quadr: {layer} {idxs} for alpha = {alpha}")
+        xdata = np.array([start[0], mid[0], end[0]])
+        logger.debug(f"XDATA: {xdata}")
+        ydata = np.array([start[1], mid[1], end[1]])
+        logger.debug(f"YDATA: {ydata}")
+
+        poly = scipy.interpolate.lagrange(xdata, ydata)
+
+        self.fit_params = Polynomial(poly).coef
+        logger.debug(f"Coefficients: {self.fit_params}")
+
+        try:
+            self.theta[layer][idxs] = torch.tensor((self.fit_params[0]*(alpha**2) + self.fit_params[1]*alpha +
+                                                   self.fit_params[2])).to(self.device)
+        except IndexError:
+            return
+        logger.debug(f"Modified theta:\n"
+                     f"{self.theta[layer][idxs]}")
+
+    def __calc_theta_vec_q(self, layer, alpha, start, mid, end):
+        """
+        Method calculates value of the parameters on the level of layer at an interpolation point alpha,
+        using the quadratic interpolation.
+
+        :param layer: examined layer
+        :param alpha: actual interpolation coefficient value
+        :param start: first known point
+        :param mid: second known point
+        :param end: last known point
+        """
+        logger.debug(f"Calculating quadr: {layer} for alpha = {alpha}")
+        xdata = [start[0], mid[0], end[0]]
+        logger.debug(f"XDATA: {xdata}")
+
+        ydata = [start[1], mid[1], end[1]]
+        logger.debug(f"YDATA: {ydata}")
+
+        self.theta[layer] = \
+            start[1] * (((alpha - mid[0]) * (alpha - end[0])) / ((start[0] - mid[0]) * (start[0] - end[0]))) + \
+            mid[1] * (((alpha - start[0]) * (alpha - end[0])) / ((mid[0] - start[0]) * (mid[0] - end[0]))) + \
+            end[1] * (((alpha - start[0]) * (alpha - mid[0])) / ((end[0] - start[0]) * (end[0] - mid[0])))
+
+        logger.debug(f"Modified theta:\n"
+                     f"{self.theta[layer]}")
+
+    def interpolate_all_quadratic(self, test_loader):
+        """
+        Method interpolates all parameters of the model using the quadratic interpolation
+        and after each interpolation step evaluates the performance of the model.
+
+        :param test_loader: test data set loader
+        """
+        if not q_loss_path.exists() or not q_acc_path.exists():
+            v_loss_list = []
+            acc_list = []
+            layers = ["conv1.weight", "conv1.bias", "conv2.weight", "conv2.bias", "fc1.weight",
+                      "fc1.bias", "fc2.weight", "fc2.bias", "fc3.weight", "fc3.bias"]
+            start_a = 0
+            mid_a = 0.5
+            end_a = 1
+            logger.debug(f"Start: {start_a}\n"
+                         f"Mid: {mid_a}\n"
+                         f"End: {end_a}")
+
+            self.model.load_state_dict(self.theta_f)
+            for alpha_act in self.alpha:
+                for layer in layers:
+                    start_p = self.theta_i[layer].cpu()
+                    mid_p = copy.deepcopy(
+                        torch.load(os.path.join(checkpoints, "checkpoint_6"))[layer]).cpu()
+                    end_p = self.theta_f[layer].cpu()
+
+                    start = [start_a, start_p]
+                    mid = [mid_a, mid_p]
+                    end = [end_a, end_p]
+
+                    self.__calc_theta_vec_q(layer, alpha_act, start, mid, end)
+                    self.model.load_state_dict(self.theta)
+
+                loss, acc = net.test(self.model, test_loader, self.device)
+                v_loss_list.append(loss)
+                acc_list.append(acc)
+
+            np.savetxt(q_loss_path, v_loss_list)
+            np.savetxt(q_acc_path, acc_list)
+            self.model.load_state_dict(self.theta_f)
 
     def individual_param_quadratic(self, test_loader, layer, idxs):
         """
@@ -354,72 +423,6 @@ class Examinator1D:
 
         return
 
-    def layers_linear(self, test_loader, layer, trained=False):
-        """
-        Method interpolates parameters of selected layer of the model and evaluates the model after each interpolation
-        step
-
-        :param test_loader: test loader
-        :param layer: layer to be interpolated
-        :param trained: show trained state
-        """
-
-        loss_res = Path("{}_{}".format(vvloss_path, layer))
-        loss_img = Path("{}_{}".format(vvloss_img_path, layer))
-
-        acc_res = Path("{}_{}".format(vacc_path, layer))
-        acc_img = Path("{}_{}".format(vacc_img_path, layer))
-
-        dist = Path("{}_{}_{}".format(vvloss_path, layer, "distance"))
-
-        logger.debug(f"Result files:\n"
-                     f"{loss_res}\n"
-                     f"{acc_res}")
-        logger.debug(f"Img files:\n"
-                     f"{loss_img}\n"
-                     f"{acc_img}")
-        logger.debug(f"Dist file:\n"
-                     f"{dist}")
-
-        if not loss_res.exists() or not acc_res.exists():
-            logger.debug("Result files not found - beginning interpolation.")
-
-            v_loss_list = []
-            acc_list = []
-
-            self.model.load_state_dict(self.theta_f)
-            for alpha_act in self.alpha:
-                self.__calc_theta_vec(layer + ".weight", alpha_act)
-                self.__calc_theta_vec(layer + ".bias", alpha_act)
-
-                self.model.load_state_dict(self.theta)
-                logger.debug(f"Getting validation loss and accuracy for alpha = {alpha_act}")
-
-                vloss, acc = net.test(self.model, test_loader, self.device)
-                v_loss_list.append(vloss)
-                acc_list.append(acc)
-
-            logger.debug(f"Saving results to files ({loss_res}, {acc_res})")
-            np.savetxt(loss_res, v_loss_list)
-            np.savetxt(acc_res, acc_list)
-
-        if not dist.exists():
-            logger.info(f"Calculating distance for: {layer}")
-
-            distance = self.__calc_distance(layer + ".weight")
-            logger.info(f"Distance: {distance}")
-
-            with open(dist, 'w') as f:
-                f.write("{}".format(distance))
-
-        logger.debug(f"Saving results to figures {loss_img}, {acc_img} ...")
-        plot.plot_metric(self.alpha, np.loadtxt(loss_res), loss_img, "loss")
-        plot.plot_metric(self.alpha, np.loadtxt(acc_res), acc_img, "acc")
-
-        self.model.load_state_dict(self.theta_f)
-
-        return
-
     def layers_quadratic(self, test_loader, layer, trained=False):
         """
         Method examines the parameters on the level of layers using the quadratic interpolation.
@@ -469,7 +472,6 @@ class Examinator1D:
             start_b = [start_a, start_pb]
             mid_b = [mid_a, mid_pb]
             end_b = [end_a, end_pb]
-
 
             for alpha_act in self.alpha:
                 self.__calc_theta_vec_q(layer + ".weight", alpha_act, start_w, mid_w, end_w)

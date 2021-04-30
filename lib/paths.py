@@ -6,13 +6,16 @@ from pathlib import Path
 logger = logging.getLogger("vis_net")
 
 # general directories
-results = Path(os.path.join(".", "results"))
-imgs = Path(os.path.join(".", "imgs"))
+dirname = os.path.dirname
+results = Path(dirname(dirname(__file__)), "results")
+imgs = Path(dirname(dirname(__file__)), "imgs")
 
-checkpoints = Path(os.path.join(".", "model_states"))
+checkpoints = Path(dirname(dirname(__file__)), "model_states")
 
-init_state = Path(os.path.join(results, "init_state.pt"))
-final_state = Path(os.path.join(results, "final_state.pt"))
+dataset = Path(dirname(dirname(__file__)), "data")
+
+init_state = Path(results, "init_state.pt")
+final_state = Path(results, "final_state.pt")
 
 """
   ----------------- FILENAMES MEANING -----------------
@@ -29,62 +32,62 @@ final_state = Path(os.path.join(results, "final_state.pt"))
   -----------------------------------------------------
 """
 # directories for single parameters experiments
-single = Path(os.path.join(results, "singleParam"))
-single_img = Path(os.path.join(imgs, "singleParam"))
+single = Path(results, "singleParam")
+single_img = Path(imgs, "singleParam")
 
 # directories for vector paramaters experiments
-vec = Path(os.path.join(results, "vec"))
-vec_img = Path(os.path.join(imgs, "vec"))
+vec = Path(results, "vec")
+vec_img = Path(imgs, "vec")
 
 # directory for preliminary experiments results
-prelim = Path(os.path.join(results, "preliminary"))
+prelim = Path(results, "preliminary")
 
 # directory for random directions experiment
-random_dirs = Path(os.path.join(results, "rand_dirs"))
-random_dirs_img = Path(os.path.join(imgs, "rand_dirs"))
+random_dirs = Path(results, "rand_dirs")
+random_dirs_img = Path(imgs, "rand_dirs")
 
 # directory for PCA directions
-pca_dirs = Path(os.path.join(results, "PCA_dirs"))
-pca_dirs_img = Path(os.path.join(imgs, "PCA_dirs"))
+pca_dirs = Path(results, "PCA_dirs")
+pca_dirs_img = Path(imgs, "PCA_dirs")
 
 # actual loss and accuracy progress of the model
-actual_loss_path = Path(os.path.join(results, "actual_loss"))
-actual_acc_path = Path(os.path.join(results, "actual_acc"))
+actual_loss_path = Path(results, "actual_loss")
+actual_acc_path = Path(results, "actual_acc")
 
 # final loss and accuracy of the model
-sf_loss_path = Path(os.path.join(results, "final_loss"))
-sf_acc_path = Path(os.path.join(results, "final_acc"))
+sf_loss_path = Path(results, "final_loss")
+sf_acc_path = Path(results, "final_acc")
 
 # interpolation
-loss_path = Path(os.path.join(results), "loss_all")
-acc_path = Path(os.path.join(results), "acc_all")
+loss_path = Path(results, "loss_all")
+acc_path = Path(results, "acc_all")
 
 # quadratic interpolation
-q_loss_path = Path(os.path.join(results), "q_loss_all")
-q_acc_path = Path(os.path.join(results), "q_acc_all")
+q_loss_path = Path(results, "q_loss_all")
+q_acc_path = Path(results, "q_acc_all")
 
 # single loss experiments paths
-svloss_path = Path(os.path.join(single, "svloss"))  # results\svloss
-svloss_img_path = Path(os.path.join(single_img, "svloss"))
+svloss_path = Path(single, "svloss")  # results\svloss
+svloss_img_path = Path(single_img, "svloss")
 
 # single accuracy experiments paths
-sacc_path = Path(os.path.join(single, "sacc"))
-sacc_img_path = Path(os.path.join(single_img, "sacc"))
+sacc_path = Path(single, "sacc")
+sacc_img_path = Path(single_img, "sacc")
 
 # vector loss experiments paths
-vvloss_path = Path(os.path.join(vec, "vvloss"))
-vvloss_img_path = Path(os.path.join(vec_img, "vvloss"))
+vvloss_path = Path(vec, "vvloss")
+vvloss_img_path = Path(vec_img, "vvloss")
 
 # vector accuracy experiments paths
-vacc_path = Path(os.path.join(vec, "vacc"))
-vacc_img_path = Path(os.path.join(vec_img, "vacc"))
+vacc_path = Path(vec, "vacc")
+vacc_img_path = Path(vec_img, "vacc")
 
 # preliminary experiments paths
-train_subs_loss = Path(os.path.join(prelim, "train_subs_loss"))
-train_subs_acc = Path(os.path.join(prelim, "train_subs_acc"))
+train_subs_loss = Path(prelim, "train_subs_loss")
+train_subs_acc = Path(prelim, "train_subs_acc")
 
-test_subs_loss = Path(os.path.join(prelim, "test_subs_loss"))
-test_subs_acc = Path(os.path.join(prelim, "test_subs_acc"))
+test_subs_loss = Path(prelim, "test_subs_loss")
+test_subs_acc = Path(prelim, "test_subs_acc")
 
 epochs_loss = Path(os.path.join(prelim, "epochs_loss"))
 epochs_acc = Path(os.path.join(prelim, "epochs_acc"))

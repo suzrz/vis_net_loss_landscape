@@ -1,9 +1,9 @@
 import copy
 import torch
 import pickle
-import data_load
+from lib import data_load
 import numpy as np
-from paths import *
+from lib.paths import *
 from torch import optim
 from torch import nn as nn
 import torch.nn.functional as f

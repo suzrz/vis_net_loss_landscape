@@ -1,6 +1,5 @@
-import prep
-import data_load
-from examine1D import *
+from lib import data_load, prep
+from lib.examine1D import *
 
 
 def run_complete(args, device):
@@ -16,7 +15,7 @@ def run_complete(args, device):
 
     model = prep.get_net(device, train_loader, test_loader, args.epochs)
 
-    interpolate = Examinator1D(model, device, alpha, final_state, init_state)
+    interpolate = Linear(model, device, alpha, final_state, init_state)
 
     interpolate.interpolate_all_linear(test_loader)
 
@@ -38,7 +37,7 @@ def run_layers(args, device):
 
     model = prep.get_net(device, train_loader, test_loader, args.epochs)
 
-    interpolate = Examinator1D(model, device, alpha, final_state, init_state)
+    interpolate = Linear(model, device, alpha, final_state, init_state)
 
     if args.trained:
         interpolate.interpolate_all_linear(test_loader)
@@ -62,6 +61,6 @@ def run_single(args, device):
 
     model = prep.get_net(device, train_loader, test_loader, args.epochs)  # setup model
 
-    interpolate = Examinator1D(model, device, alpha, final_state, init_state)  # get interpolator instance
+    interpolate = Linear(model, device, alpha, final_state, init_state)  # get interpolator instance
 
     interpolate.individual_param_linear(test_loader, args.layer, args.idxs)  # execute the experiment

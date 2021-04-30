@@ -3,7 +3,7 @@ import copy
 import h5py
 import numpy as np
 import matplotlib.pyplot as plt
-from paths import *
+from lib.paths import *
 from matplotlib.font_manager import FontProperties
 from mpl_toolkits.mplot3d import Axes3D
 
@@ -12,7 +12,7 @@ color_trained = "dimgrey"
 color_acc = "blue"
 
 font = FontProperties()
-font.set_size(15)
+font.set_size(20)
 
 
 def _plot_line(x, y, xlabel, ylabel, annotate=False, color="blue"):
@@ -165,7 +165,7 @@ def plot_metric(alpha, ydata, img_path, metric):
     plt.close("all")
 
 
-def _map_distance(directory):
+def map_distance(directory):
     """
     Maps calculated distances to values from interval <0, 1>
 
@@ -305,6 +305,7 @@ def plot_lin_quad_real(show=False):
         plt.show()
     plt.close("all")
 
+
 def plot_individual_lin_quad(x):
     """
     Function plots comparison between linear and quadratic interpolation on the level of individual parameter.
@@ -325,13 +326,11 @@ def plot_individual_lin_quad(x):
                 continue
 
     for key, value in data.items():
-        l = Path(os.path.join(single, key))
-        print(l)
-        q = Path(os.path.join(single, value))
-        print(q)
+        linear = Path(os.path.join(single, key))
+        quadratic = Path(os.path.join(single, value))
 
-        l = np.loadtxt(l)
-        q = np.loadtxt(q)
+        linear = np.loadtxt(linear)
+        quadratic = np.loadtxt(quadratic)
 
         fig = plt.figure(figsize=(8.5, 6))
         ax = fig.add_subplot()
@@ -339,8 +338,8 @@ def plot_individual_lin_quad(x):
         ax.spines["right"].set_visible(False)
         ax.spines["top"].set_visible(False)
 
-        ax.plot(x, l, color="orange", label="Linear")
-        ax.plot(x, q, color="blue", label="Quadratic")
+        ax.plot(x, linear, color="orange", label="Linear")
+        ax.plot(x, quadratic, color="blue", label="Quadratic")
 
         ax.set_xlabel(r"$\alpha$", fontproperties=font)
         ax.set_ylabel("Validation loss", fontproperties=font)
@@ -349,7 +348,6 @@ def plot_individual_lin_quad(x):
 
         plt.savefig(os.path.join(single_img, f"{key}_comparison.pdf"), format="pdf")
         plt.close("all")
-
 
 
 def contour_path(steps, loss_grid, coords, pcvariances):
@@ -367,8 +365,8 @@ def contour_path(steps, loss_grid, coords, pcvariances):
     im = ax.contourf(coords_x, coords_y, loss_grid, levels=40, alpha=0.9)
     w1s = [step[0] for step in steps]
     w2s = [step[1] for step in steps]
-    (pathline,) = ax.plot(w1s, w2s, color='r', lw=1)
-    (point, ) = ax.plot(steps[0][0], steps[0][1], "ro")
+    ax.plot(w1s, w2s, color='r', lw=1)
+    ax.plot(steps[0][0], steps[0][1], "ro")
     plt.colorbar(im)
     ax.set_xlabel(f"PCA 0 {pcvariances[0]:.2%}")
     ax.set_ylabel(f"PCA 1 {pcvariances[1]:.2%}")
@@ -394,15 +392,16 @@ def surface_contour(loss_grid, coords):
 
     plt.close("all")
 
+
 def surface3d_rand_dirs():
     # vmin = 0
     # vmax = 100
 
     # vlevel = 0.5
-    surf = Path(os.path.join(random_dirs, "surf.h5"))
+    surface = Path(os.path.join(random_dirs, "surf.h5"))
     surf_name = "loss"
 
-    with h5py.File(surf, 'r') as fd:
+    with h5py.File(surface, 'r') as fd:
         x = np.array(fd["xcoordinates"][:])
         y = np.array(fd["ycoordinates"][:])
 
@@ -422,14 +421,11 @@ def surface3d_rand_dirs():
 
 
 def surface_heatmap_rand_dirs():
-    surf = Path(os.path.join(random_dirs, "surf.h5"))
+    surface = Path(os.path.join(random_dirs, "surf.h5"))
     surf_name = "loss"
 
-    with h5py.File(surf, 'r') as fd:
-        x = np.array(fd["xcoordinates"][:])
-        y = np.array(fd["ycoordinates"][:])
+    with h5py.File(surface, 'r') as fd:
 
-        X, Y = np.meshgrid(x, y)
         Z = np.array(fd[surf_name][:])
 
         """HEAT MAP"""

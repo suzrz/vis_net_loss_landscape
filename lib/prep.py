@@ -58,9 +58,9 @@ def parse_arguments():
                         help="Sets the resolution the path visualization (default = 3).")
     parser.add_argument("--auto", action="store_true",
                         help="Runs the 1D experiments automatically.")
-    parser.add_argument("--auto-n", type=int, action="store", default=10, nargs='?',
+    parser.add_argument("--auto-n", type=int, action="store", default=1, nargs='?',
                         help="Sets number of examined parameters for "
-                             "auto execution of the 1D experiments (default = 10).")
+                             "auto execution of the 1D experiments (default = 1).")
     parser.add_argument("--plot", action="store_true",
                         help="Plot available data.")
     parser.add_argument("--debug", action="store_true", help="Enables debug logging.")

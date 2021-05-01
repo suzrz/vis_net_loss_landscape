@@ -35,7 +35,7 @@ def parse_arguments():
                         help="Set number of interpolation steps (int, default = 40).")
     parser.add_argument("--epochs", type=int, action="store", default=14, nargs='?',
                         help="Set number of training epochs (default = 14).")
-    parser.add_argument("--idxs", nargs='+', default=(0, 0, 0, 0),
+    parser.add_argument("--idxs", nargs='+', type=int, default=(0, 0, 0, 0),
                         help="Set index of examined parameter (default = [0, 0, 0, 0]).")
     parser.add_argument("--layer", default="conv1",
                         help="Set layer of examined parameter (default = conv1).")
@@ -66,6 +66,7 @@ def parse_arguments():
     parser.add_argument("--debug", action="store_true", help="Enables debug logging.")
 
     args = parser.parse_args()
+    args.idxs = tuple(args.idxs)
 
     return args
 

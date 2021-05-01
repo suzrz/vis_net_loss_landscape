@@ -107,7 +107,7 @@ def train(model, train_loader, optimizer, device, epoch, checkpoint_file=True):
         loss = f.nll_loss(output, target)  # compute train loss
         train_loss += f.nll_loss(output, target, reduction="sum").item()
         loss.backward()
-        optimizer.step()  # TODO here collect data to project trajectory: flat weights, loss
+        optimizer.step()
 
         if checkpoint_file:
             filename = Path(os.path.join(checkpoints), f"checkpoint_epoch_{epoch}_step_{batch_idx}.pkl")
@@ -146,7 +146,7 @@ def test(model, test_loader, device):
 
     test_loss /= len(test_loader.dataset)  # compute validation loss of neural network
     accuracy = 100. * correct / len(test_loader.dataset)
-    logger.info(f"Validation has finished:"
+    logger.debug(f"Validation has finished:"
                 f"\n      Validation loss: {test_loss}"
                 f"\n      Accuracy: {accuracy} %")
     return test_loss, accuracy

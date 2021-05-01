@@ -218,7 +218,10 @@ def plot_params_by_layer(x, layer, opacity_dict, show=False):
                 re.search("distance", file) and not re.search("q", file):
             k = file + "_distance"  # key for opacity dictionary
             lab = file.split("_")  # get label (parameter position)
-            ax.plot(x, np.loadtxt(os.path.join(single, file)), label=lab[-1], alpha=opacity_dict[k], color="blueviolet")
+            try:
+                ax.plot(x, np.loadtxt(os.path.join(single, file)), label=lab[-1], alpha=opacity_dict[k], color="blueviolet")
+            except KeyError:
+                continue  # distance file does not exist
 
     ax.set_ylabel("Validation loss", fontproperties=font)
     ax.set_xlabel(r"$\alpha$", fontproperties=font)
@@ -231,12 +234,11 @@ def plot_params_by_layer(x, layer, opacity_dict, show=False):
     plt.close("all")
 
 
-def plot_vec_all_la(x, show=False):
+def plot_vec_all_la(x):
     """
     Function plots all performance of the model with modified layers in one figure
 
     :param x: data for x-axis (interpolation coefficient)
-    :param show: show plot
     """
     files = os.listdir(vec)
     fig, (ax, ax2) = plt.subplots(1, 2, figsize=(8, 3))
@@ -272,12 +274,10 @@ def plot_vec_all_la(x, show=False):
 
     plt.savefig("{}_{}.pdf".format(vec_img, "all_la"), format="pdf")
 
-    if show:
-        plt.show()
     plt.close("all")
 
 
-def plot_lin_quad_real(show=False):
+def plot_lin_quad_real():
     alpha = np.linspace(0, 1, 40)
     epochs = np.arange(0, 14)
 
@@ -301,8 +301,7 @@ def plot_lin_quad_real(show=False):
     ax1.set_ylabel("Validation Loss", fontproperties=font)
 
     plt.savefig(os.path.join(vec_img, "lin_quadr_real.pdf"), format="pdf")
-    if show:
-        plt.show()
+
     plt.close("all")
 
 
@@ -329,8 +328,11 @@ def plot_individual_lin_quad(x):
         linear = Path(os.path.join(single, key))
         quadratic = Path(os.path.join(single, value))
 
-        linear = np.loadtxt(linear)
-        quadratic = np.loadtxt(quadratic)
+        try:
+            linear = np.loadtxt(linear)
+            quadratic = np.loadtxt(quadratic)
+        except OSError:
+            continue  # only one type of the 1D experiment available
 
         fig = plt.figure(figsize=(8.5, 6))
         ax = fig.add_subplot()
@@ -341,10 +343,8 @@ def plot_individual_lin_quad(x):
         ax.plot(x, linear, color="orange", label="Linear")
         ax.plot(x, quadratic, color="blue", label="Quadratic")
 
-        ax.set_xlabel(r"$\alpha$", fontproperties=font)
-        ax.set_ylabel("Validation loss", fontproperties=font)
-
-        ax.legend(loc="upper right")
+        ax.set_xticks([], [])
+        ax.set_yticks([], [])
 
         plt.savefig(os.path.join(single_img, f"{key}_comparison.pdf"), format="pdf")
         plt.close("all")

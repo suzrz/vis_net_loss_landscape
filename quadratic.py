@@ -19,6 +19,8 @@ def run_complete(args, device):
 
     interpolate.interpolate_all_quadratic(test_loader)
 
+    plot.plot_lin_quad_real()
+
 
 def run_layers(args, device):
     """

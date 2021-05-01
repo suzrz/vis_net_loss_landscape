@@ -56,7 +56,7 @@ class Examinator1D:
 class Linear(Examinator1D):
     def __calc_theta_single(self, layer, idxs, alpha):
         """
-        Method calculates interpolation of a single parameter with respect to interpolation coefficient alpha
+        Method calculates interpolation of a individual parameter with respect to interpolation coefficient alpha
 
         :param layer: layer of parameter
         :param idxs: position of parameter
@@ -249,7 +249,7 @@ class Linear(Examinator1D):
 class Quadratic(Examinator1D):
     def __calc_theta_single_q(self, layer, idxs, alpha, start, mid, end):
         """
-        Method calculates quadratic interpolation of a single parameter with respect to interpolation coefficient
+        Method calculates quadratic interpolation of a individual parameter with respect to interpolation coefficient
         alpha
 
         :param layer: layer of parameter

@@ -17,6 +17,7 @@ else:
 
 logging.basicConfig(level=lvl, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
                     filename="vis_net.log")
+logger.info("========NEURAL NETWORK TRAINING PROGRESS VISUALIZATION TOOL========")
 
 init_dirs()
 
@@ -25,24 +26,27 @@ device = torch.device("cuda" if use_cuda else "cpu")
 logger.debug(f"Device: {device}")
 
 if args.auto:
-    logger.info("Executing 1D experiments automatically")
+    logger.info(f"Executing one dimensional experiments automatically. (Number of samples: {args.auto_n})")
     prep.run_all(args, device)
 
-if args.single:
-    logger.info("Executing interpolation of individual parameter experiment")
-    linear.run_single(args, device)
+if args.linear_i:
+    logger.info(f"Executing parameter level linear path experiment. (Parameter {args.layer} {args.idxs})")
+    linear.run_individual(args, device)
 
-if args.layers:
+if args.linear_q:
+    logger.info(f"Executing layer level linear path experiment. (Layer {args.layer})")
     linear.run_complete(args, device)
 
-    logger.info("Executing interpolation of parameters of a layer experiment")
-    linear.run_layers(args, device)
+    linear.run_layer(args, device)
 
-if args.quadratic:
+if args.quadratic_i:
+    logger.info(f"Executing parameter level quadratic path experiment. (Parameter {args.layer} {args.idxs})")
+    quadratic.run_individual(args, device)
+
+if args.quadratic_l:
+    logger.info(f"Executing layer level quadratic path experiment. (Layer {args.layer})")
     quadratic.run_complete(args, device)
 
-    logger.info("Executing quadratic interpolation of individual parameter")
-    quadratic.run_individual(args, device)
     quadratic.run_layers(args, device)
 
 if args.preliminary:

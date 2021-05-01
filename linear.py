@@ -20,7 +20,7 @@ def run_complete(args, device):
     interpolate.interpolate_all_linear(test_loader)
 
 
-def run_layers(args, device):
+def run_layer(args, device):
     """
     Function setups and executes experiment of interpolation of parameters
 
@@ -44,7 +44,7 @@ def run_layers(args, device):
     interpolate.layers_linear(test_loader, args.layer, args.trained)
 
 
-def run_single(args, device):
+def run_individual(args, device):
     """
     Function executes experiment with individual parameter
 

@@ -205,7 +205,7 @@ def plot_params_by_layer(x, layer, opacity_dict, show=False):
     :param opacity_dict: dictionary with travelled distances of each parameter
     :param show: show the plots
     """
-    files = os.listdir(single)
+    files = os.listdir(individual)
 
     fig = plt.figure(figsize=(8, 6))
     ax = fig.add_subplot()
@@ -219,14 +219,14 @@ def plot_params_by_layer(x, layer, opacity_dict, show=False):
             k = file + "_distance"  # key for opacity dictionary
             lab = file.split("_")  # get label (parameter position)
             try:
-                ax.plot(x, np.loadtxt(os.path.join(single, file)), label=lab[-1], alpha=opacity_dict[k], color="blueviolet")
+                ax.plot(x, np.loadtxt(os.path.join(individual, file)), label=lab[-1], alpha=opacity_dict[k], color="blueviolet")
             except KeyError:
                 continue  # distance file does not exist
 
     ax.set_ylabel("Validation loss", fontproperties=font)
     ax.set_xlabel(r"$\alpha$", fontproperties=font)
 
-    plt.savefig("{}.pdf".format(os.path.join(single_img, layer)), format="pdf")
+    plt.savefig("{}.pdf".format(os.path.join(individual_img, layer)), format="pdf")
 
     if show:
         plt.show()
@@ -240,7 +240,7 @@ def plot_vec_all_la(x):
 
     :param x: data for x-axis (interpolation coefficient)
     """
-    files = os.listdir(vec)
+    files = os.listdir(layers)
     fig, (ax, ax2) = plt.subplots(1, 2, figsize=(8, 3))
 
     ax.spines["right"].set_visible(False)
@@ -259,9 +259,9 @@ def plot_vec_all_la(x):
             k = file + "_distance"
             try:
                 if re.search("loss", file):
-                    ax.plot(x, np.loadtxt(os.path.join(vec, file)), label=lab[-1], lw=1)
+                    ax.plot(x, np.loadtxt(os.path.join(layers, file)), label=lab[-1], lw=1)
                 if re.search("acc", file):
-                    ax2.plot(x, np.loadtxt(os.path.join(vec, file)), lw=1)
+                    ax2.plot(x, np.loadtxt(os.path.join(layers, file)), lw=1)
             except KeyError:
                 logger.warning(f"Missing key {k} in opacity dict, will not plot line for {file}")
                 continue
@@ -272,7 +272,7 @@ def plot_vec_all_la(x):
     fig.legend()
     fig.subplots_adjust(bottom=0.17)
 
-    plt.savefig("{}_{}.pdf".format(vec_img, "all_la"), format="pdf")
+    plt.savefig("{}_{}.pdf".format(layers_img, "all_la"), format="pdf")
 
     plt.close("all")
 
@@ -300,7 +300,7 @@ def plot_lin_quad_real():
     ax2.set_xlabel("Epochs", fontproperties=font)
     ax1.set_ylabel("Validation Loss", fontproperties=font)
 
-    plt.savefig(os.path.join(vec_img, "lin_quadr_real.pdf"), format="pdf")
+    plt.savefig(os.path.join(layers_img, "lin_quadr_real.pdf"), format="pdf")
 
     plt.close("all")
 
@@ -312,11 +312,11 @@ def plot_individual_lin_quad(x):
     :param x: x-axis data
     """
     data = {}
-    for fil in os.listdir(single):  # get all linear interpolation results
+    for fil in os.listdir(individual):  # get all linear interpolation results
         if re.search("svloss", fil) and not re.search("q", fil) and not re.search("distance", fil):
             data[fil] = ""
 
-    for fil in os.listdir(single):  # get all quadratic interpolation results
+    for fil in os.listdir(individual):  # get all quadratic interpolation results
         if re.search("svloss", fil) and re.search("q", fil):
             k = fil[:-2]
             try:
@@ -325,8 +325,8 @@ def plot_individual_lin_quad(x):
                 continue
 
     for key, value in data.items():
-        linear = Path(os.path.join(single, key))
-        quadratic = Path(os.path.join(single, value))
+        linear = Path(os.path.join(individual, key))
+        quadratic = Path(os.path.join(individual, value))
 
         try:
             linear = np.loadtxt(linear)
@@ -346,7 +346,7 @@ def plot_individual_lin_quad(x):
         ax.set_xticks([], [])
         ax.set_yticks([], [])
 
-        plt.savefig(os.path.join(single_img, f"{key}_comparison.pdf"), format="pdf")
+        plt.savefig(os.path.join(individual_img, f"{key}_comparison.pdf"), format="pdf")
         plt.close("all")
 
 

@@ -343,10 +343,8 @@ def plot_individual_lin_quad(x):
         ax.plot(x, linear, color="orange", label="Linear")
         ax.plot(x, quadratic, color="blue", label="Quadratic")
 
-        ax.set_xlabel(r"$\alpha$", fontproperties=font)
-        ax.set_ylabel("Validation loss", fontproperties=font)
-
-        ax.legend(loc="upper right")
+        ax.set_xticks([], [])
+        ax.set_yticks([], [])
 
         plt.savefig(os.path.join(single_img, f"{key}_comparison.pdf"), format="pdf")
         plt.close("all")

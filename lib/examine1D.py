@@ -39,7 +39,7 @@ class Examinator1D:
         logger.debug(f"Final state path: {final_state_path}")
         logger.debug(f"Init state path: {init_state_path}")
 
-    def __calc_distance(self, layer, idxs=None):
+    def calc_distance(self, layer, idxs=None):
         """
         Method calculates distance between initial and final parameters
 
@@ -164,7 +164,7 @@ class Linear(Examinator1D):
         if not dist.exists():
             logger.info(f"Calculating distance for: {layer} {idxs}")
 
-            distance = self.__calc_distance(layer + ".weight", idxs)
+            distance = self.calc_distance(layer + ".weight", idxs)
             logger.info(f"Distance: {distance}")
 
             with open(dist, 'w') as f:
@@ -231,7 +231,7 @@ class Linear(Examinator1D):
         if not dist.exists():
             logger.info(f"Calculating distance for: {layer}")
 
-            distance = self.__calc_distance(layer + ".weight")
+            distance = self.calc_distance(layer + ".weight")
             logger.info(f"Distance: {distance}")
 
             with open(dist, 'w') as f:
@@ -328,7 +328,7 @@ class Quadratic(Examinator1D):
                 for layer in layers:
                     start_p = self.theta_i[layer].cpu()
                     mid_p = copy.deepcopy(
-                        torch.load(os.path.join(checkpoints, "checkpoint_6"))[layer]).cpu()
+                        torch.load(os.path.join(checkpoints, "checkpoint_1"))[layer]).cpu()
                     end_p = self.theta_f[layer].cpu()
 
                     start = [start_a, start_p]
@@ -344,6 +344,7 @@ class Quadratic(Examinator1D):
 
             np.savetxt(q_loss_path, v_loss_list)
             np.savetxt(q_acc_path, acc_list)
+            plot.plot_lin_quad_real()
             self.model.load_state_dict(self.theta_f)
 
     def individual_param_quadratic(self, test_loader, layer, idxs):

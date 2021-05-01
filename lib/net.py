@@ -179,11 +179,12 @@ def pre_train_subset(model, device, subset_list, epochs, test_loader):
 
         train_loader, test_loader = data_load.data_load(train_samples=n_samples)
 
+        logger.info(f"Training subset size {n_samples}")
+
         for epoch in range(1, epochs):
             train(model, train_loader, optimizer, device, epoch)
 
             scheduler.step()
-            logger.debug(f"Finished epoch {epoch} for training subset {n_samples}")
 
         loss, acc = test(model, test_loader, device)
 
@@ -219,14 +220,16 @@ def pre_test_subset(model, device, subset_list):
         accs = []
 
         _, test_loader = data_load.data_load(test_samples=n_samples)  # to choose random data each time
-        for x in range(100):  # 10x pruchod experimentem TODO
+
+        logger.info(f"Test subset size {n_samples}")
+
+        for x in range(10):
             loss, acc = test(model, test_loader, device)
 
             losses.append(loss)
             accs.append(acc)
 
-            logger.debug(f"Subset size: {n_samples}"
-                         f"Validation loss: {loss}"
+            logger.debug(f"Validation loss: {loss}"
                          f"Accuracy: {acc}")
 
         subset_losses.append(losses)

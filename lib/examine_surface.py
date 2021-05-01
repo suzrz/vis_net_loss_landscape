@@ -1,7 +1,7 @@
-from lib import net
 import h5py
 import torch
 import numpy as np
+from lib import net
 from lib.paths import *
 
 logger = logging.getLogger("vis_net")
@@ -35,6 +35,7 @@ def get_directions(model, device):
     :param device: device to be used
     :return: list of two random directions
     """
+    logger.info("Generating random directions")
     x = get_random_direction(model, device)
     y = get_random_direction(model, device)
 
@@ -96,10 +97,13 @@ def overwrite_weights(model, init_weights, directions, step, device):
     :param step: step
     :param device: device
     """
+    logger.debug(f"Size of step: {step}")
+
     dx = directions[0]
     dy = directions[1]
 
     changes = [d0 * step[0] + d1 * step[1] for (d0, d1) in zip(dx, dy)]
+    logger.debug(f"Changes: {changes}")
 
     for (p, w, d) in zip(model.parameters(), init_weights, changes):
         p.data = w.to(device) + torch.tensor(d).to(device)
@@ -114,9 +118,9 @@ def calc_loss(model, test_loader, directions, device):
     :param directions: random projection directions
     :param device: device
     """
-    logger.info("Calculating loss function surface")
-    filename = Path(os.path.join(random_dirs, "surf.h5"))
-    logger.debug(f"Surface file: {filename}")
+    logger.info("Calculating loss surface")
+    filename = Path(random_dirs, "surf.h5")
+    logger.debug(f"Surface file: {filename.resolve()}")
 
     set_surf_file(filename)
 

@@ -5,7 +5,7 @@ logger = logging.getLogger("vis_net")
 
 
 def run_rand_dirs(args):
-    logger.info("Running loss function landscape visualization")
+    logger.info("Running loss function landscape visualization using random directions")
 
     use_cuda = not args.no_cuda and torch.cuda.is_available()
     device = torch.device("cuda" if use_cuda else "cpu")

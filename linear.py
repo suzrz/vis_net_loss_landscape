@@ -10,9 +10,9 @@ def run_complete(args, device):
     :param device: device to be used
     """
     logger.info("Running linear path examination on the level of model.")
-    logger.debug(f"Interpolation coefficient alpha "
-                 f"start: {args.alpha_start}"
-                 f"end: {args.alpha_end}"
+    logger.debug(f"Interpolation coefficient alpha\n"
+                 f"start: {args.alpha_start}\n"
+                 f"end: {args.alpha_end}\n"
                  f"steps: {args.alpha_steps}")
 
     alpha = np.linspace(args.alpha_start, args.alpha_end, args.alpha_steps)
@@ -34,10 +34,10 @@ def run_layer(args, device):
     :param device: device to be used
     """
     logger.info(f"Running linear path examination on the level of layer {args.layer}")
-    logger.debug(f"Interpolation coefficient alpha "
-                 f"start: {args.alpha_start}"
-                 f"end: {args.alpha_end}"
-                 f"steps: {args.alpha_steps}")
+    logger.debug(f"Interpolation coefficient alpha\n "
+                 f"start: {args.alpha_start}\n"
+                 f"end: {args.alpha_end}\n"
+                 f"steps: {args.alpha_steps}\n")
 
     alpha = np.linspace(0, 1, args.alpha_steps)
 
@@ -49,7 +49,7 @@ def run_layer(args, device):
 
     if args.trained:
         interpolate.interpolate_all_linear(test_loader)
-    interpolate.layers_linear(test_loader, args.layer, args.trained)
+    interpolate.layers_linear(test_loader, args.layer)
 
 
 def run_individual(args, device):
@@ -60,10 +60,10 @@ def run_individual(args, device):
     :param device: device to be used
     """
     logger.info(f"Running linear path examination on the level of parameters {args.layer} {args.idxs}")
-    logger.debug(f"Interpolation coefficient alpha "
-                 f"start: {args.alpha_start}"
-                 f"end: {args.alpha_end}"
-                 f"steps: {args.alpha_steps}")
+    logger.debug(f"Interpolation coefficient alpha\n "
+                 f"start: {args.alpha_start}\n"
+                 f"end: {args.alpha_end}\n"
+                 f"steps: {args.alpha_steps}\n")
 
     alpha = np.linspace(args.alpha_start, args.alpha_end, args.alpha_steps)  # setup interpolation coefficient
 

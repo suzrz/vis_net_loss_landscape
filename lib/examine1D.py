@@ -94,12 +94,12 @@ class Linear(Examinator1D):
         if not loss_path.exists() or not acc_path.exists():
             v_loss_list = []
             acc_list = []
-            layers = ["conv1.weight", "conv1.bias", "conv2.weight", "conv2.bias", "fc1.weight",
-                      "fc1.bias", "fc2.weight", "fc2.bias", "fc3.weight", "fc3.bias"]
+            lays = ["conv1.weight", "conv1.bias", "conv2.weight", "conv2.bias", "fc1.weight",
+                    "fc1.bias", "fc2.weight", "fc2.bias", "fc3.weight", "fc3.bias"]
 
             self.model.load_state_dict(self.theta_f)
             for alpha_act in self.alpha:
-                for layer in layers:
+                for layer in lays:
                     self.__calc_theta_vec(layer, alpha_act)
                     self.model.load_state_dict(self.theta)
 
@@ -165,7 +165,7 @@ class Linear(Examinator1D):
             logger.info(f"Calculating distance for: {layer} {idxs}")
 
             distance = self.calc_distance(layer + ".weight", idxs)
-            logger.info(f"Distance: {distance}")
+            logger.debug(f"Distance: {distance}")
 
             with open(dist, 'w') as f:
                 f.write("{}".format(distance))
@@ -179,14 +179,13 @@ class Linear(Examinator1D):
 
         return
 
-    def layers_linear(self, test_loader, layer, trained=False):
+    def layers_linear(self, test_loader, layer):
         """
         Method interpolates parameters of selected layer of the model and evaluates the model after each interpolation
         step
 
         :param test_loader: test loader
         :param layer: layer to be interpolated
-        :param trained: show trained state
         """
 
         loss_res = Path("{}_{}".format(vvloss_path, layer))
@@ -261,9 +260,7 @@ class Quadratic(Examinator1D):
         """
         logger.debug(f"Calculating quadr: {layer} {idxs} for alpha = {alpha}")
         xdata = np.array([start[0], mid[0], end[0]])
-        logger.debug(f"XDATA: {xdata}")
         ydata = np.array([start[1], mid[1], end[1]])
-        logger.debug(f"YDATA: {ydata}")
 
         poly = scipy.interpolate.lagrange(xdata, ydata)
 
@@ -314,8 +311,8 @@ class Quadratic(Examinator1D):
         if not q_loss_path.exists() or not q_acc_path.exists():
             v_loss_list = []
             acc_list = []
-            layers = ["conv1.weight", "conv1.bias", "conv2.weight", "conv2.bias", "fc1.weight",
-                      "fc1.bias", "fc2.weight", "fc2.bias", "fc3.weight", "fc3.bias"]
+            lays = ["conv1.weight", "conv1.bias", "conv2.weight", "conv2.bias", "fc1.weight",
+                    "fc1.bias", "fc2.weight", "fc2.bias", "fc3.weight", "fc3.bias"]
             start_a = 0
             mid_a = 0.5
             end_a = 1
@@ -325,7 +322,7 @@ class Quadratic(Examinator1D):
 
             self.model.load_state_dict(self.theta_f)
             for alpha_act in self.alpha:
-                for layer in layers:
+                for layer in lays:
                     start_p = self.theta_i[layer].cpu()
                     mid_p = copy.deepcopy(
                         torch.load(os.path.join(checkpoints, "checkpoint_1"))[layer]).cpu()
@@ -344,7 +341,7 @@ class Quadratic(Examinator1D):
 
             np.savetxt(q_loss_path, v_loss_list)
             np.savetxt(q_acc_path, acc_list)
-            plot.plot_lin_quad_real()
+            plot.plot_lin_quad_real(self.alpha)
             self.model.load_state_dict(self.theta_f)
 
     def individual_param_quadratic(self, test_loader, layer, idxs):
@@ -424,13 +421,12 @@ class Quadratic(Examinator1D):
 
         return
 
-    def layers_quadratic(self, test_loader, layer, trained=False):
+    def layers_quadratic(self, test_loader, layer):
         """
         Method examines the parameters on the level of layers using the quadratic interpolation.
 
         :param test_loader: test data set loader
         :param layer: layer to be examined
-        :param trained: show actual state in the result
         """
         loss_res = Path("{}_{}_q".format(vvloss_path, layer))
         loss_img = Path("{}_{}_q".format(vvloss_img_path, layer))

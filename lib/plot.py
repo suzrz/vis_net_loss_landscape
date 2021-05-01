@@ -347,8 +347,8 @@ def plot_individual_lin_quad(x):
         ax.plot(x, linear, color="orange", label="Linear")
         ax.plot(x, quadratic, color="blue", label="Quadratic")
 
-        ax.set_xticks([], [])
-        ax.set_yticks([], [])
+        ax.set_xticks(ticks=[], minor=[])
+        ax.set_yticks(ticks=[], minor=[])
 
         plt.savefig(os.path.join(individual_img, f"{key}_comparison.pdf"), format="pdf")
         plt.close("all")

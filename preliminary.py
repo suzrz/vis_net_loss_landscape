@@ -10,6 +10,7 @@ def run_preliminary(args, device):
     Function executes preliminary experiments
 
     :param args: command line arguments
+    :param device: device to be used
     """
     logger.info("Running preliminary experiments.")
     subs_train = [1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 15000, 20000, 30000, 40000, 50000, 60000]
@@ -21,7 +22,7 @@ def run_preliminary(args, device):
     model = prep.get_net(device, train_loader, test_loader, args.epochs)
     model.load_state_dict(torch.load(init_state))
 
-    net.pre_train_subset(model, device, subs_train, args.epochs, test_loader)
+    net.pre_train_subset(model, device, subs_train, args.epochs)
     net.pre_test_subset(model, device, subs_test)
     net.pre_epochs(model, device, epochs)
 

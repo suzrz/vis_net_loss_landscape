@@ -264,33 +264,32 @@ def plot_available(args):
     individual_files = os.listdir(individual)
     layer_files = os.listdir(layers)
 
-    alpha_i = np.linspace(args.alpha_start, args.alpha_end, args.alpha_steps)
-    alpha_l = np.linspace(0, 1, args.alpha_steps)
+    alpha = np.linspace(args.alpha_start, args.alpha_end, args.alpha_steps)
 
     for fil in individual_files:
         if not re.search("distance", fil):
             if re.search("loss", fil):
-                plot.plot_metric(alpha_i, np.loadtxt(Path(individual, fil)), Path(individual_img, fil), "loss")
+                plot.plot_metric(alpha, np.loadtxt(Path(individual, fil)), Path(individual_img, fil), "loss")
             if re.search("acc", fil):
-                plot.plot_metric(alpha_i, np.loadtxt(Path(individual, fil)), Path(individual_img, fil), "acc")
+                plot.plot_metric(alpha, np.loadtxt(Path(individual, fil)), Path(individual_img, fil), "acc")
 
     for fil in layer_files:
         if not re.search("distance", fil):
             if re.search("loss", fil):
-                plot.plot_metric(alpha_l, np.loadtxt(Path(layers, fil)), Path(layers_img, fil), "loss")
+                plot.plot_metric(alpha, np.loadtxt(Path(layers, fil)), Path(layers_img, fil), "loss")
             if re.search("acc", fil):
-                plot.plot_metric(alpha_l, np.loadtxt(Path(layers, fil)), Path(layers_img, fil), "acc")
+                plot.plot_metric(alpha, np.loadtxt(Path(layers, fil)), Path(layers_img, fil), "acc")
 
     d = plot.map_distance(individual)
 
     # plot parameters of each layer in one plot
-    plot.plot_params_by_layer(alpha_i, "conv1", d)
-    plot.plot_params_by_layer(alpha_i, "conv2", d)
-    plot.plot_params_by_layer(alpha_i, "fc1", d)
-    plot.plot_params_by_layer(alpha_i, "fc2", d)
-    plot.plot_params_by_layer(alpha_i, "fc3", d)
+    plot.plot_params_by_layer(alpha, "conv1", d)
+    plot.plot_params_by_layer(alpha, "conv2", d)
+    plot.plot_params_by_layer(alpha, "fc1", d)
+    plot.plot_params_by_layer(alpha, "fc2", d)
+    plot.plot_params_by_layer(alpha, "fc3", d)
 
-    plot.plot_vec_all_la(alpha_l)
+    plot.plot_vec_all_la(alpha)
 
-    plot.plot_lin_quad_real()
+    plot.plot_lin_quad_real(alpha)
     plot.plot_individual_lin_quad(np.linspace(args.alpha_start, args.alpha_end, args.alpha_steps))

@@ -147,7 +147,3 @@ def calc_loss(model, test_loader, directions, device):
             fd["loss"][:] = losses
 
             fd.flush()
-
-
-
-

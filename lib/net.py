@@ -152,7 +152,7 @@ def test(model, test_loader, device):
     return test_loss, accuracy
 
 
-def pre_train_subset(model, device, subset_list, epochs, test_loader):
+def pre_train_subset(model, device, subset_list, epochs):
     """
     Function to examine impact of different sizes of training subset.
 
@@ -160,7 +160,6 @@ def pre_train_subset(model, device, subset_list, epochs, test_loader):
     :param device: device to be used
     :param subset_list: list of subsets sizes to be examinated
     :param epochs: number of training epoch
-    :param test_loader: test dataset loader
     """
     logger.info("Running impact of size of training subset preliminary experiment")
     if train_subs_loss.exists() and train_subs_acc.exists():

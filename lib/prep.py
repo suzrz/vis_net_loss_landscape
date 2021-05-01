@@ -158,18 +158,14 @@ def _run_interpolation(idxs, args, device):
     :param args: experiment configuration
     :param device: device to be used
     """
-    if args.single:
-        linear.run_layers(args, device)
-    if args.quadratic:
-        quadratic.run_layers(args, device)
+    linear.run_layers(args, device)
+    quadratic.run_layers(args, device)
 
     for i in idxs:
         args.idxs = i
         logger.debug(f"layer: {args.layer}, idxs: {idxs}")
-        if args.single:
-            linear.run_single(args, device)
-        if args.quadratic:
-            quadratic.run_individual(args, device)
+        linear.run_single(args, device)
+        quadratic.run_individual(args, device)
 
 
 def run_all(args, device):
@@ -247,10 +243,10 @@ def run_all(args, device):
     plot.plot_params_by_layer(x, "fc3", d)
 
     # plot all layers in one
-    xv = np.linspace(0, 1, args.alpha_steps, args.show)
-    plot.plot_vec_all_la(xv, args.show)
+    xv = np.linspace(0, 1, args.alpha_steps)
+    plot.plot_vec_all_la(xv)
 
-    plot.plot_lin_quad_real(args.show)
+    plot.plot_lin_quad_real()
     plot.plot_individual_lin_quad(np.linspace(args.alpha_start, args.alpha_end, args.alpha_steps))
 
     sys.exit(0)
@@ -266,16 +262,16 @@ def plot_available(args):
     for fil in individual_files:
         if not re.search("distance", fil):
             if re.search("loss", fil):
-                plot.plot_metric(alpha_i, np.loadtxt(fil), os.path.join(single_img, fil), "loss")
+                plot.plot_metric(alpha_i, np.loadtxt(Path(single, fil)), Path(single_img, fil), "loss")
             if re.search("acc", fil):
-                plot.plot_metric(alpha_i, np.loadtxt(fil), os.path.join(single_img, fil), "acc")
+                plot.plot_metric(alpha_i, np.loadtxt(Path(single, fil)), Path(single_img, fil), "acc")
 
     for fil in layer_files:
         if not re.search("distance", fil):
             if re.search("loss", fil):
-                plot.plot_metric(alpha_l, np.loadtxt(fil), os.path.join(fil), "loss")
+                plot.plot_metric(alpha_l, np.loadtxt(Path(vec, fil)), Path(vec_img, fil), "loss")
             if re.search("acc", fil):
-                plot.plot_metric(alpha_l, np.loadtxt(fil), os.path.join(fil), "acc")
+                plot.plot_metric(alpha_l, np.loadtxt(Path(vec, fil)), Path(vec_img, fil), "acc")
 
     d = plot.map_distance(single)
 
@@ -286,7 +282,7 @@ def plot_available(args):
     plot.plot_params_by_layer(alpha_i, "fc2", d)
     plot.plot_params_by_layer(alpha_i, "fc3", d)
 
-    plot.plot_vec_all_la(alpha_l, args.show)
+    plot.plot_vec_all_la(alpha_l)
 
-    plot.plot_lin_quad_real(args.show)
+    plot.plot_lin_quad_real()
     plot.plot_individual_lin_quad(np.linspace(args.alpha_start, args.alpha_end, args.alpha_steps))

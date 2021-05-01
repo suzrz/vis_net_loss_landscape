@@ -84,44 +84,50 @@ def get_net(device, train_loader, test_loader, epochs):
     :return: Net object (NN model)
     """
     # Create instance of neural network
-    logger.debug("[main]: Getting NN model")
+    logger.info("Creating instance of a NN model.")
+
     model = net.Net().to(device)
+
     loss_list = []
     acc_list = []
 
     # Save initial state of network if not saved yet
     if not init_state.exists():
-        logger.info("[main]: No initial state of the model found. Initializing ...")
+        logger.debug("No initial state of the model found. Initializing ...")
         torch.save(model.state_dict(), init_state)
-        logger.debug("[main]: Initial state saved into {}".format(init_state))
+        logger.debug(f"Initial state saved in {init_state}")
 
     # Get optimizer and scheduler
     optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.5)  # set optimizer
     scheduler = StepLR(optimizer, step_size=1, gamma=0.7)  # set scheduler
 
-    # Initialize neural network model
-    model.load_state_dict(torch.load(init_state))  # Loading initial state to be sure that net is in initial state
+    # Load initial state to the model
+    model.load_state_dict(torch.load(init_state))
     torch.manual_seed(1)  # set seed
 
     # Train model if not trained yet
     if not final_state.exists():
-        logger.info("[main]: No final state of the model found. Training ...")
+        logger.debug("No final state of the model found. Training ...")
 
         loss, acc = net.test(model, test_loader, device)
         loss_list.append(loss)
         acc_list.append(acc)
 
+        logger.debug(f"Training the NN model.")
         for epoch in range(1, epochs):
-            logger.debug("[main]: Epoch {}".format(epoch))
-            logger.debug("[main]: Loss {}".format(loss))
-            logger.debug("[main]: Acc {}".format(acc))
             net.train(model, train_loader, optimizer, device, epoch)
+
             loss, acc = net.test(model, test_loader, device)
+            logger.debug(f"Epoch {epoch}\n"
+                         f"Loss {loss}\n"
+                         f"Accuracy {acc}")
+
             loss_list.append(loss)
             acc_list.append(acc)
+
             scheduler.step()
-            logger.debug("[main]: Finished training epoch {}".format(epoch))
-            torch.save(model.state_dict(), os.path.join(checkpoints, "checkpoint_{}".format(epoch)))
+
+            torch.save(model.state_dict(), Path(checkpoints, f"checkpoint_{epoch}"))
 
         torch.save(model.state_dict(), final_state)  # save final parameters of model
 
@@ -129,7 +135,6 @@ def get_net(device, train_loader, test_loader, epochs):
         np.savetxt(os.path.join(results, "actual_acc"), acc_list)
 
     model.load_state_dict(torch.load(final_state))
-    logger.debug("[main get_net]: Loaded final parameters in the model.")
 
     return model  # return neural network in final (trained) state
 

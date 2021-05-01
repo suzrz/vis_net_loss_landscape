@@ -147,8 +147,8 @@ def test(model, test_loader, device):
     test_loss /= len(test_loader.dataset)  # compute validation loss of neural network
     accuracy = 100. * correct / len(test_loader.dataset)
     logger.debug(f"Validation has finished:"
-                f"\n      Validation loss: {test_loss}"
-                f"\n      Accuracy: {accuracy} %")
+                 f"\n      Validation loss: {test_loss}"
+                 f"\n      Accuracy: {accuracy} %")
     return test_loss, accuracy
 
 
@@ -162,7 +162,7 @@ def pre_train_subset(model, device, subset_list, epochs, test_loader):
     :param epochs: number of training epoch
     :param test_loader: test dataset loader
     """
-    logger.info("Subset preliminary experiment started")
+    logger.info("Running impact of size of training subset preliminary experiment")
     if train_subs_loss.exists() and train_subs_acc.exists():
         return
 
@@ -177,14 +177,13 @@ def pre_train_subset(model, device, subset_list, epochs, test_loader):
         optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.5)  # set optimizer
         scheduler = StepLR(optimizer, step_size=1, gamma=0.7)  # set scheduler
 
-        for epoch in range(1, epochs):
-            train_loader, test_loader = data_load.data_load(train_samples=n_samples)
+        train_loader, test_loader = data_load.data_load(train_samples=n_samples)
 
+        for epoch in range(1, epochs):
             train(model, train_loader, optimizer, device, epoch)
-            test(model, test_loader, device)
 
             scheduler.step()
-            logger.debug(f"Finished epoch for tranining subset {epoch}, {n_samples}")
+            logger.debug(f"Finished epoch {epoch} for training subset {n_samples}")
 
         loss, acc = test(model, test_loader, device)
 
@@ -205,6 +204,7 @@ def pre_test_subset(model, device, subset_list):
     :param device: device to be used
     :param subset_list: list of subset sizes to be examined
     """
+    logger.info("Running impact of size of test subset preliminary experiment")
     if test_subs_loss.exists() and test_subs_acc.exists():
         return
 
@@ -217,14 +217,17 @@ def pre_test_subset(model, device, subset_list):
     for n_samples in subset_list:
         losses = []
         accs = []
+
+        _, test_loader = data_load.data_load(test_samples=n_samples)  # to choose random data each time
         for x in range(100):  # 10x pruchod experimentem TODO
-            _, test_loader = data_load.data_load(test_samples=n_samples)  # to choose random data each time
             loss, acc = test(model, test_loader, device)
+
             losses.append(loss)
             accs.append(acc)
-            logger.info(f"Subset size: {n_samples}"
-                        f"Validation loss: {loss}"
-                        f"Accuracy: {acc}")
+
+            logger.debug(f"Subset size: {n_samples}"
+                         f"Validation loss: {loss}"
+                         f"Accuracy: {acc}")
 
         subset_losses.append(losses)
         subset_accs.append(accs)

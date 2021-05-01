@@ -1,5 +1,6 @@
 import torch
-from lib import preliminary, prep
+from lib import prep
+import preliminary
 import PCA_directions
 import random_directions
 import linear
@@ -32,7 +33,7 @@ if args.auto:
 if args.linear_i:
     linear.run_individual(args, device)
 
-if args.linear_q:
+if args.linear_l:
     linear.run_complete(args, device)
 
     linear.run_layer(args, device)
@@ -46,7 +47,7 @@ if args.quadratic_l:
     quadratic.run_layers(args, device)
 
 if args.preliminary:
-    preliminary.run_preliminary(args)
+    preliminary.run_preliminary(args, device)
 
 if args.surface:
     random_directions.run_rand_dirs(args)

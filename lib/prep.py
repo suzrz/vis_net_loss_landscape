@@ -176,7 +176,7 @@ def run_all(args, device):
         Runs linear and quadratic interpolation automatically over all layers
         and chosen number of parameters.
 
-        Warning: Works only for model architecture specified in net.py
+        Warning: Works only for the provided model architecture specified in net.py
 
         :param args: experiment parameters
         :param device: device to be used
@@ -246,11 +246,11 @@ def run_all(args, device):
     plot.plot_params_by_layer(x, "fc3", d)
 
     # plot all layers in one
-    xv = np.linspace(0, 1, args.alpha_steps)
-    plot.plot_vec_all_la(xv)
+    alpha = np.linspace(args.alpha_start, args.alpha_end, args.alpha_steps)
 
-    plot.plot_lin_quad_real()
-    plot.plot_individual_lin_quad(np.linspace(args.alpha_start, args.alpha_end, args.alpha_steps))
+    plot.plot_vec_all_la(alpha)
+    plot.plot_lin_quad_real(alpha)
+    plot.plot_individual_lin_quad(alpha)
 
     sys.exit(0)
 

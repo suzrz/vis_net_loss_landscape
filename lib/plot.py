@@ -172,6 +172,7 @@ def map_distance(directory):
     :param directory: directory with distance files
     :return: dictionary of mapped distances assigned to according names
     """
+    logger.debug(f"Mapping distance to <0;1>. Data directory: {directory}")
     a_files = os.listdir(directory)
     distances = {}
     for file in a_files:
@@ -205,6 +206,7 @@ def plot_params_by_layer(x, layer, opacity_dict, show=False):
     :param opacity_dict: dictionary with travelled distances of each parameter
     :param show: show the plots
     """
+    logger.debug(f"Plotting all parameters of layer {layer} together.")
     files = os.listdir(individual)
 
     fig = plt.figure(figsize=(8, 6))
@@ -219,14 +221,17 @@ def plot_params_by_layer(x, layer, opacity_dict, show=False):
             k = file + "_distance"  # key for opacity dictionary
             lab = file.split("_")  # get label (parameter position)
             try:
-                ax.plot(x, np.loadtxt(os.path.join(individual, file)), label=lab[-1], alpha=opacity_dict[k], color="blueviolet")
+                ax.plot(x, np.loadtxt(os.path.join(individual, file)), label=lab[-1],
+                        alpha=opacity_dict[k], color="blueviolet")
             except KeyError:
-                continue  # distance file does not exist
+                logger.warning(f"No distance file for {file}")
+                continue
 
     ax.set_ylabel("Validation loss", fontproperties=font)
     ax.set_xlabel(r"$\alpha$", fontproperties=font)
 
-    plt.savefig("{}.pdf".format(os.path.join(individual_img, layer)), format="pdf")
+    logger.debug(f"Saving parameters of layer {layer} to {Path(individual_img, layer).resolve()}")
+    plt.savefig("{}.pdf".format(Path(individual_img, layer)), format="pdf")
 
     if show:
         plt.show()
@@ -277,8 +282,7 @@ def plot_vec_all_la(x):
     plt.close("all")
 
 
-def plot_lin_quad_real():
-    alpha = np.linspace(0, 1, 40)
+def plot_lin_quad_real(alpha):
     epochs = np.arange(0, 14)
 
     lin = np.loadtxt(loss_path)

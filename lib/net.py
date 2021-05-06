@@ -146,9 +146,9 @@ def test(model, test_loader, device):
 
     test_loss /= len(test_loader.dataset)  # compute validation loss of neural network
     accuracy = 100. * correct / len(test_loader.dataset)
-    logger.debug(f"Validation has finished:"
-                f"\n      Validation loss: {test_loss}"
-                f"\n      Accuracy: {accuracy} %")
+    logger.debug(f"Validation has finished:\n"
+                f"\n      Validation loss: {test_loss}\n"
+                f"\n      Accuracy: {accuracy} %\n")
     return test_loss, accuracy
 
 
@@ -217,14 +217,14 @@ def pre_test_subset(model, device, subset_list):
     for n_samples in subset_list:
         losses = []
         accs = []
-        for x in range(100):  # 10x pruchod experimentem TODO
-            _, test_loader = data_load.data_load(test_samples=n_samples)  # to choose random data each time
+        for x in range(10):
+            _, test_loader = data_load.data_load(test_samples=n_samples)  # choose random data each time
             loss, acc = test(model, test_loader, device)
             losses.append(loss)
             accs.append(acc)
-            logger.info(f"Subset size: {n_samples}"
-                        f"Validation loss: {loss}"
-                        f"Accuracy: {acc}")
+            logger.info(f"Subset size: {n_samples}\n"
+                        f"Validation loss: {loss}\n"
+                        f"Accuracy: {acc}\n")
 
         subset_losses.append(losses)
         subset_accs.append(accs)

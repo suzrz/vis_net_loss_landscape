@@ -41,6 +41,7 @@ vec_img = Path(imgs, "vec")
 
 # directory for preliminary experiments results
 prelim = Path(results, "preliminary")
+prelim_img = Path(imgs, "preliminary")
 
 # directory for random directions experiment
 random_dirs = Path(results, "rand_dirs")
@@ -102,7 +103,7 @@ def init_dirs():
     """
     logger.info("Initializing directories")
     dirs = [results, imgs, checkpoints, single, single_img, vec, vec_img, prelim,
-            random_dirs, random_dirs_img, pca_dirs, pca_dirs_img]
+            prelim_img, random_dirs, random_dirs_img, pca_dirs, pca_dirs_img]
 
     for d in dirs:
         logger.debug(f"Searching for {d}")

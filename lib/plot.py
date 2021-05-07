@@ -58,7 +58,7 @@ def _plot_line(x, y, xlabel, ylabel, annotate=False, color="blue"):
         ax.annotate("{:.3f}".format(y[-3]), xy=(x[-3], y[-3]), xytext=(x[-3], y[-3] + y[-3]*k))
 
     fig.tight_layout()
-    plt.savefig(os.path.join(os.path.join(imgs), "{}.pdf".format(ylabel)), format="pdf")
+    plt.savefig(f"{os.path.join(os.path.join(imgs), ylabel)}.pdf", format="pdf")
     plt.close("all")
 
 
@@ -98,16 +98,16 @@ def plot_box(x, loss_only=False, acc_only=False, show=False, xlabel=None):
     :param show: show the plot
     :param xlabel: xlabel to be shown
     """
-    logging.info("[plot]: Plotting preliminary experiments results (test subset size)")
+    logging.debug("Plotting preliminary experiments results (test subset size)")
 
     if not acc_only:
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(figsize=(9, 6))
 
         if not epochs_loss.exists():
-            logging.error("[plot]: No loss data found")
+            logging.warning("No loss data found")
             return
 
-        loss = np.loadtxt(epochs_loss)  # TODO probably test_subs_loss???
+        loss = np.loadtxt(test_subs_loss)
 
         ax.set_ylabel("Validation loss", fontproperties=font)
         ax.set_xlabel(xlabel, fontproperties=font)
@@ -118,16 +118,16 @@ def plot_box(x, loss_only=False, acc_only=False, show=False, xlabel=None):
 
         if show:
             plt.show()
-        plt.savefig(os.path.join(os.path.join(imgs, "subsets_imp"), "test_loss.pdf"), format="pdf")
+        plt.savefig(f"{os.path.join(prelim_img, 'test_loss.pdf')}", format="pdf")
 
     if not loss_only:
         fig, ax = plt.subplots()
 
         if not epochs_acc.exists():
-            logging.error("[plot]: No accuracy data found")
+            logging.warning("No accuracy data found")
             return
 
-        acc = np.loadtxt(epochs_acc)  # TODO probably test_subs_acc???
+        acc = np.loadtxt(test_subs_acc)
 
         ax.set_ylabel("Accuracy", fontproperties=font)
         ax.set_xlabel(xlabel, fontproperties=font)
@@ -138,7 +138,8 @@ def plot_box(x, loss_only=False, acc_only=False, show=False, xlabel=None):
 
         if show:
             plt.show()
-        plt.savefig(os.path.join(os.path.join(imgs, "subsets_imp"), "test_acc.pdf"), format="pdf")
+
+        plt.savefig(f"{os.path.join(prelim_img, 'test_acc.pdf')}", format="pdf")
 
 
 def plot_metric(alpha, ydata, img_path, metric):
@@ -219,7 +220,8 @@ def plot_params_by_layer(x, layer, opacity_dict, show=False):
             k = file + "_distance"  # key for opacity dictionary
             lab = file.split("_")  # get label (parameter position)
             try:
-                ax.plot(x, np.loadtxt(os.path.join(single, file)), label=lab[-1], alpha=opacity_dict[k], color="blueviolet")
+                ax.plot(x, np.loadtxt(os.path.join(single, file)), label=lab[-1],
+                        alpha=opacity_dict[k], color="blueviolet")
             except KeyError:
                 continue  # distance file does not exist
 

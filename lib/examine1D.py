@@ -94,8 +94,7 @@ class Linear(Examinator1D):
         if not loss_path.exists() or not acc_path.exists():
             v_loss_list = []
             acc_list = []
-            layers = ["conv1.weight", "conv1.bias", "conv2.weight", "conv2.bias", "fc1.weight",
-                      "fc1.bias", "fc2.weight", "fc2.bias", "fc3.weight", "fc3.bias"]
+            layers = [name for name, _ in self.model.named_parameters()]
 
             self.model.load_state_dict(self.theta_f)
             for alpha_act in self.alpha:
@@ -179,14 +178,13 @@ class Linear(Examinator1D):
 
         return
 
-    def layers_linear(self, test_loader, layer, trained=False):
+    def layers_linear(self, test_loader, layer):
         """
         Method interpolates parameters of selected layer of the model and evaluates the model after each interpolation
         step
 
         :param test_loader: test loader
         :param layer: layer to be interpolated
-        :param trained: show trained state
         """
 
         loss_res = Path("{}_{}".format(vvloss_path, layer))
@@ -314,8 +312,8 @@ class Quadratic(Examinator1D):
         if not q_loss_path.exists() or not q_acc_path.exists():
             v_loss_list = []
             acc_list = []
-            layers = ["conv1.weight", "conv1.bias", "conv2.weight", "conv2.bias", "fc1.weight",
-                      "fc1.bias", "fc2.weight", "fc2.bias", "fc3.weight", "fc3.bias"]
+            layers = [name for name, _ in self.model.named_parameters()]
+
             start_a = 0
             mid_a = 0.5
             end_a = 1
@@ -328,7 +326,7 @@ class Quadratic(Examinator1D):
                 for layer in layers:
                     start_p = self.theta_i[layer].cpu()
                     mid_p = copy.deepcopy(
-                        torch.load(os.path.join(checkpoints, "checkpoint_1"))[layer]).cpu()
+                        torch.load(os.path.join(checkpoints, "checkpoint_1"))[layer]).cpu()  # TODO automatic mid
                     end_p = self.theta_f[layer].cpu()
 
                     start = [start_a, start_p]
@@ -385,7 +383,7 @@ class Quadratic(Examinator1D):
 
             start_p = self.theta_i[layer + ".weight"][idxs].cpu()
             mid_p = copy.deepcopy(torch.load(Path(os.path.join(checkpoints,
-                                                               "checkpoint_7"))))[layer + ".weight"][idxs].cpu()
+                                                               "checkpoint_7"))))[layer + ".weight"][idxs].cpu()  # TODO AUTO MID
             end_p = self.theta_f[layer + ".weight"][idxs].cpu()
 
             logger.debug(f"Start loss: {start_p}\n"
@@ -424,13 +422,12 @@ class Quadratic(Examinator1D):
 
         return
 
-    def layers_quadratic(self, test_loader, layer, trained=False):
+    def layers_quadratic(self, test_loader, layer):
         """
         Method examines the parameters on the level of layers using the quadratic interpolation.
 
         :param test_loader: test data set loader
         :param layer: layer to be examined
-        :param trained: show actual state in the result
         """
         loss_res = Path("{}_{}_q".format(vvloss_path, layer))
         loss_img = Path("{}_{}_q".format(vvloss_img_path, layer))
@@ -459,7 +456,7 @@ class Quadratic(Examinator1D):
                          f"End: {end_a}")
 
             start_p = self.theta_i[layer + ".weight"].cpu()
-            mid_p = copy.deepcopy(torch.load(os.path.join(checkpoints, "checkpoint_6"))[layer + ".weight"]).cpu()
+            mid_p = copy.deepcopy(torch.load(os.path.join(checkpoints, "checkpoint_6"))[layer + ".weight"]).cpu()  # TODO AUTO MID
             end_p = self.theta_f[layer + ".weight"].cpu()
 
             start_w = [start_a, start_p]
@@ -467,7 +464,7 @@ class Quadratic(Examinator1D):
             end_w = [end_a, end_p]
 
             start_pb = self.theta_i[layer + ".bias"].cpu()
-            mid_pb = copy.deepcopy(torch.load(os.path.join(checkpoints, "checkpoint_6"))[layer + ".bias"]).cpu()
+            mid_pb = copy.deepcopy(torch.load(os.path.join(checkpoints, "checkpoint_6"))[layer + ".bias"]).cpu()  # TODO AUTO MID
             end_pb = self.theta_f[layer + ".bias"].cpu()
 
             start_b = [start_a, start_pb]

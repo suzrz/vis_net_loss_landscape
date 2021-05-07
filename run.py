@@ -1,5 +1,6 @@
 import torch
-from lib import preliminary, prep
+import prep
+import preliminary
 import PCA_directions
 import random_directions
 import linear
@@ -47,7 +48,7 @@ if args.quadratic:
 
 if args.preliminary:
     logger.info("Executing preliminary experiments")
-    preliminary.run_preliminary(args)
+    preliminary.run_preliminary(args, device)
 
 if args.surface:
     logger.info("Executing random directions experiment")

@@ -1,3 +1,12 @@
+"""
+This code is based on:
+
+Title: Visualizing the Loss Landscape of Neural Nets
+Authors: Hao Li, Zheng Xu, Gavin Taylor, Christoph Studer and Tom Goldstein
+Date: 2021-02-1
+Version: -
+Availability: https://github.com/tomgoldstein/loss-landscape
+"""
 from lib import net
 import h5py
 import torch

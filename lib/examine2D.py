@@ -1,3 +1,12 @@
+"""
+This code is based on:
+
+Title: Animating the Optimization Trajectory of Neural Nets
+Authors: Chao Yang
+Date: 2021-02-1
+Version: 0.1.9
+Availability: https://github.com/logancyang/loss-landscape-anim
+"""
 import re
 import sys
 from lib import net

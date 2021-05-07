@@ -1,4 +1,5 @@
-from lib import data_load, prep
+from lib import data_load
+import prep
 from lib.examine1D import *
 
 

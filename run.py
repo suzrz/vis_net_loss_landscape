@@ -1,5 +1,6 @@
 import torch
-from lib import preliminary, prep
+import prep
+import preliminary
 import PCA_directions
 import random_directions
 import linear

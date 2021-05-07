@@ -1,6 +1,7 @@
 import torch
 import numpy as np
 from torch import utils as utils
+import torch.utils.data
 from lib.paths import *
 from torchvision import datasets, transforms
 

@@ -1,4 +1,5 @@
-from lib import data_load, prep
+from lib import data_load
+import prep
 from lib.examine1D import *
 
 
@@ -41,7 +42,7 @@ def run_layers(args, device):
 
     if args.trained:
         interpolate.interpolate_all_linear(test_loader)
-    interpolate.layers_linear(test_loader, args.layer, args.trained)
+    interpolate.layers_linear(test_loader, args.layer)
 
 
 def run_single(args, device):

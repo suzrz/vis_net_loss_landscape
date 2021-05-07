@@ -1,5 +1,6 @@
 import logging
-from lib import examine2D, plot, data_load, prep
+from lib import examine2D, plot, data_load
+import prep
 
 logger = logging.getLogger("vis_net")
 

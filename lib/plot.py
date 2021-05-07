@@ -141,6 +141,7 @@ def plot_box(x, loss_only=False, acc_only=False, show=False, xlabel=None):
 
         plt.savefig(f"{os.path.join(prelim_img, 'test_acc.pdf')}", format="pdf")
 
+
 def plot_metric(alpha, ydata, img_path, metric):
     """
     Function plots result of experiment focused on specified metric.
@@ -219,7 +220,8 @@ def plot_params_by_layer(x, layer, opacity_dict, show=False):
             k = file + "_distance"  # key for opacity dictionary
             lab = file.split("_")  # get label (parameter position)
             try:
-                ax.plot(x, np.loadtxt(os.path.join(single, file)), label=lab[-1], alpha=opacity_dict[k], color="blueviolet")
+                ax.plot(x, np.loadtxt(os.path.join(single, file)), label=lab[-1],
+                        alpha=opacity_dict[k], color="blueviolet")
             except KeyError:
                 continue  # distance file does not exist
 

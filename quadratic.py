@@ -23,7 +23,7 @@ def run_complete(args, device):
     interpolate_l = nnvis.Linear(model, device, alpha, nnvis.final_state, nnvis.init_state)
     interpolate_l.interpolate_all_linear(test_loader)
 
-    nnvis.plot_lin_quad_real()
+    nnvis.plot_lin_quad_real(alpha)
 
 
 def run_layers(args, device):

@@ -4,12 +4,12 @@ import quadratic
 import preliminary
 import random_directions
 import PCA_directions
-import nnvis
 import torch
+from nnvis import paths
 
 args = prep.parse_arguments()
 
-nnvis.init_dirs()
+paths.init_dirs()
 
 use_cuda = not args.no_cuda and torch.cuda.is_available()
 device = torch.device("cuda" if use_cuda else "cpu")

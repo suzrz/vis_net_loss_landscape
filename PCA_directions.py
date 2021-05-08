@@ -1,8 +1,5 @@
-import logging
 import nnvis
 import prep
-
-logger = logging.getLogger("vis_net")
 
 
 def run_pca_surface(args, device):
@@ -12,8 +9,6 @@ def run_pca_surface(args, device):
     :param args: experiment configuration
     :param device: device to be used
     """
-    logger.info("Running loss function landscape visualization using PCA directions")
-
     train_loader, test_loader = nnvis.data_load()
 
     model = prep.get_net(device, train_loader, test_loader, args.epochs)

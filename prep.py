@@ -10,10 +10,8 @@ import numpy as np
 from pathlib import Path
 from torch import optim as optim
 from torch.optim.lr_scheduler import StepLR
-
 import linear
 import quadratic
-
 
 
 def parse_arguments():
@@ -37,9 +35,6 @@ def parse_arguments():
                         help="Set index of examined parameter (default = (0, 0, 0, 0)).")
     parser.add_argument("--layer", default="conv1",
                         help="Set layer of examined parameter (default = conv1).")
-    parser.add_argument("--trained", action="store_true",
-                        help="Plot difference between interpolated and actual trained results. "
-                             "Available only for layer level experiments.")
     parser.add_argument("--preliminary", action="store_true",
                         help="Preliminary experiments execution.")
     parser.add_argument("--linear-i", action="store_true",
@@ -54,14 +49,12 @@ def parse_arguments():
                         help="Loss function surface visualization.")
     parser.add_argument("--path", action="store_true",
                         help="Optimizer path visualization")
-    parser.add_argument("--res", type=int, action="store", default=3, nargs='?',
-                        help="Sets the resolution the path visualization (default = 3).")
     parser.add_argument("--auto", action="store_true",
                         help="Runs the 1D experiments automatically.")
     parser.add_argument("--auto-n", type=int, action="store", default=1, nargs='?',
                         help="Sets number of examined parameters for "
                              "auto execution of the 1D experiments (default = 1).")
-    parser.add_argument("--plot", action="store_true",
+    parser.add_argument("--plot-all", action="store_true",
                         help="Plot available data.")
     parser.add_argument("--debug", action="store_true", help="Enables debug logging.")
 
@@ -216,7 +209,7 @@ def run_all(args, device):
 
     # prepare x-axis and opacity dictionary for plotting all parameters of a layer
     x = np.linspace(args.alpha_start, args.alpha_end, args.alpha_steps)
-    d = plot.map_distance(nnvis.individual)
+    d = nnvis.map_distance(nnvis.individual)
 
     # plot parameters of each layer in one plot
     nnvis.plot_params_by_layer(x, "conv1", d)
@@ -253,7 +246,7 @@ def plot_available(args):
             if re.search("acc", fil):
                 nnvis.plot_metric(alpha, np.loadtxt(Path(nnvis.layers, fil)), Path(nnvis.layers_img, fil), "acc")
 
-    d = plot.map_distance(nnvis.individual)
+    d = nnvis.map_distance(nnvis.individual)
 
     # plot parameters of each layer in one plot
     nnvis.plot_params_by_layer(alpha, "conv1", d)

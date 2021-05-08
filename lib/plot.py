@@ -283,9 +283,23 @@ def plot_lin_quad_real():
     alpha = np.linspace(0, 1, 40)
     epochs = np.arange(0, 14)
 
-    lin = np.loadtxt(loss_path)
-    quadr = np.loadtxt(q_loss_path)
-    real = np.loadtxt(actual_loss_path)
+    if loss_path.exists():
+        lin = np.loadtxt(loss_path)
+    else:
+        raise FileNotFoundError("Linear interpolation on the level of model not found. "
+                                "Please run Linear.interpolate_all_linear.")
+
+    if q_loss_path.exists():
+        quadr = np.loadtxt(q_loss_path)
+    else:
+        raise FileNotFoundError("Linear interpolation on the level of model not found. "
+                                "Please run Quadratic.interpolate_all_quadratic first.")
+
+    if actual_loss_path.exists():
+        real = np.loadtxt(actual_loss_path)
+    else:
+        raise FileNotFoundError("Linear interpolation on the level of model not found. "
+                                "Please create and train model first.")
 
     fig, ax1 = plt.subplots()
 

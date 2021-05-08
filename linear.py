@@ -1,6 +1,6 @@
-from lib import data_load
 import prep
-from lib.examine1D import *
+import nnvis
+import numpy as np
 
 
 def run_complete(args, device):
@@ -10,18 +10,18 @@ def run_complete(args, device):
     :param args: CLI arguments with experiment configuration
     :param device: device to be used
     """
-    alpha = np.linspace(0, 1, args.alpha_steps)  # set interpolation start and end are disabled
+    alpha = np.linspace(args.alpha_start, args.alpha_end, args.alpha_steps)
 
-    train_loader, test_loader = data_load.data_load()
+    train_loader, test_loader = nnvis.data_load()
 
     model = prep.get_net(device, train_loader, test_loader, args.epochs)
 
-    interpolate = Linear(model, device, alpha, final_state, init_state)
+    interpolate = nnvis.Linear(model, device, alpha, nnvis.final_state, nnvis.init_state)
 
     interpolate.interpolate_all_linear(test_loader)
 
 
-def run_layers(args, device):
+def run_layer(args, device):
     """
     Function setups and executes experiment of interpolation of parameters
 
@@ -29,23 +29,17 @@ def run_layers(args, device):
     :param device: device to be used
     """
     alpha = np.linspace(0, 1, args.alpha_steps)
-    logger.debug(f"Interpolation coefficient alpha "
-                 f"start: {args.alpha_start}"
-                 f"end: {args.alpha_end}"
-                 f"steps: {args.alpha_steps}")
 
-    train_loader, test_loader = data_load.data_load()
+    train_loader, test_loader = nnvis.data_load()
 
     model = prep.get_net(device, train_loader, test_loader, args.epochs)
 
-    interpolate = Linear(model, device, alpha, final_state, init_state)
+    interpolate = nnvis.Linear(model, device, alpha, nnvis.final_state, nnvis.init_state)
 
-    if args.trained:
-        interpolate.interpolate_all_linear(test_loader)
     interpolate.layers_linear(test_loader, args.layer)
 
 
-def run_single(args, device):
+def run_individual(args, device):
     """
     Function executes experiment with individual parameter
 
@@ -53,15 +47,11 @@ def run_single(args, device):
     :param device: device to be used
     """
     alpha = np.linspace(args.alpha_start, args.alpha_end, args.alpha_steps)  # setup interpolation coefficient
-    logger.debug(f"Interpolation coefficient alpha "
-                 f"start: {args.alpha_start}"
-                 f"end: {args.alpha_end}"
-                 f"steps: {args.alpha_steps}")
 
-    train_loader, test_loader = data_load.data_load()  # setup data loaders
+    train_loader, test_loader = nnvis.data_load()  # setup data loaders
 
     model = prep.get_net(device, train_loader, test_loader, args.epochs)  # setup model
 
-    interpolate = Linear(model, device, alpha, final_state, init_state)  # get interpolator instance
+    interpolate = nnvis.Linear(model, device, alpha, nnvis.final_state, nnvis.init_state)  # get interpolator instance
 
     interpolate.individual_param_linear(test_loader, args.layer, args.idxs)  # execute the experiment

@@ -8,13 +8,15 @@ Version: 0.1.9
 Availability: https://github.com/logancyang/loss-landscape-anim
 """
 import re
+import os
 import sys
-from lib import net
 import torch
 import pickle
+import logging
 import numpy as np
-from lib.paths import *
+from pathlib import Path
 from sklearn.decomposition import PCA
+from nnvis import paths, net
 
 logger = logging.getLogger("vis_net")
 
@@ -46,7 +48,7 @@ def natural_keys(text):
 
 
 class Examinator2D:
-    def __init__(self, model, device, checkpoints_dir=checkpoints):
+    def __init__(self, model, device, checkpoints_dir=paths.checkpoints):
         self.model = model
         self.device = device
         self.directory = checkpoints_dir
@@ -202,7 +204,7 @@ class Examinator2D:
 
         return converted_x, converted_y
 
-    def get_loss_grid(self, test_loader, resolution=50):
+    def get_loss_grid(self, test_loader, resolution=3):
         """
         Calculated the validation loss over a PCA projection grid.
 
@@ -211,7 +213,7 @@ class Examinator2D:
         :return: path of the optimizer in 2D, validation loss grid, minimum position, minimum value, coordinates,
                 pcvariances
         """
-        grid_file = Path(os.path.join(pca_dirs, "loss_grid"))
+        grid_file = Path(os.path.join(paths.pca_dirs, "loss_grid"))
         logger.info(f"Surface grid file {grid_file}")
 
         steps = self.__get_steps()

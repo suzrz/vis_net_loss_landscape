@@ -1,6 +1,6 @@
-from lib import data_load
 import prep
-from lib.examine1D import *
+import numpy as np
+import nnvis
 
 
 def run_complete(args, device):
@@ -12,15 +12,18 @@ def run_complete(args, device):
     """
     alpha = np.linspace(0, 1, args.alpha_steps)
 
-    train_loader, test_loader = data_load.data_load()
+    train_loader, test_loader = nnvis.data_load()
 
     model = prep.get_net(device, train_loader, test_loader, args.epochs)
 
-    interpolate = Quadratic(model, device, alpha, final_state, init_state)
+    interpolate = nnvis.Quadratic(model, device, alpha, nnvis.final_state, nnvis.init_state)
 
     interpolate.interpolate_all_quadratic(test_loader)
 
-    plot.plot_lin_quad_real()
+    interpolate_l = nnvis.Linear(model, device, alpha, nnvis.final_state, nnvis.init_state)
+    interpolate_l.interpolate_all_linear(test_loader)
+
+    nnvis.plot_lin_quad_real()
 
 
 def run_layers(args, device):
@@ -30,15 +33,14 @@ def run_layers(args, device):
     :param args: experiment configuration
     :param device: device to be used
     """
-    logger.info("Running quadratic interpolation on the level of layers")
 
     alpha = np.linspace(0, 1, args.alpha_steps)
 
-    train_loader, test_loader = data_load.data_load()
+    train_loader, test_loader = nnvis.data_load()
 
     model = prep.get_net(device, train_loader, test_loader, args.epochs)
 
-    interpolate = Quadratic(model, device, alpha, final_state, init_state)
+    interpolate = nnvis.Quadratic(model, device, alpha, nnvis.final_state, nnvis.init_state)
 
     interpolate.layers_quadratic(test_loader, args.layer)
 
@@ -50,14 +52,13 @@ def run_individual(args, device):
     :param args: experiment configuration
     :param device: device to be used
     """
-    logger.info("Running quadratic interpolation of parameters")
 
     alpha = np.linspace(args.alpha_start, args.alpha_end, args.alpha_steps)
 
-    train_loader, test_loader = data_load.data_load()
+    train_loader, test_loader = nnvis.data_load()
 
     model = prep.get_net(device, train_loader, test_loader, args.epochs)
 
-    interpolate = Quadratic(model, device, alpha, final_state, init_state)
+    interpolate = nnvis.Quadratic(model, device, alpha, nnvis.final_state, nnvis.init_state)
 
     interpolate.individual_param_quadratic(test_loader, args.layer, args.idxs)

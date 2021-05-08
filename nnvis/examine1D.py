@@ -1,9 +1,10 @@
-from lib import net, plot
+import os
+import nnvis
+import logging
 import copy
 import torch
 import numpy as np
 import scipy.interpolate
-from lib.paths import *
 from pathlib import Path
 from numpy.polynomial import Polynomial
 
@@ -91,7 +92,7 @@ class Linear(Examinator1D):
         :param test_loader: test loader loader
         """
 
-        if not loss_path.exists() or not acc_path.exists():
+        if not nnvis.loss_path.exists() or not nnvis.acc_path.exists():
             v_loss_list = []
             acc_list = []
             layers = [name for name, _ in self.model.named_parameters()]
@@ -102,12 +103,12 @@ class Linear(Examinator1D):
                     self.__calc_theta_vec(layer, alpha_act)
                     self.model.load_state_dict(self.theta)
 
-                loss, acc = net.test(self.model, test_loader, self.device)
+                loss, acc = nnvis.test(self.model, test_loader, self.device)
                 v_loss_list.append(loss)
                 acc_list.append(acc)
 
-            np.savetxt(loss_path, v_loss_list)
-            np.savetxt(acc_path, acc_list)
+            np.savetxt(nnvis.loss_path, v_loss_list)
+            np.savetxt(nnvis.acc_path, acc_list)
             self.model.load_state_dict(self.theta_f)
 
     def individual_param_linear(self, test_loader, layer, idxs):
@@ -120,13 +121,13 @@ class Linear(Examinator1D):
         :param idxs: position of the parameter
         """
 
-        loss_res = Path("{}_{}_{}".format(svloss_path, layer, convert_list2str(idxs)))
-        loss_img = Path("{}_{}_{}".format(svloss_img_path, layer, convert_list2str(idxs)))
+        loss_res = Path("{}_{}_{}".format(nnvis.svloss_path, layer, convert_list2str(idxs)))
+        loss_img = Path("{}_{}_{}".format(nnvis.svloss_img_path, layer, convert_list2str(idxs)))
 
-        acc_res = Path("{}_{}_{}".format(sacc_path, layer, convert_list2str(idxs)))
-        acc_img = Path("{}_{}_{}".format(sacc_img_path, layer, convert_list2str(idxs)))
+        acc_res = Path("{}_{}_{}".format(nnvis.sacc_path, layer, convert_list2str(idxs)))
+        acc_img = Path("{}_{}_{}".format(nnvis.sacc_img_path, layer, convert_list2str(idxs)))
 
-        dist = Path("{}_{}_{}_{}".format(svloss_path, layer, convert_list2str(idxs), "distance"))
+        dist = Path("{}_{}_{}_{}".format(nnvis.svloss_path, layer, convert_list2str(idxs), "distance"))
 
         logger.debug(f"Result files:\n"
                      f"{loss_res}\n"
@@ -150,7 +151,7 @@ class Linear(Examinator1D):
                 self.model.load_state_dict(self.theta)
 
                 logger.debug(f"Getting validation loss and accuracy for alpha = {alpha_act}")
-                val_loss, acc = net.test(self.model, test_loader, self.device)
+                val_loss, acc = nnvis.test(self.model, test_loader, self.device)
                 acc_list.append(acc)
                 v_loss_list.append(val_loss)
 
@@ -166,13 +167,13 @@ class Linear(Examinator1D):
             distance = self.calc_distance(layer + ".weight", idxs)
             logger.info(f"Distance: {distance}")
 
-            with open(dist, 'w') as f:
-                f.write("{}".format(distance))
+            with open(dist, 'w') as fd:
+                fd.write("{}".format(distance))
 
         logger.debug(f"Saving results to figures {loss_img}, {acc_img} ...")
 
-        plot.plot_metric(self.alpha, np.loadtxt(loss_res), loss_img, "loss")
-        plot.plot_metric(self.alpha, np.loadtxt(acc_res), acc_img, "acc")
+        nnvis.plot_metric(self.alpha, np.loadtxt(loss_res), loss_img, "loss")
+        nnvis.plot_metric(self.alpha, np.loadtxt(acc_res), acc_img, "acc")
 
         self.model.load_state_dict(self.theta_f)
 
@@ -187,13 +188,13 @@ class Linear(Examinator1D):
         :param layer: layer to be interpolated
         """
 
-        loss_res = Path("{}_{}".format(vvloss_path, layer))
-        loss_img = Path("{}_{}".format(vvloss_img_path, layer))
+        loss_res = Path("{}_{}".format(nnvis.vvloss_path, layer))
+        loss_img = Path("{}_{}".format(nnvis.vvloss_img_path, layer))
 
-        acc_res = Path("{}_{}".format(vacc_path, layer))
-        acc_img = Path("{}_{}".format(vacc_img_path, layer))
+        acc_res = Path("{}_{}".format(nnvis.vacc_path, layer))
+        acc_img = Path("{}_{}".format(nnvis.vacc_img_path, layer))
 
-        dist = Path("{}_{}_{}".format(vvloss_path, layer, "distance"))
+        dist = Path("{}_{}_{}".format(nnvis.vvloss_path, layer, "distance"))
 
         logger.debug(f"Result files:\n"
                      f"{loss_res}\n"
@@ -218,7 +219,7 @@ class Linear(Examinator1D):
                 self.model.load_state_dict(self.theta)
                 logger.debug(f"Getting validation loss and accuracy for alpha = {alpha_act}")
 
-                vloss, acc = net.test(self.model, test_loader, self.device)
+                vloss, acc = nnvis.test(self.model, test_loader, self.device)
                 v_loss_list.append(vloss)
                 acc_list.append(acc)
 
@@ -232,12 +233,12 @@ class Linear(Examinator1D):
             distance = self.calc_distance(layer + ".weight")
             logger.info(f"Distance: {distance}")
 
-            with open(dist, 'w') as f:
-                f.write("{}".format(distance))
+            with open(dist, 'w') as fd:
+                fd.write("{}".format(distance))
 
         logger.debug(f"Saving results to figures {loss_img}, {acc_img} ...")
-        plot.plot_metric(self.alpha, np.loadtxt(loss_res), loss_img, "loss")
-        plot.plot_metric(self.alpha, np.loadtxt(acc_res), acc_img, "acc")
+        nnvis.plot_metric(self.alpha, np.loadtxt(loss_res), loss_img, "loss")
+        nnvis.plot_metric(self.alpha, np.loadtxt(acc_res), acc_img, "acc")
 
         self.model.load_state_dict(self.theta_f)
 
@@ -309,7 +310,7 @@ class Quadratic(Examinator1D):
 
         :param test_loader: test data set loader
         """
-        if not q_loss_path.exists() or not q_acc_path.exists():
+        if not nnvis.q_loss_path.exists() or not nnvis.q_acc_path.exists():
             v_loss_list = []
             acc_list = []
             layers = [name for name, _ in self.model.named_parameters()]
@@ -326,7 +327,7 @@ class Quadratic(Examinator1D):
                 for layer in layers:
                     start_p = self.theta_i[layer].cpu()
                     mid_p = copy.deepcopy(
-                        torch.load(os.path.join(checkpoints, "checkpoint_1"))[layer]).cpu()  # TODO automatic mid
+                        torch.load(os.path.join(nnvis.checkpoints, "checkpoint_1"))[layer]).cpu()  # TODO automatic mid
                     end_p = self.theta_f[layer].cpu()
 
                     start = [start_a, start_p]
@@ -336,13 +337,13 @@ class Quadratic(Examinator1D):
                     self.__calc_theta_vec_q(layer, alpha_act, start, mid, end)
                     self.model.load_state_dict(self.theta)
 
-                loss, acc = net.test(self.model, test_loader, self.device)
+                loss, acc = nnvis.test(self.model, test_loader, self.device)
                 v_loss_list.append(loss)
                 acc_list.append(acc)
 
-            np.savetxt(q_loss_path, v_loss_list)
-            np.savetxt(q_acc_path, acc_list)
-            plot.plot_lin_quad_real()
+            np.savetxt(nnvis.q_loss_path, v_loss_list)
+            np.savetxt(nnvis.q_acc_path, acc_list)
+            nnvis.plot_lin_quad_real()
             self.model.load_state_dict(self.theta_f)
 
     def individual_param_quadratic(self, test_loader, layer, idxs):
@@ -355,11 +356,11 @@ class Quadratic(Examinator1D):
         :param idxs: position of parameter
         """
 
-        loss_res = Path("{}_{}_{}_q".format(svloss_path, layer, convert_list2str(idxs)))
-        loss_img = Path("{}_{}_{}_q".format(svloss_img_path, layer, convert_list2str(idxs)))
+        loss_res = Path("{}_{}_{}_q".format(nnvis.svloss_path, layer, convert_list2str(idxs)))
+        loss_img = Path("{}_{}_{}_q".format(nnvis.svloss_img_path, layer, convert_list2str(idxs)))
 
-        acc_res = Path("{}_{}_{}_q".format(sacc_path, layer, convert_list2str(idxs)))
-        acc_img = Path("{}_{}_{}_q".format(sacc_img_path, layer, convert_list2str(idxs)))
+        acc_res = Path("{}_{}_{}_q".format(nnvis.sacc_path, layer, convert_list2str(idxs)))
+        acc_img = Path("{}_{}_{}_q".format(nnvis.sacc_img_path, layer, convert_list2str(idxs)))
 
         logger.debug(f"Result files:\n"
                      f"{loss_res}\n"
@@ -382,7 +383,7 @@ class Quadratic(Examinator1D):
                          f"End: {end_a}")
 
             start_p = self.theta_i[layer + ".weight"][idxs].cpu()
-            mid_p = copy.deepcopy(torch.load(Path(os.path.join(checkpoints,
+            mid_p = copy.deepcopy(torch.load(Path(os.path.join(nnvis.checkpoints,
                                                                "checkpoint_7"))))[layer + ".weight"][idxs].cpu()  # TODO AUTO MID
             end_p = self.theta_f[layer + ".weight"][idxs].cpu()
 
@@ -404,7 +405,7 @@ class Quadratic(Examinator1D):
                 self.model.load_state_dict(self.theta)
 
                 logger.debug(f"Getting validation loss and accuracy for alpha = {alpha_act}")
-                val_loss, acc = net.test(self.model, test_loader, self.device)
+                val_loss, acc = nnvis.test(self.model, test_loader, self.device)
                 acc_list.append(acc)
                 v_loss_list.append(val_loss)
 
@@ -415,8 +416,8 @@ class Quadratic(Examinator1D):
             self.model.load_state_dict(self.theta_f)
 
         logger.debug(f"Saving results to figures {loss_img}, {acc_img} ...")
-        plot.plot_metric(self.alpha, np.loadtxt(loss_res), loss_img, "loss")
-        plot.plot_metric(self.alpha, np.loadtxt(acc_res), acc_img, "acc")
+        nnvis.plot_metric(self.alpha, np.loadtxt(loss_res), loss_img, "loss")
+        nnvis.plot_metric(self.alpha, np.loadtxt(acc_res), acc_img, "acc")
 
         self.model.load_state_dict(self.theta_f)
 
@@ -429,11 +430,11 @@ class Quadratic(Examinator1D):
         :param test_loader: test data set loader
         :param layer: layer to be examined
         """
-        loss_res = Path("{}_{}_q".format(vvloss_path, layer))
-        loss_img = Path("{}_{}_q".format(vvloss_img_path, layer))
+        loss_res = Path("{}_{}_q".format(nnvis.vvloss_path, layer))
+        loss_img = Path("{}_{}_q".format(nnvis.vvloss_img_path, layer))
 
-        acc_res = Path("{}_{}_q".format(vacc_path, layer))
-        acc_img = Path("{}_{}_q".format(vacc_img_path, layer))
+        acc_res = Path("{}_{}_q".format(nnvis.vacc_path, layer))
+        acc_img = Path("{}_{}_q".format(nnvis.vacc_img_path, layer))
 
         logger.debug(f"Result files:\n"
                      f"{loss_res}\n"
@@ -456,7 +457,7 @@ class Quadratic(Examinator1D):
                          f"End: {end_a}")
 
             start_p = self.theta_i[layer + ".weight"].cpu()
-            mid_p = copy.deepcopy(torch.load(os.path.join(checkpoints, "checkpoint_6"))[layer + ".weight"]).cpu()  # TODO AUTO MID
+            mid_p = copy.deepcopy(torch.load(os.path.join(nnvis.checkpoints, "checkpoint_6"))[layer + ".weight"]).cpu()  # TODO AUTO MID
             end_p = self.theta_f[layer + ".weight"].cpu()
 
             start_w = [start_a, start_p]
@@ -464,7 +465,7 @@ class Quadratic(Examinator1D):
             end_w = [end_a, end_p]
 
             start_pb = self.theta_i[layer + ".bias"].cpu()
-            mid_pb = copy.deepcopy(torch.load(os.path.join(checkpoints, "checkpoint_6"))[layer + ".bias"]).cpu()  # TODO AUTO MID
+            mid_pb = copy.deepcopy(torch.load(os.path.join(nnvis.checkpoints, "checkpoint_6"))[layer + ".bias"]).cpu()  # TODO AUTO MID
             end_pb = self.theta_f[layer + ".bias"].cpu()
 
             start_b = [start_a, start_pb]
@@ -478,7 +479,7 @@ class Quadratic(Examinator1D):
                 self.model.load_state_dict(self.theta)
                 logger.debug(f"Getting validation loss and accuracy for alpha = {alpha_act}")
 
-                vloss, acc = net.test(self.model, test_loader, self.device)
+                vloss, acc = nnvis.test(self.model, test_loader, self.device)
                 v_loss_list.append(vloss)
                 acc_list.append(acc)
 
@@ -487,8 +488,8 @@ class Quadratic(Examinator1D):
             np.savetxt(acc_res, acc_list)
 
         logger.debug(f"Saving results to figures {loss_img}, {acc_img} ...")
-        plot.plot_metric(self.alpha, np.loadtxt(loss_res), loss_img, "loss")
-        plot.plot_metric(self.alpha, np.loadtxt(acc_res), acc_img, "acc")
+        nnvis.plot_metric(self.alpha, np.loadtxt(loss_res), loss_img, "loss")
+        nnvis.plot_metric(self.alpha, np.loadtxt(acc_res), acc_img, "acc")
 
         self.model.load_state_dict(self.theta_f)
 

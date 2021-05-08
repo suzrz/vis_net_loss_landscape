@@ -1,10 +1,10 @@
+import logging
 import copy
 import torch
 import numpy as np
-from lib import data_load, net
 from torch.optim.lr_scheduler import StepLR
 from torch import optim
-from lib.paths import *
+from nnvis import paths, net, data_loader
 
 logger = logging.getLogger("vis_net")
 
@@ -20,13 +20,13 @@ def pre_train_subset(model, device, subset_list, epochs, test_loader):
     :param test_loader: test dataset loader
     """
     logger.info("Subset preliminary experiment started")
-    if train_subs_loss.exists() and train_subs_acc.exists():
+    if paths.train_subs_loss.exists() and paths.train_subs_acc.exists():
         return
 
     loss_list = []
     acc_list = []
-    theta_i = copy.deepcopy(torch.load(init_state))
-    theta_f = copy.deepcopy(torch.load(final_state))
+    theta_i = copy.deepcopy(torch.load(paths.init_state))
+    theta_f = copy.deepcopy(torch.load(paths.final_state))
 
     for n_samples in subset_list:
         model.load_state_dict(theta_i)
@@ -35,7 +35,7 @@ def pre_train_subset(model, device, subset_list, epochs, test_loader):
         scheduler = StepLR(optimizer, step_size=1, gamma=0.7)  # set scheduler
 
         for epoch in range(1, epochs):
-            train_loader, test_loader = data_load.data_load(train_samples=n_samples)
+            train_loader, test_loader = data_loader.data_load(train_samples=n_samples)
 
             net.train(model, train_loader, optimizer, device, epoch)
             net.test(model, test_loader, device)
@@ -48,8 +48,8 @@ def pre_train_subset(model, device, subset_list, epochs, test_loader):
         loss_list.append(loss)
         acc_list.append(acc)
 
-    np.savetxt(train_subs_loss, loss_list)
-    np.savetxt(train_subs_acc, acc_list)
+    np.savetxt(paths.train_subs_loss, loss_list)
+    np.savetxt(paths.train_subs_acc, acc_list)
 
     model.load_state_dict(theta_f)
 
@@ -62,12 +62,12 @@ def pre_test_subset(model, device, subset_list):
     :param device: device to be used
     :param subset_list: list of subset sizes to be examined
     """
-    if test_subs_loss.exists() and test_subs_acc.exists():
+    if paths.test_subs_loss.exists() and paths.test_subs_acc.exists():
         return
 
     subset_losses = []
     subset_accs = []
-    theta_f = copy.deepcopy(torch.load(final_state))
+    theta_f = copy.deepcopy(torch.load(paths.final_state))
 
     model.load_state_dict(theta_f)
 
@@ -75,7 +75,7 @@ def pre_test_subset(model, device, subset_list):
         losses = []
         accs = []
         for x in range(10):
-            _, test_loader = data_load.data_load(test_samples=n_samples)  # choose random data each time
+            _, test_loader = data_loader.data_load(test_samples=n_samples)  # choose random data each time
             loss, acc = net.test(model, test_loader, device)
             losses.append(loss)
             accs.append(acc)
@@ -86,8 +86,8 @@ def pre_test_subset(model, device, subset_list):
         subset_losses.append(losses)
         subset_accs.append(accs)
 
-    np.savetxt(test_subs_loss, subset_losses)
-    np.savetxt(test_subs_acc, subset_accs)
+    np.savetxt(paths.test_subs_loss, subset_losses)
+    np.savetxt(paths.test_subs_acc, subset_accs)
 
 
 def pre_epochs(model, device, epochs_list):
@@ -99,18 +99,18 @@ def pre_epochs(model, device, epochs_list):
     :param epochs_list: list of epochs numbers after which will be the model evaluated
     """
     logger.info("Epochs performance experiment started.")
-    if epochs_loss.exists() and epochs_acc.exists():
+    if paths.epochs_loss.exists() and paths.epochs_acc.exists():
         return
 
     loss_list = []
     acc_list = []
 
-    theta_i = copy.deepcopy(torch.load(init_state))
+    theta_i = copy.deepcopy(torch.load(paths.init_state))
 
     model.load_state_dict(theta_i)
     optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.5)  # set optimizer
     scheduler = StepLR(optimizer, step_size=1, gamma=0.7)  # set scheduler
-    train_loader, test_loader = data_load.data_load()
+    train_loader, test_loader = data_loader.data_load()
 
     for epoch in range(max(epochs_list) + 1):
         net.train(model, train_loader, optimizer, device, epoch)
@@ -128,5 +128,5 @@ def pre_epochs(model, device, epochs_list):
                         f"Validation loss: {loss}"
                         f"Accuracy: {acc}")
 
-    np.savetxt(epochs_loss, loss_list)
-    np.savetxt(epochs_acc, loss_list)
+    np.savetxt(paths.epochs_loss, loss_list)
+    np.savetxt(paths.epochs_acc, loss_list)

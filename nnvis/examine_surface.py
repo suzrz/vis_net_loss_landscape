@@ -2,16 +2,18 @@
 This code is based on:
 
 Title: Visualizing the Loss Landscape of Neural Nets
-Authors: Hao Li, Zheng Xu, Gavin Taylor, Christoph Studer and Tom Goldstein
+Authors: Li, Hao and Xu, Zheng and Taylor, Gavin and Studer, Christoph and Goldstein, Tom
 Date: 2021-02-1
 Version: -
 Availability: https://github.com/tomgoldstein/loss-landscape
 """
-from lib import net
+import os
 import h5py
 import torch
 import numpy as np
-from lib.paths import *
+import logging
+from pathlib import Path
+from nnvis import paths, net
 
 logger = logging.getLogger("vis_net")
 
@@ -111,7 +113,7 @@ def overwrite_weights(model, init_weights, directions, step, device):
     changes = [d0 * step[0] + d1 * step[1] for (d0, d1) in zip(dx, dy)]
 
     for (p, w, d) in zip(model.parameters(), init_weights, changes):
-        p.data = w.to(device) + torch.tensor(d).to(device)
+        p.data = w.to(device) + d.clone().detach().requires_grad_(True)
 
 
 def calc_loss(model, test_loader, directions, device):
@@ -124,7 +126,7 @@ def calc_loss(model, test_loader, directions, device):
     :param device: device
     """
     logger.info("Calculating loss function surface")
-    filename = Path(os.path.join(random_dirs, "surf.h5"))
+    filename = Path(os.path.join(paths.random_dirs, "surf.h5"))
     logger.debug(f"Surface file: {filename}")
 
     set_surf_file(filename)

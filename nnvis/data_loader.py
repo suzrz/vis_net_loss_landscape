@@ -1,8 +1,8 @@
-import torch
+import torch.utils.data
+from nnvis import paths
+import logging
 import numpy as np
 from torch import utils as utils
-import torch.utils.data
-from lib.paths import *
 from torchvision import datasets, transforms
 
 
@@ -30,9 +30,9 @@ def data_load(train_samples=60000, test_samples=10000):
     logger.debug(f"data transformations: {transform}")
 
     # prepare subsets
-    train_set = datasets.MNIST(dataset, train=True, download=True,
+    train_set = datasets.MNIST(paths.dataset, train=True, download=True,
                                transform=transform)
-    test_set = datasets.MNIST(dataset, train=False, download=True,
+    test_set = datasets.MNIST(paths.dataset, train=False, download=True,
                               transform=transform)
 
     tr = list(range(0, len(train_set), 1))

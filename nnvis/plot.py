@@ -1,11 +1,14 @@
+import os
 import re
 import copy
 import h5py
+import logging
 import numpy as np
 import matplotlib.pyplot as plt
-from lib.paths import *
+from pathlib import Path
 from matplotlib.font_manager import FontProperties
 from mpl_toolkits.mplot3d import Axes3D
+from nnvis import paths
 
 color_loss = "red"
 color_trained = "dimgrey"
@@ -13,6 +16,8 @@ color_acc = "blue"
 
 font = FontProperties()
 font.set_size(20)
+
+logger = logging.getLogger("vis_net")
 
 
 def _plot_line(x, y, xlabel, ylabel, annotate=False, color="blue"):
@@ -58,7 +63,7 @@ def _plot_line(x, y, xlabel, ylabel, annotate=False, color="blue"):
         ax.annotate("{:.3f}".format(y[-3]), xy=(x[-3], y[-3]), xytext=(x[-3], y[-3] + y[-3]*k))
 
     fig.tight_layout()
-    plt.savefig(f"{os.path.join(os.path.join(imgs), ylabel)}.pdf", format="pdf")
+    plt.savefig(f"{os.path.join(os.path.join(paths.imgs), ylabel)}.pdf", format="pdf")
     plt.close("all")
 
 
@@ -103,11 +108,11 @@ def plot_box(x, loss_only=False, acc_only=False, show=False, xlabel=None):
     if not acc_only:
         fig, ax = plt.subplots(figsize=(9, 6))
 
-        if not epochs_loss.exists():
+        if not paths.epochs_loss.exists():
             logging.warning("No loss data found")
             return
 
-        loss = np.loadtxt(test_subs_loss)
+        loss = np.loadtxt(paths.test_subs_loss)
 
         ax.set_ylabel("Validation loss", fontproperties=font)
         ax.set_xlabel(xlabel, fontproperties=font)
@@ -118,16 +123,16 @@ def plot_box(x, loss_only=False, acc_only=False, show=False, xlabel=None):
 
         if show:
             plt.show()
-        plt.savefig(f"{os.path.join(prelim_img, 'test_loss.pdf')}", format="pdf")
+        plt.savefig(f"{os.path.join(paths.prelim_img, 'test_loss.pdf')}", format="pdf")
 
     if not loss_only:
         fig, ax = plt.subplots()
 
-        if not epochs_acc.exists():
+        if not paths.epochs_acc.exists():
             logging.warning("No accuracy data found")
             return
 
-        acc = np.loadtxt(test_subs_acc)
+        acc = np.loadtxt(paths.test_subs_acc)
 
         ax.set_ylabel("Accuracy", fontproperties=font)
         ax.set_xlabel(xlabel, fontproperties=font)
@@ -139,7 +144,7 @@ def plot_box(x, loss_only=False, acc_only=False, show=False, xlabel=None):
         if show:
             plt.show()
 
-        plt.savefig(f"{os.path.join(prelim_img, 'test_acc.pdf')}", format="pdf")
+        plt.savefig(f"{os.path.join(paths.prelim_img, 'test_acc.pdf')}", format="pdf")
 
 
 def plot_metric(alpha, ydata, img_path, metric):
@@ -206,7 +211,7 @@ def plot_params_by_layer(x, layer, opacity_dict, show=False):
     :param opacity_dict: dictionary with travelled distances of each parameter
     :param show: show the plots
     """
-    files = os.listdir(single)
+    files = os.listdir(paths.single)
 
     fig = plt.figure(figsize=(8, 6))
     ax = fig.add_subplot()
@@ -220,7 +225,7 @@ def plot_params_by_layer(x, layer, opacity_dict, show=False):
             k = file + "_distance"  # key for opacity dictionary
             lab = file.split("_")  # get label (parameter position)
             try:
-                ax.plot(x, np.loadtxt(os.path.join(single, file)), label=lab[-1],
+                ax.plot(x, np.loadtxt(os.path.join(paths.single, file)), label=lab[-1],
                         alpha=opacity_dict[k], color="blueviolet")
             except KeyError:
                 continue  # distance file does not exist
@@ -228,7 +233,7 @@ def plot_params_by_layer(x, layer, opacity_dict, show=False):
     ax.set_ylabel("Validation loss", fontproperties=font)
     ax.set_xlabel(r"$\alpha$", fontproperties=font)
 
-    plt.savefig("{}.pdf".format(os.path.join(single_img, layer)), format="pdf")
+    plt.savefig("{}.pdf".format(os.path.join(paths.single_img, layer)), format="pdf")
 
     if show:
         plt.show()
@@ -242,7 +247,7 @@ def plot_vec_all_la(x):
 
     :param x: data for x-axis (interpolation coefficient)
     """
-    files = os.listdir(vec)
+    files = os.listdir(paths.vec)
     fig, (ax, ax2) = plt.subplots(1, 2, figsize=(8, 3))
 
     ax.spines["right"].set_visible(False)
@@ -261,20 +266,20 @@ def plot_vec_all_la(x):
             k = file + "_distance"
             try:
                 if re.search("loss", file):
-                    ax.plot(x, np.loadtxt(os.path.join(vec, file)), label=lab[-1], lw=1)
+                    ax.plot(x, np.loadtxt(os.path.join(paths.vec, file)), label=lab[-1], lw=1)
                 if re.search("acc", file):
-                    ax2.plot(x, np.loadtxt(os.path.join(vec, file)), lw=1)
+                    ax2.plot(x, np.loadtxt(os.path.join(paths.vec, file)), lw=1)
             except KeyError:
                 logger.warning(f"Missing key {k} in opacity dict, will not plot line for {file}")
                 continue
 
-    ax.plot(x, np.loadtxt(loss_path), label="all", color=color_trained, linewidth=1)
-    ax2.plot(x, np.loadtxt(acc_path), color=color_trained, linewidth=1)
+    ax.plot(x, np.loadtxt(paths.loss_path), label="all", color=color_trained, linewidth=1)
+    ax2.plot(x, np.loadtxt(paths.acc_path), color=color_trained, linewidth=1)
 
     fig.legend()
     fig.subplots_adjust(bottom=0.17)
 
-    plt.savefig("{}_{}.pdf".format(vec_img, "all_la"), format="pdf")
+    plt.savefig("{}_{}.pdf".format(paths.vec_img, "all_la"), format="pdf")
 
     plt.close("all")
 
@@ -283,20 +288,20 @@ def plot_lin_quad_real():
     alpha = np.linspace(0, 1, 40)
     epochs = np.arange(0, 14)
 
-    if loss_path.exists():
-        lin = np.loadtxt(loss_path)
+    if paths.loss_path.exists():
+        lin = np.loadtxt(paths.loss_path)
     else:
         raise FileNotFoundError("Linear interpolation on the level of model not found. "
                                 "Please run Linear.interpolate_all_linear.")
 
-    if q_loss_path.exists():
-        quadr = np.loadtxt(q_loss_path)
+    if paths.q_loss_path.exists():
+        quadr = np.loadtxt(paths.q_loss_path)
     else:
         raise FileNotFoundError("Linear interpolation on the level of model not found. "
                                 "Please run Quadratic.interpolate_all_quadratic first.")
 
-    if actual_loss_path.exists():
-        real = np.loadtxt(actual_loss_path)
+    if paths.actual_loss_path.exists():
+        real = np.loadtxt(paths.actual_loss_path)
     else:
         raise FileNotFoundError("Linear interpolation on the level of model not found. "
                                 "Please create and train model first.")
@@ -316,8 +321,7 @@ def plot_lin_quad_real():
     ax2.set_xlabel("Epochs", fontproperties=font)
     ax1.set_ylabel("Validation Loss", fontproperties=font)
 
-    plt.savefig(os.path.join(vec_img, "lin_quadr_real.pdf"), format="pdf")
-
+    plt.savefig(os.path.join(paths.vec_img, "lin_quadr_real.pdf"), format="pdf")
     plt.close("all")
 
 
@@ -328,11 +332,11 @@ def plot_individual_lin_quad(x):
     :param x: x-axis data
     """
     data = {}
-    for fil in os.listdir(single):  # get all linear interpolation results
+    for fil in os.listdir(paths.single):  # get all linear interpolation results
         if re.search("svloss", fil) and not re.search("q", fil) and not re.search("distance", fil):
             data[fil] = ""
 
-    for fil in os.listdir(single):  # get all quadratic interpolation results
+    for fil in os.listdir(paths.single):  # get all quadratic interpolation results
         if re.search("svloss", fil) and re.search("q", fil):
             k = fil[:-2]
             try:
@@ -341,8 +345,8 @@ def plot_individual_lin_quad(x):
                 continue
 
     for key, value in data.items():
-        linear = Path(os.path.join(single, key))
-        quadratic = Path(os.path.join(single, value))
+        linear = Path(os.path.join(paths.single, key))
+        quadratic = Path(os.path.join(paths.single, value))
 
         try:
             linear = np.loadtxt(linear)
@@ -362,7 +366,7 @@ def plot_individual_lin_quad(x):
         ax.set_xticks([], [])
         ax.set_yticks([], [])
 
-        plt.savefig(os.path.join(single_img, f"{key}_comparison.pdf"), format="pdf")
+        plt.savefig(os.path.join(paths.single_img, f"{key}_comparison.pdf"), format="pdf")
         plt.close("all")
 
 
@@ -387,7 +391,7 @@ def contour_path(steps, loss_grid, coords, pcvariances):
     ax.set_xlabel(f"PCA 0 {pcvariances[0]:.2%}")
     ax.set_ylabel(f"PCA 1 {pcvariances[1]:.2%}")
 
-    plt.savefig(os.path.join(pca_dirs_img, "loss_contour_path.pdf"), format="pdf")
+    plt.savefig(os.path.join(paths.pca_dirs_img, "loss_contour_path.pdf"), format="pdf")
 
     plt.close("all")
 
@@ -404,7 +408,7 @@ def surface_contour(loss_grid, coords):
     im = ax.contourf(coords[0], coords[1], loss_grid, levels=45, alpha=0.9)
     plt.colorbar(im)
 
-    plt.savefig(os.path.join(pca_dirs_img, "loss_surface.pdf"), format="pdf")
+    plt.savefig(os.path.join(paths.pca_dirs_img, "loss_surface.pdf"), format="pdf")
 
     plt.close("all")
 
@@ -414,7 +418,7 @@ def surface3d_rand_dirs():
     # vmax = 100
 
     # vlevel = 0.5
-    surface = Path(os.path.join(random_dirs, "surf.h5"))
+    surface = Path(os.path.join(paths.random_dirs, "surf.h5"))
     surf_name = "loss"
 
     with h5py.File(surface, 'r') as fd:
@@ -425,19 +429,17 @@ def surface3d_rand_dirs():
         Z = np.array(fd[surf_name][:])
 
         """3D"""
-        fig = plt.figure()
-        ax = Axes3D(fig)
+        fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
         ax.set_xlabel("x")
         ax.set_ylabel("y")
         ax.set_zlabel("f(x, y)")
         surface = ax.plot_surface(X, Y, Z, linewidth=0, antialiased=False, cmap="plasma")
         fig.colorbar(surface, shrink=0.5, aspect=5)
-        plt.show()
-        plt.savefig(os.path.join(random_dirs_img, "surface_3d.pdf"), format="pdf")
+        plt.savefig(os.path.join(paths.random_dirs_img, "surface_3d.pdf"), format="pdf")
 
 
 def surface_heatmap_rand_dirs():
-    surface = Path(os.path.join(random_dirs, "surf.h5"))
+    surface = Path(os.path.join(paths.random_dirs, "surf.h5"))
     surf_name = "loss"
 
     with h5py.File(surface, 'r') as fd:
@@ -445,7 +447,7 @@ def surface_heatmap_rand_dirs():
         Z = np.array(fd[surf_name][:])
 
         """HEAT MAP"""
-        im = plt.imshow(Z, cmap="plasma")
+        fig, ax = plt.subplots()
+        im = ax.imshow(Z, cmap="plasma")
         plt.colorbar(im)
-        plt.show()
-        plt.savefig(os.path.join(random_dirs_img, "surface_heatmap.pdf"), format="pdf")
+        plt.savefig(os.path.join(paths.random_dirs_img, "surface_heatmap.pdf"), format="pdf")

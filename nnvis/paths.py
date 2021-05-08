@@ -2,8 +2,8 @@ import os
 import logging
 from pathlib import Path
 
-
 logger = logging.getLogger("vis_net")
+
 
 # general directories
 dirname = os.path.dirname
@@ -17,20 +17,6 @@ dataset = Path(dirname(dirname(__file__)), "data")
 init_state = Path(results, "init_state.pt")
 final_state = Path(results, "final_state.pt")
 
-"""
-  ----------------- FILENAMES MEANING -----------------
-       first position               second position
-    ----------------------      ----------------------
-     prefix |   meaning            abbr.  |  meaning
-    --------|-------------      ----------|-----------
-       s    | single param           f    |   final    
-       v    | whole vector          v|t   | val|train
-    ----------------------      ----------------------
-  ----------------- SUBSET FILENAMES -----------------
-
-
-  -----------------------------------------------------
-"""
 # directories for single parameters experiments
 single = Path(results, "singleParam")
 single_img = Path(imgs, "singleParam")

@@ -1,7 +1,10 @@
-import torch
+import os
+import logging
 import pickle
-from lib.paths import *
+import torch
 from torch import nn as nn
+from pathlib import Path
+from nnvis import paths
 import torch.nn.functional as f
 
 logger = logging.getLogger("vis_net")
@@ -109,7 +112,7 @@ def train(model, train_loader, optimizer, device, epoch, checkpoint_file=True):
         optimizer.step()
 
         if checkpoint_file:
-            filename = Path(os.path.join(checkpoints), f"checkpoint_epoch_{epoch}_step_{batch_idx}.pkl")
+            filename = Path(os.path.join(paths.checkpoints), f"checkpoint_epoch_{epoch}_step_{batch_idx}.pkl")
 
             logger.debug(f"Creating checkpoint file {filename}")
 

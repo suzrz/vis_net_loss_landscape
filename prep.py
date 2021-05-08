@@ -1,21 +1,19 @@
+import os
 import re
 import sys
-from lib import net, plot
+import nnvis
 import torch
 import random
-import linear
 import itertools
 import argparse
 import numpy as np
-import quadratic
-from lib.paths import *
+from pathlib import Path
 from torch import optim as optim
 from torch.optim.lr_scheduler import StepLR
 
-mpl_logger = logging.getLogger("matplotlib")
-mpl_logger.setLevel(logging.WARNING)
+import linear
+import quadratic
 
-logger = logging.getLogger("vis_net")
 
 
 def parse_arguments():
@@ -82,52 +80,43 @@ def get_net(device, train_loader, test_loader, epochs):
     :return: Net object (NN model)
     """
     # Create instance of neural network
-    logger.debug("[main]: Getting NN model")
-    m = net.SimpleCNN().to(device)
+    m = nnvis.SimpleCNN().to(device)
     loss_list = []
     acc_list = []
 
     # Save initial state of network if not saved yet
-    if not init_state.exists():
-        logger.info("[main]: No initial state of the model found. Initializing ...")
-        torch.save(m.state_dict(), init_state)
-        logger.debug("[main]: Initial state saved into {}".format(init_state))
+    if not nnvis.init_state.exists():
+        torch.save(m.state_dict(), nnvis.init_state)
 
     # Get optimizer and scheduler
     optimizer = optim.SGD(m.parameters(), lr=0.01, momentum=0.5)  # set optimizer
     scheduler = StepLR(optimizer, step_size=1, gamma=0.7)  # set scheduler
 
     # Initialize neural network model
-    m.load_state_dict(torch.load(init_state))  # Loading initial state to be sure that net is in initial state
+    m.load_state_dict(torch.load(nnvis.init_state))  # Loading initial state to be sure that net is in initial state
     torch.manual_seed(1)  # set seed
 
     # Train model if not trained yet
-    if not final_state.exists():
-        logger.info("[main]: No final state of the model found. Training ...")
+    if not nnvis.final_state.exists():
 
-        loss, acc = net.test(m, test_loader, device)
+        loss, acc = nnvis.test(m, test_loader, device)
         loss_list.append(loss)
         acc_list.append(acc)
 
         for epoch in range(1, epochs):
-            logger.debug("[main]: Epoch {}".format(epoch))
-            logger.debug("[main]: Loss {}".format(loss))
-            logger.debug("[main]: Acc {}".format(acc))
-            net.train(m, train_loader, optimizer, device, epoch)
-            loss, acc = net.test(m, test_loader, device)
+            nnvis.train(m, train_loader, optimizer, device, epoch)
+            loss, acc = nnvis.test(m, test_loader, device)
             loss_list.append(loss)
             acc_list.append(acc)
             scheduler.step()
-            logger.debug("[main]: Finished training epoch {}".format(epoch))
-            torch.save(m.state_dict(), os.path.join(checkpoints, "checkpoint_{}".format(epoch)))
+            torch.save(m.state_dict(), os.path.join(nnvis.checkpoints, "checkpoint_{}".format(epoch)))
 
-        torch.save(m.state_dict(), final_state)  # save final parameters of model
+        torch.save(m.state_dict(), nnvis.final_state)  # save final parameters of model
 
-        np.savetxt(os.path.join(results, "actual_loss"), loss_list)
-        np.savetxt(os.path.join(results, "actual_acc"), acc_list)
+        np.savetxt(os.path.join(nnvis.results, "actual_loss"), loss_list)
+        np.savetxt(os.path.join(nnvis.results, "actual_acc"), acc_list)
 
-    m.load_state_dict(torch.load(final_state))
-    logger.debug("[main get_net]: Loaded final parameters in the model.")
+    m.load_state_dict(torch.load(nnvis.final_state))
 
     return m  # return neural network in final (trained) state
 
@@ -136,12 +125,9 @@ def sample(indexes, n_samples=30):
     samples = []
 
     if n_samples > len(indexes):
-        logger.warning(f"Number of samples {n_samples} is bigger than "
-                       f"len of sampled list {len(indexes)}. Using full set...")
         return indexes
 
     interval = len(indexes) // n_samples
-    logger.debug(f"Samples interval: {interval}")
     count = 0
     for i in range(len(indexes) - 1):
         if i % interval == 0 and count < n_samples:
@@ -164,7 +150,6 @@ def _run_interpolation(idxs, args, device):
 
     for i in idxs:
         args.idxs = i
-        logger.debug(f"layer: {args.layer}, idxs: {idxs}")
         linear.run_single(args, device)
         quadratic.run_individual(args, device)
 
@@ -186,7 +171,6 @@ def run_all(args, device):
     aux = [list(np.arange(0, 6)), [0], list(np.arange(0, 3)), list(np.arange(0, 3))]
     conv1_idxs = list(itertools.product(*aux))
     conv1_idxs = random.sample(conv1_idxs, args.auto_n)
-    logger.debug(f"Number of parameters to be examined in layer conv1: {len(conv1_idxs)}")
 
     args.layer = "conv1"
 
@@ -196,7 +180,6 @@ def run_all(args, device):
     aux = [list(np.arange(0, 6)), list(np.arange(0, 6)), list(np.arange(0, 3)), list(np.arange(0, 3))]
     conv2_idxs = list(itertools.product(*aux))
     conv2_idxs = random.sample(conv2_idxs, args.auto_n)
-    logger.debug(f"Number of parameters to be examined in conv2 layer: {len(conv2_idxs)}")
 
     args.layer = "conv2"
 
@@ -206,7 +189,6 @@ def run_all(args, device):
     aux = [list(np.arange(0, 120)), list(np.arange(0, 576))]
     fc1_idxs = list(itertools.product(*aux))
     fc1_idxs = random.sample(fc1_idxs, args.auto_n)
-    logger.debug(f"Number of parameters to be examined in fc1 layer: {len(fc1_idxs)}")
 
     args.layer = "fc1"
 
@@ -216,7 +198,6 @@ def run_all(args, device):
     aux = [list(np.arange(0, 84)), list(np.arange(0, 120))]
     fc2_idxs = list(itertools.product(*aux))
     fc2_idxs = random.sample(fc2_idxs, args.auto_n)
-    logger.debug(f"Number of parameters to be examined in fc2 layer: {len(fc2_idxs)}")
 
     args.layer = "fc2"
 
@@ -226,7 +207,6 @@ def run_all(args, device):
     aux = [list(np.arange(0, 10)), list(np.arange(0, 84))]
     fc3_idxs = list(itertools.product(*aux))
     fc3_idxs = random.sample(fc3_idxs, args.auto_n)
-    logger.debug(f"Number of parameters to be examined in fc3 layer: {len(fc3_idxs)}")
 
     args.layer = "fc3"
 
@@ -234,28 +214,28 @@ def run_all(args, device):
 
     # prepare x-axis and opacity dictionary for plotting all parameters of a layer
     x = np.linspace(args.alpha_start, args.alpha_end, args.alpha_steps)
-    d = plot.map_distance(single)
+    d = nnvis.map_distance(nnvis.single)
 
     # plot parameters of each layer in one plot
-    plot.plot_params_by_layer(x, "conv1", d)
-    plot.plot_params_by_layer(x, "conv2", d)
-    plot.plot_params_by_layer(x, "fc1", d)
-    plot.plot_params_by_layer(x, "fc2", d)
-    plot.plot_params_by_layer(x, "fc3", d)
+    nnvis.plot_params_by_layer(x, "conv1", d)
+    nnvis.plot_params_by_layer(x, "conv2", d)
+    nnvis.plot_params_by_layer(x, "fc1", d)
+    nnvis.plot_params_by_layer(x, "fc2", d)
+    nnvis.plot_params_by_layer(x, "fc3", d)
 
     # plot all layers in one
     xv = np.linspace(0, 1, args.alpha_steps)
-    plot.plot_vec_all_la(xv)
+    nnvis.plot_vec_all_la(xv)
 
-    plot.plot_lin_quad_real()
-    plot.plot_individual_lin_quad(np.linspace(args.alpha_start, args.alpha_end, args.alpha_steps))
+    nnvis.plot_lin_quad_real()
+    nnvis.plot_individual_lin_quad(np.linspace(args.alpha_start, args.alpha_end, args.alpha_steps))
 
     sys.exit(0)
 
 
 def plot_available(args):
-    individual_files = os.listdir(single)
-    layer_files = os.listdir(vec)
+    individual_files = os.listdir(nnvis.single)
+    layer_files = os.listdir(nnvis.vec)
 
     alpha_i = np.linspace(args.alpha_start, args.alpha_end, args.alpha_steps)
     alpha_l = np.linspace(0, 1, args.alpha_steps)
@@ -263,27 +243,27 @@ def plot_available(args):
     for fil in individual_files:
         if not re.search("distance", fil):
             if re.search("loss", fil):
-                plot.plot_metric(alpha_i, np.loadtxt(Path(single, fil)), Path(single_img, fil), "loss")
+                nnvis.plot_metric(alpha_i, np.loadtxt(Path(nnvis.single, fil)), Path(nnvis.single_img, fil), "loss")
             if re.search("acc", fil):
-                plot.plot_metric(alpha_i, np.loadtxt(Path(single, fil)), Path(single_img, fil), "acc")
+                nnvis.plot_metric(alpha_i, np.loadtxt(Path(nnvis.single, fil)), Path(nnvis.single_img, fil), "acc")
 
     for fil in layer_files:
         if not re.search("distance", fil):
             if re.search("loss", fil):
-                plot.plot_metric(alpha_l, np.loadtxt(Path(vec, fil)), Path(vec_img, fil), "loss")
+                nnvis.plot_metric(alpha_l, np.loadtxt(Path(nnvis.vec, fil)), Path(nnvis.vec_img, fil), "loss")
             if re.search("acc", fil):
-                plot.plot_metric(alpha_l, np.loadtxt(Path(vec, fil)), Path(vec_img, fil), "acc")
+                nnvis.plot_metric(alpha_l, np.loadtxt(Path(nnvis.vec, fil)), Path(nnvis.vec_img, fil), "acc")
 
-    d = plot.map_distance(single)
+    d = nnvis.map_distance(nnvis.single)
 
     # plot parameters of each layer in one plot
-    plot.plot_params_by_layer(alpha_i, "conv1", d)
-    plot.plot_params_by_layer(alpha_i, "conv2", d)
-    plot.plot_params_by_layer(alpha_i, "fc1", d)
-    plot.plot_params_by_layer(alpha_i, "fc2", d)
-    plot.plot_params_by_layer(alpha_i, "fc3", d)
+    nnvis.plot_params_by_layer(alpha_i, "conv1", d)
+    nnvis.plot_params_by_layer(alpha_i, "conv2", d)
+    nnvis.plot_params_by_layer(alpha_i, "fc1", d)
+    nnvis.plot_params_by_layer(alpha_i, "fc2", d)
+    nnvis.plot_params_by_layer(alpha_i, "fc3", d)
 
-    plot.plot_vec_all_la(alpha_l)
+    nnvis.plot_vec_all_la(alpha_l)
 
-    plot.plot_lin_quad_real()
-    plot.plot_individual_lin_quad(np.linspace(args.alpha_start, args.alpha_end, args.alpha_steps))
+    nnvis.plot_lin_quad_real()
+    nnvis.plot_individual_lin_quad(np.linspace(args.alpha_start, args.alpha_end, args.alpha_steps))

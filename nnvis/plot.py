@@ -7,7 +7,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
 from matplotlib.font_manager import FontProperties
-from mpl_toolkits.mplot3d import Axes3D
 from nnvis import paths
 
 color_loss = "red"
@@ -63,7 +62,7 @@ def _plot_line(x, y, xlabel, ylabel, annotate=False, color="blue"):
         ax.annotate("{:.3f}".format(y[-3]), xy=(x[-3], y[-3]), xytext=(x[-3], y[-3] + y[-3]*k))
 
     fig.tight_layout()
-    plt.savefig(f"{os.path.join(os.path.join(paths.imgs_prelim), ylabel)}.pdf", format="pdf")
+    plt.savefig(f"{os.path.join(os.path.join(paths.prelim_img), ylabel)}.pdf", format="pdf")
     plt.close("all")
 
 

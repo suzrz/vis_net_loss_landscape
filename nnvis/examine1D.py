@@ -1,4 +1,5 @@
 import os
+import re
 import nnvis
 import logging
 import copy
@@ -246,6 +247,19 @@ class Linear(Examinator1D):
 
 
 class Quadratic(Examinator1D):
+    def __get_mid_point(self, directory):
+        """
+        Method obtains middle point of model training
+
+        :param directory: directory with checkpoint files
+        :return: mid point
+        """
+        files = [fi for fi in os.listdir(directory) if not re.search("step", fi)]
+
+        mid = files[(len(files) - 1) // 2:(len(files) + 2) // 2]
+
+        return mid
+
     def __calc_theta_single_q(self, layer, idxs, alpha, start, mid, end):
         """
         Method calculates quadratic interpolation of a individual parameter with respect to interpolation coefficient
@@ -321,11 +335,14 @@ class Quadratic(Examinator1D):
                          f"End: {end_a}")
 
             self.model.load_state_dict(self.theta_f)
+
+            mid_check = self.__get_mid_point(nnvis.checkpoints)
+
             for alpha_act in self.alpha:
                 for layer in layers:
                     start_p = self.theta_i[layer].cpu()
                     mid_p = copy.deepcopy(
-                        torch.load(os.path.join(nnvis.checkpoints, "checkpoint_1"))[layer]).cpu()  # TODO automatic mid
+                        torch.load(os.path.join(nnvis.checkpoints, mid_check))[layer]).cpu()
                     end_p = self.theta_f[layer].cpu()
 
                     start = [start_a, start_p]
@@ -341,7 +358,7 @@ class Quadratic(Examinator1D):
 
             np.savetxt(nnvis.q_loss_path, v_loss_list)
             np.savetxt(nnvis.q_acc_path, acc_list)
-            nnvis.plot_lin_quad_real()
+            nnvis.plot_lin_quad_real(self.alpha)
             self.model.load_state_dict(self.theta_f)
 
     def individual_param_quadratic(self, test_loader, layer, idxs):
@@ -380,9 +397,11 @@ class Quadratic(Examinator1D):
                          f"Mid: {mid_a}\n"
                          f"End: {end_a}")
 
+            mid_check = self.__get_mid_point(nnvis.checkpoints)
+
             start_p = self.theta_i[layer + ".weight"][idxs].cpu()
             mid_p = copy.deepcopy(torch.load(Path(os.path.join(nnvis.checkpoints,
-                                                               "checkpoint_7"))))[layer + ".weight"][idxs].cpu()  # TODO AUTO MID
+                                                               mid_check))))[layer + ".weight"][idxs].cpu()
             end_p = self.theta_f[layer + ".weight"][idxs].cpu()
 
             logger.debug(f"Start loss: {start_p}\n"
@@ -454,8 +473,10 @@ class Quadratic(Examinator1D):
                          f"Mid: {mid_a}\n"
                          f"End: {end_a}")
 
+            mid_check = self.__get_mid_point(nnvis.checkpoints)
+
             start_p = self.theta_i[layer + ".weight"].cpu()
-            mid_p = copy.deepcopy(torch.load(os.path.join(nnvis.checkpoints, "checkpoint_6"))[layer + ".weight"]).cpu()  # TODO AUTO MID
+            mid_p = copy.deepcopy(torch.load(os.path.join(nnvis.checkpoints, mid_check))[layer + ".weight"]).cpu()
             end_p = self.theta_f[layer + ".weight"].cpu()
 
             start_w = [start_a, start_p]

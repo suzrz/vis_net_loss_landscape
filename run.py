@@ -42,5 +42,5 @@ if args.surface:
 if args.path:
     PCA_directions.run_pca_surface(args, device)
 
-if args.plot:
+if args.plot_all:
     prep.plot_available(args)

@@ -34,7 +34,7 @@ def parse_arguments():
     parser.add_argument("--epochs", type=int, action="store", default=14, nargs='?',
                         help="Set number of training epochs (default = 14).")
     parser.add_argument("--idxs", nargs='+', type=int, default=(0, 0, 0, 0),
-                        help="Set index of examined parameter (default = [0, 0, 0, 0]).")
+                        help="Set index of examined parameter (default = (0, 0, 0, 0)).")
     parser.add_argument("--layer", default="conv1",
                         help="Set layer of examined parameter (default = conv1).")
     parser.add_argument("--trained", action="store_true",
@@ -42,12 +42,14 @@ def parse_arguments():
                              "Available only for layer level experiments.")
     parser.add_argument("--preliminary", action="store_true",
                         help="Preliminary experiments execution.")
-    parser.add_argument("--single", action="store_true",
-                        help="Individual parameter examination.")
-    parser.add_argument("--layers", action="store_true",
-                        help="Layer level examination.")
-    parser.add_argument("--quadratic", action="store_true",
-                        help="Examination on both parameter and layer levels using the quadratic path.")
+    parser.add_argument("--linear-i", action="store_true",
+                        help="Individual parameter linear path examination.")
+    parser.add_argument("--linear-l", action="store_true",
+                        help="Layer linear path examination.")
+    parser.add_argument("--quadratic-i", action="store_true",
+                        help="Individual parameter quadratic path examination.")
+    parser.add_argument("--quadratic-l", action="store_true",
+                        help="Layer quadratic path examination.")
     parser.add_argument("--surface", action="store_true",
                         help="Loss function surface visualization.")
     parser.add_argument("--path", action="store_true",
@@ -145,12 +147,12 @@ def _run_interpolation(idxs, args, device):
     :param args: experiment configuration
     :param device: device to be used
     """
-    linear.run_layers(args, device)
+    linear.run_layer(args, device)
     quadratic.run_layers(args, device)
 
     for i in idxs:
         args.idxs = i
-        linear.run_single(args, device)
+        linear.run_individual(args, device)
         quadratic.run_individual(args, device)
 
 
@@ -159,7 +161,7 @@ def run_all(args, device):
         Runs linear and quadratic interpolation automatically over all layers
         and chosen number of parameters.
 
-        Warning: Works only for model architecture specified in net.py
+        Warning: Works only for the provided model architecture specified in net.py
 
         :param args: experiment parameters
         :param device: device to be used
@@ -214,7 +216,7 @@ def run_all(args, device):
 
     # prepare x-axis and opacity dictionary for plotting all parameters of a layer
     x = np.linspace(args.alpha_start, args.alpha_end, args.alpha_steps)
-    d = nnvis.map_distance(nnvis.single)
+    d = plot.map_distance(nnvis.individual)
 
     # plot parameters of each layer in one plot
     nnvis.plot_params_by_layer(x, "conv1", d)
@@ -224,46 +226,43 @@ def run_all(args, device):
     nnvis.plot_params_by_layer(x, "fc3", d)
 
     # plot all layers in one
-    xv = np.linspace(0, 1, args.alpha_steps)
-    nnvis.plot_vec_all_la(xv)
-
-    nnvis.plot_lin_quad_real()
-    nnvis.plot_individual_lin_quad(np.linspace(args.alpha_start, args.alpha_end, args.alpha_steps))
+    nnvis.plot_vec_all_la(x)
+    nnvis.plot_lin_quad_real(x)
+    nnvis.plot_individual_lin_quad(x)
 
     sys.exit(0)
 
 
 def plot_available(args):
-    individual_files = os.listdir(nnvis.single)
-    layer_files = os.listdir(nnvis.vec)
+    individual_files = os.listdir(nnvis.individual)
+    layer_files = os.listdir(nnvis.layers)
 
-    alpha_i = np.linspace(args.alpha_start, args.alpha_end, args.alpha_steps)
-    alpha_l = np.linspace(0, 1, args.alpha_steps)
+    alpha = np.linspace(args.alpha_start, args.alpha_end, args.alpha_steps)
 
     for fil in individual_files:
         if not re.search("distance", fil):
             if re.search("loss", fil):
-                nnvis.plot_metric(alpha_i, np.loadtxt(Path(nnvis.single, fil)), Path(nnvis.single_img, fil), "loss")
+                nnvis.plot_metric(alpha, np.loadtxt(Path(nnvis.individual, fil)), Path(nnvis.individual_img, fil), "loss")
             if re.search("acc", fil):
-                nnvis.plot_metric(alpha_i, np.loadtxt(Path(nnvis.single, fil)), Path(nnvis.single_img, fil), "acc")
+                nnvis.plot_metric(alpha, np.loadtxt(Path(nnvis.individual, fil)), Path(nnvis.individual_img, fil), "acc")
 
     for fil in layer_files:
         if not re.search("distance", fil):
             if re.search("loss", fil):
-                nnvis.plot_metric(alpha_l, np.loadtxt(Path(nnvis.vec, fil)), Path(nnvis.vec_img, fil), "loss")
+                nnvis.plot_metric(alpha, np.loadtxt(Path(nnvis.layers, fil)), Path(nnvis.layers_img, fil), "loss")
             if re.search("acc", fil):
-                nnvis.plot_metric(alpha_l, np.loadtxt(Path(nnvis.vec, fil)), Path(nnvis.vec_img, fil), "acc")
+                nnvis.plot_metric(alpha, np.loadtxt(Path(nnvis.layers, fil)), Path(nnvis.layers_img, fil), "acc")
 
-    d = nnvis.map_distance(nnvis.single)
+    d = plot.map_distance(nnvis.individual)
 
     # plot parameters of each layer in one plot
-    nnvis.plot_params_by_layer(alpha_i, "conv1", d)
-    nnvis.plot_params_by_layer(alpha_i, "conv2", d)
-    nnvis.plot_params_by_layer(alpha_i, "fc1", d)
-    nnvis.plot_params_by_layer(alpha_i, "fc2", d)
-    nnvis.plot_params_by_layer(alpha_i, "fc3", d)
+    nnvis.plot_params_by_layer(alpha, "conv1", d)
+    nnvis.plot_params_by_layer(alpha, "conv2", d)
+    nnvis.plot_params_by_layer(alpha, "fc1", d)
+    nnvis.plot_params_by_layer(alpha, "fc2", d)
+    nnvis.plot_params_by_layer(alpha, "fc3", d)
 
-    nnvis.plot_vec_all_la(alpha_l)
+    nnvis.plot_vec_all_la(alpha)
 
-    nnvis.plot_lin_quad_real()
+    nnvis.plot_lin_quad_real(alpha)
     nnvis.plot_individual_lin_quad(np.linspace(args.alpha_start, args.alpha_end, args.alpha_steps))

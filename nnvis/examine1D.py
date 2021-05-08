@@ -57,7 +57,7 @@ class Examinator1D:
 class Linear(Examinator1D):
     def __calc_theta_single(self, layer, idxs, alpha):
         """
-        Method calculates interpolation of a single parameter with respect to interpolation coefficient alpha
+        Method calculates interpolation of a individual parameter with respect to interpolation coefficient alpha
 
         :param layer: layer of parameter
         :param idxs: position of parameter
@@ -165,7 +165,7 @@ class Linear(Examinator1D):
             logger.info(f"Calculating distance for: {layer} {idxs}")
 
             distance = self.calc_distance(layer + ".weight", idxs)
-            logger.info(f"Distance: {distance}")
+            logger.debug(f"Distance: {distance}")
 
             with open(dist, 'w') as fd:
                 fd.write("{}".format(distance))
@@ -248,7 +248,7 @@ class Linear(Examinator1D):
 class Quadratic(Examinator1D):
     def __calc_theta_single_q(self, layer, idxs, alpha, start, mid, end):
         """
-        Method calculates quadratic interpolation of a single parameter with respect to interpolation coefficient
+        Method calculates quadratic interpolation of a individual parameter with respect to interpolation coefficient
         alpha
 
         :param layer: layer of parameter
@@ -260,9 +260,7 @@ class Quadratic(Examinator1D):
         """
         logger.debug(f"Calculating quadr: {layer} {idxs} for alpha = {alpha}")
         xdata = np.array([start[0], mid[0], end[0]])
-        logger.debug(f"XDATA: {xdata}")
         ydata = np.array([start[1], mid[1], end[1]])
-        logger.debug(f"YDATA: {ydata}")
 
         poly = scipy.interpolate.lagrange(xdata, ydata)
 

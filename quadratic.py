@@ -10,7 +10,7 @@ def run_complete(args, device):
     :param args: experiment configuration
     :param device: device to be used
     """
-    alpha = np.linspace(0, 1, args.alpha_steps)
+    alpha = np.linspace(args.alpha_start, args.alpha_end, args.alpha_steps)
 
     train_loader, test_loader = nnvis.data_load()
 
@@ -34,7 +34,7 @@ def run_layers(args, device):
     :param device: device to be used
     """
 
-    alpha = np.linspace(0, 1, args.alpha_steps)
+    alpha = np.linspace(args.alpha_start, args.alpha_end, args.alpha_steps)
 
     train_loader, test_loader = nnvis.data_load()
 

@@ -12,7 +12,7 @@ def run_pca_surface(args, device):
     :param args: experiment configuration
     :param device: device to be used
     """
-    logger.info("Running loss function landscape visualization")
+    logger.info("Running loss function landscape visualization using PCA directions")
 
     train_loader, test_loader = nnvis.data_load()
 

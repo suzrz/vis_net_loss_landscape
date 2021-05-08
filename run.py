@@ -17,18 +17,20 @@ device = torch.device("cuda" if use_cuda else "cpu")
 if args.auto:
     prep.run_all(args, device)
 
-if args.single:
-    linear.run_single(args, device)
+if args.linear_i:
+    linear.run_individual(args, device)
 
-if args.layers:
+if args.linear_l:
     linear.run_complete(args, device)
 
-    linear.run_layers(args, device)
+    linear.run_layer(args, device)
 
-if args.quadratic:
+if args.quadratic_i:
+    quadratic.run_individual(args, device)
+
+if args.quadratic_l:
     quadratic.run_complete(args, device)
 
-    quadratic.run_individual(args, device)
     quadratic.run_layers(args, device)
 
 if args.preliminary:

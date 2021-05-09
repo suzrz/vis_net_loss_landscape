@@ -1,3 +1,9 @@
+"""
+Neural Network loss surface visualization using random directions projection
+
+:author: Silvie Nemcova (xnemco06@stud.fit.vutbr.cz)
+:year: 2021
+"""
 import prep
 import torch
 import nnvis

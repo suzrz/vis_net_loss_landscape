@@ -1,3 +1,9 @@
+"""
+Neural Network Training Progress Path Visualization using PCA directions
+
+:author: Silvie Nemcova (xnemco06@stud.fit.vutbr.cz)
+:year: 2021
+"""
 import nnvis
 import prep
 

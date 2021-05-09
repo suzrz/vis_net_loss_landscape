@@ -12,10 +12,16 @@ If CUDA will be used, then also:
 - CUDA>=11.1 (Available [here](https://developer.nvidia.com/cuda-downloads))
 
 # Installation
-For running this tool it is necessary to have installed PyTorch. Recommended way of installation is from the project 
-[website](https://pytorch.org/get-started/locally/), where it is possible to get CUDA version if you have a CUDA GPU.
+### Using pip
+You can use pip to install the nnvis package:
 
-All required Python packages can be installed with: 
+Windows: ```py -m pip install -r requirements.txt```
+
+Linux/MacOS: ```pip3 install nnvis```
+
+
+### Using requirements file
+Or you can use provided ```requirements.txt``` file: 
 
 Windows:
 ```py -m pip install -r requirements.txt```

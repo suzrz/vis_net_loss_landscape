@@ -1,3 +1,9 @@
+"""
+Neural Network Training Progress using Linear Path
+
+:author: Silvie Nemcova (xnemco06@stud.fit.vutbr.cz)
+:year: 2021
+"""
 import prep
 import nnvis
 import numpy as np

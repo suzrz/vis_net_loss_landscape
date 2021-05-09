@@ -1,3 +1,9 @@
+"""
+Preliminary experiments
+
+:author: Silvie Nemcova (xnemco06@stud.fit.vutbr.cz)
+:year: 2021
+"""
 import torch
 import prep
 import nnvis

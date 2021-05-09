@@ -1,3 +1,9 @@
+"""
+Neural Network Training Progress visualization using Quadratic Path
+
+:author: Silvie Nemcova (xnemco06@stud.fit.vutbr.cz)
+:year: 2021
+"""
 import prep
 import numpy as np
 import nnvis

@@ -15,7 +15,7 @@ If CUDA will be used, then also:
 ### Using pip
 You can use pip to install the nnvis package:
 
-Windows: ```py -m pip install -r requirements.txt```
+Windows: ```py -m pip install nnvis```
 
 Linux/MacOS: ```pip3 install nnvis```
 

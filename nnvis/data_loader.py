@@ -1,3 +1,11 @@
+"""
+Data loader module
+
+Used for MNIST data set loading
+
+:author: Silvie Nemcova (xnemco06@stud.fit.vutbr.cz)
+:year: 2021
+"""
 import torch.utils.data
 from nnvis import paths
 import logging

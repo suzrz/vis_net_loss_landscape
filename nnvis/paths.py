@@ -1,3 +1,9 @@
+"""
+Path specifications for the tool
+
+:author: Silvie Nemcova (xnemco06@stud.fit.vutbr.cz)
+:year: 2021
+"""
 import os
 import logging
 from pathlib import Path

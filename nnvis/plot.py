@@ -1,3 +1,9 @@
+"""
+Plot library for visualizing the neural network training progress
+
+:author: Silvie Nemcova (xnemco06@stud.fit.vutbr.cz)
+:year: 2021
+"""
 import os
 import re
 import copy

@@ -1,4 +1,9 @@
 """
+Neural Network Training Progress 2D examinator
+
+:author: Silvie Nemcova (xnemco06@stud.fit.vutbr.cz)
+:year: 2021
+
 This code is based on:
 
 Title: Animating the Optimization Trajectory of Neural Nets

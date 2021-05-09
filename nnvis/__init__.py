@@ -1,3 +1,9 @@
+"""
+Neural Network Training Progress Visualization
+
+:author: Silvie Nemcova (xnemco06@stud.fit.vutbr.cz)
+:year: 2021
+"""
 from .data_loader import *
 from .examine1D import *
 from .examine2D import *

@@ -1,3 +1,9 @@
+"""
+Neural Network Training Progress 1D examinator
+
+:author: Silvie Nemcova (xnemco06@stud.fit.vutbr.cz)
+:year: 2021
+"""
 import os
 import re
 import logging

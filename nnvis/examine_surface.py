@@ -1,4 +1,9 @@
 """
+Neural Network Training Progress loss surface examinator
+
+:author: Silvie Nemcova (xnemco06@stud.fit.vutbr.cz)
+:year: 2021
+
 This code is based on:
 
 Title: Visualizing the Loss Landscape of Neural Nets

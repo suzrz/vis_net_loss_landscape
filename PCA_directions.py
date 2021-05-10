@@ -21,7 +21,7 @@ def run_pca_surface(args, device):
 
     examine = nnvis.Examinator2D(model, device)
 
-    data = examine.get_loss_grid(test_loader, resolution=args.res)
+    data = examine.get_loss_grid(test_loader)
 
     nnvis.contour_path(data["path_2d"], data["loss_grid"], data["coords"], data["pcvariances"])
     nnvis.surface_contour(data["loss_grid"], data["coords"])

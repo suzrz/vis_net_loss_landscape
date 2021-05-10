@@ -12,6 +12,8 @@ If CUDA will be used, then also:
 - CUDA>=11.1 (Available [here](https://developer.nvidia.com/cuda-downloads))
 
 # Installation
+Warning: The installation takes around 5GB of disk space.
+
 ## Virtual environment setup
 Because of use of various Python Packages it is recommened to use virtual environment. 
 
@@ -41,16 +43,25 @@ Windows: ```py run.py -h```
 
 Linux/MacOS: ```python3 run.py -h```
 
+#### Logging
+The tool uses ```vis_net.log``` to log the progress of the usage.
+
 ## Examples
-For auto run all one dimensional experiments run:
+The examples are demonstrating the use of tool on a simple CNN model based on LeNet 5, trained and validated on MNIST 
+dataset.
 
-Windows: ```py run.py --auto```
+#### Computational demands:
+It takes around three minutes to examine one parameter using single-dimensional method (linear or quadratic path) on 
+a machine with Intel Core i5-6600K and NVIDIA GTX 1060 6GB with CUDA enabled.
 
-Linux/MacOS: ```python3 run.py --auto```
+#### Execution
+To auto run all one dimensional experiments it is recommended to set number of examined parameters in each layer. The 
+default value is ```10```, you can set the number using option ```--auto-n [INT]```.
 
-This will run linear and quadratic path experiments on the level of model, layer and parameter. Option ```--auto-n INT``` 
-specifies number of randomly selected parameters to examine in each layer (e. g. ```--auto-n 10``` will examine 10 
-randomly selected parameters). 
+Windows: ```py run.py --auto --auto-n [INT]```
+
+Linux/MacOS: ```python3 run.py --auto --auto-n [INT]```
+
 
 To visualize the surface of the loss function run:
 
@@ -58,7 +69,11 @@ Windows: ```py run.py --surface```
 
 Linux/MacOS: ```python3 run.py --surface```
 
-This will execute the random directions surface examination.
+To visualize the path of SGD:
+
+Windows: ```py run.py --path```
+
+Linux/MacOS: ```python3 run.py --path```
 
 # References
 <a id="1">[1]</a>

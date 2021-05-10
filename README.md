@@ -12,13 +12,12 @@ If CUDA will be used, then also:
 - CUDA>=11.1 (Available [here](https://developer.nvidia.com/cuda-downloads))
 
 # Installation
-### Using pip
-You can use pip to install the nnvis package:
+## Virtual environment setup
+Because of use of various Python Packages it is recommened to use virtual environment. 
 
-Windows: ```py -m pip install nnvis```
+Windows: ```py -m venv <path_to_venv>```
 
-Linux/MacOS: ```pip3 install nnvis```
-
+Linux/MacOS: ```python3 -m venv <path_to_venv>```
 
 ### Using requirements file
 Or you can use provided ```requirements.txt``` file: 
@@ -27,6 +26,13 @@ Windows:
 ```py -m pip install -r requirements.txt```
 
 Linux/MacOS: ```pip3 install -r requirements.txt```
+
+### Using pip
+You can use pip to install the nnvis package:
+
+Windows: ```py -m pip install nnvis```
+
+Linux/MacOS: ```pip3 install nnvis```
 
 # Usage
 For help run:

@@ -46,7 +46,7 @@ This will run linear and quadratic path experiments on the level of model, layer
 specifies number of randomly selected parameters to examine in each layer (e. g. ```--auto-n 10``` will examine 10 
 randomly selected parameters). 
 
-To examine the surface of the loss function run:
+To visualize the surface of the loss function run:
 
 Windows: ```py run.py --surface```
 

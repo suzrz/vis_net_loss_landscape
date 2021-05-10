@@ -1,3 +1,9 @@
+"""
+Main execute script
+
+:author: Silvie Nemcova <xnemco06@stud.fit.vutbr.cz>
+:year: 2021
+"""
 import prep
 import linear
 import quadratic

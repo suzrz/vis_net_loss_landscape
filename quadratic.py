@@ -16,7 +16,7 @@ def run_complete(args, device):
     :param args: experiment configuration
     :param device: device to be used
     """
-    alpha = np.linspace(args.alpha_start, args.alpha_end, args.alpha_steps)
+    alpha = np.linspace(0, 1, args.alpha_steps)
 
     train_loader, test_loader = nnvis.data_load()
 
@@ -24,10 +24,10 @@ def run_complete(args, device):
 
     interpolate = nnvis.Quadratic(model, device, alpha, nnvis.final_state, nnvis.init_state)
 
-    interpolate.interpolate_all_quadratic(test_loader)
-
     interpolate_l = nnvis.Linear(model, device, alpha, nnvis.final_state, nnvis.init_state)
     interpolate_l.interpolate_all_linear(test_loader)
+
+    interpolate.interpolate_all_quadratic(test_loader)
 
     nnvis.plot_lin_quad_real(alpha)
 
@@ -40,7 +40,7 @@ def run_layers(args, device):
     :param device: device to be used
     """
 
-    alpha = np.linspace(args.alpha_start, args.alpha_end, args.alpha_steps)
+    alpha = np.linspace(0, 1, args.alpha_steps)
 
     train_loader, test_loader = nnvis.data_load()
 

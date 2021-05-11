@@ -13,6 +13,7 @@ import random
 import itertools
 import argparse
 import numpy as np
+from tqdm import tqdm
 from pathlib import Path
 from torch import optim as optim
 from torch.optim.lr_scheduler import StepLR
@@ -30,11 +31,11 @@ def parse_arguments():
     parser.add_argument('--no-cuda', action='store_true',
                         help="Disables CUDA training.")
     parser.add_argument("--alpha-start", type=float, action="store", default=-0.5, nargs='?',
-                        help="Set starting point of interpolation (float, default = -0.5).")
+                        help="Set starting point of 1D paths on parameter level (float, default = -0.5).")
     parser.add_argument("--alpha-end", type=float, action="store", default=1.5, nargs='?',
-                        help="Set ending point of interpolation (float, default = 1.5).")
+                        help="Set ending point of 1D paths on parameter level (float, default = 1.5).")
     parser.add_argument("--alpha-steps", type=int, action="store", default=40, nargs='?',
-                        help="Set number of interpolation steps (int, default = 40).")
+                        help="Set number of 1D paths steps (int, default = 40).")
     parser.add_argument("--epochs", type=int, action="store", default=14, nargs='?',
                         help="Set number of training epochs (default = 14).")
     parser.add_argument("--idxs", nargs='+', type=int, default=(0, 0, 0, 0),
@@ -103,7 +104,7 @@ def get_net(device, train_loader, test_loader, epochs):
         loss_list.append(loss)
         acc_list.append(acc)
 
-        for epoch in range(1, epochs):
+        for epoch in tqdm(range(1, epochs), desc="Model training"):
             nnvis.train(m, train_loader, optimizer, device, epoch)
             loss, acc = nnvis.test(m, test_loader, device)
             loss_list.append(loss)
@@ -214,6 +215,7 @@ def run_all(args, device):
 
     # prepare x-axis and opacity dictionary for plotting all parameters of a layer
     x = np.linspace(args.alpha_start, args.alpha_end, args.alpha_steps)
+    x_model = np.linspace(0, 1, 40)
     d = nnvis.map_distance(nnvis.individual)
 
     # plot parameters of each layer in one plot
@@ -225,7 +227,7 @@ def run_all(args, device):
 
     # plot all layers in one
     nnvis.plot_vec_all_la(x)
-    nnvis.plot_lin_quad_real(x)
+    nnvis.plot_lin_quad_real(x_model)
     nnvis.plot_individual_lin_quad(x)
 
     sys.exit(0)
@@ -262,5 +264,6 @@ def plot_available(args):
 
     nnvis.plot_vec_all_la(alpha)
 
-    nnvis.plot_lin_quad_real(alpha)
-    nnvis.plot_individual_lin_quad(np.linspace(args.alpha_start, args.alpha_end, args.alpha_steps))
+    model_alpha = np.linspace(0, 1, 40)
+    nnvis.plot_lin_quad_real(model_alpha)
+    nnvis.plot_individual_lin_quad(alpha)

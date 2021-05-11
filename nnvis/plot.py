@@ -303,13 +303,13 @@ def plot_lin_quad_real(alpha):
     if paths.q_loss_path.exists():
         quadr = np.loadtxt(paths.q_loss_path)
     else:
-        raise FileNotFoundError("Linear interpolation on the level of model not found. "
+        raise FileNotFoundError("Quadratic interpolation on the level of model not found. "
                                 "Please run Quadratic.interpolate_all_quadratic first.")
 
     if paths.actual_loss_path.exists():
         real = np.loadtxt(paths.actual_loss_path)
     else:
-        raise FileNotFoundError("Linear interpolation on the level of model not found. "
+        raise FileNotFoundError("Actual loss path of the model not found. "
                                 "Please create and train model first.")
 
     fig, ax1 = plt.subplots()

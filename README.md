@@ -12,13 +12,32 @@ If CUDA will be used, then also:
 - CUDA>=11.1 (Available [here](https://developer.nvidia.com/cuda-downloads))
 
 # Installation
-### Using pip
-You can use pip to install the nnvis package:
+Warning: The installation can take around 5GB of disk space.
 
-Windows: ```py -m pip install nnvis```
+Make sure that you are using the right version of Python. In Windows OS you can use option 
+```py -v <version> ...``` and in Linux/MacOS ```python<version> ...``` to use version 
+```<version>``` of Python.
 
-Linux/MacOS: ```pip3 install nnvis```
+## Virtual environment setup
+Because of use of various Python Packages it is recommened to use virtual environment. 
 
+Create virtual environment:
+
+Windows: ```py -m venv <path_to_venv>```
+
+Linux/MacOS: ```python3 -m venv <path_to_venv>```
+
+Activate virtual environment:
+
+Windows: ```<path_to_venv>\Scripts\activate```
+
+Linux/MacOS: ```source <path_to_venv>/bin/activate```
+
+Deactivation of the virtual environment:
+
+Windows/Linux/MacOS: ```deactivate```
+
+More details about virtual environments can be found [here](https://docs.python.org/3/library/venv.html).
 
 ### Using requirements file
 Or you can use provided ```requirements.txt``` file: 
@@ -28,6 +47,13 @@ Windows:
 
 Linux/MacOS: ```pip3 install -r requirements.txt```
 
+### Using pip
+You can use pip to install the nnvis package:
+
+Windows: ```py -m pip install nnvis```
+
+Linux/MacOS: ```pip3 install nnvis```
+
 # Usage
 For help run:
 
@@ -35,16 +61,26 @@ Windows: ```py run.py -h```
 
 Linux/MacOS: ```python3 run.py -h```
 
+#### Logging
+The tool uses ```<path_to_project>/vis_net.log``` to log the progress of the usage and it 
+shows progress bars on terminal.
+
 ## Examples
-For auto run all one dimensional experiments run:
+The examples are demonstrating the use of tool on a simple CNN model based on LeNet 5, trained and validated on MNIST 
+dataset.
 
-Windows: ```py run.py --auto```
+#### Computational demands:
+It takes around three minutes to examine one parameter using single-dimensional methods (linear and quadratic path) on 
+a machine with Intel Core i5-6600K and NVIDIA GTX 1060 6GB with CUDA enabled.
 
-Linux/MacOS: ```python3 run.py --auto```
+#### Execution
+To auto run all one dimensional experiments it is recommended to set number of examined parameters in each layer. The 
+default value is ```10```, you can set the number using option ```--auto-n [INT]```.
 
-This will run linear and quadratic path experiments on the level of model, layer and parameter. Option ```--auto-n INT``` 
-specifies number of randomly selected parameters to examine in each layer (e. g. ```--auto-n 10``` will examine 10 
-randomly selected parameters). 
+Windows: ```py run.py --auto --auto-n [INT]```
+
+Linux/MacOS: ```python3 run.py --auto --auto-n [INT]```
+
 
 To visualize the surface of the loss function run:
 
@@ -52,7 +88,11 @@ Windows: ```py run.py --surface```
 
 Linux/MacOS: ```python3 run.py --surface```
 
-This will execute the random directions surface examination.
+To visualize the path of SGD:
+
+Windows: ```py run.py --path```
+
+Linux/MacOS: ```python3 run.py --path```
 
 # References
 <a id="1">[1]</a>

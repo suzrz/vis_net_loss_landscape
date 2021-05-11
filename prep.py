@@ -62,7 +62,6 @@ def parse_arguments():
                              "auto execution of the 1D experiments (default = 1).")
     parser.add_argument("--plot-all", action="store_true",
                         help="Plot available data.")
-    parser.add_argument("--debug", action="store_true", help="Enables debug logging.")
 
     args = parser.parse_args()
     args.idxs = tuple(args.idxs)

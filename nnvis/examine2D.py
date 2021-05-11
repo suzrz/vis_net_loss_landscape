@@ -19,6 +19,7 @@ import torch
 import pickle
 import logging
 import numpy as np
+from tqdm import tqdm
 from pathlib import Path
 from sklearn.decomposition import PCA
 from nnvis import paths, net
@@ -162,7 +163,7 @@ class Examinator2D:
         arg_min = ()
 
         logger.info("Calculating loss values for PCA directions")
-        for i in range(n):
+        for i in tqdm(range(n), desc="Optimizer path visualization"):
             loss_row = []
             for j in range(m):
                 logger.debug(f"Calculating loss for coordinates: {i}, {j}")

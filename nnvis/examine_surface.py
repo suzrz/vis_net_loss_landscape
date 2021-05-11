@@ -18,6 +18,7 @@ import torch
 import numpy as np
 import logging
 from pathlib import Path
+from tqdm import tqdm
 from nnvis import paths, net
 
 logger = logging.getLogger("vis_net")
@@ -148,7 +149,7 @@ def calc_loss(model, test_loader, directions, device):
 
         ids, coords = get_indices(losses, xcoords, ycoords)
 
-        for count, idx in enumerate(ids):
+        for count, idx in enumerate(tqdm(ids, desc="Loss Landscape Visualization", dynamic_ncols=True)):
             coord = coords[count]
             logger.debug(f"Index: {idx}")
 

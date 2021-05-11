@@ -12,14 +12,32 @@ If CUDA will be used, then also:
 - CUDA>=11.1 (Available [here](https://developer.nvidia.com/cuda-downloads))
 
 # Installation
-Warning: The installation takes around 5GB of disk space.
+Warning: The installation can take around 5GB of disk space.
+
+Make sure that you are using the right version of Python. In Windows OS you can use option 
+```py -v <version> ...``` and in Linux/MacOS ```python<version> ...``` to use version 
+```<version>``` of Python.
 
 ## Virtual environment setup
 Because of use of various Python Packages it is recommened to use virtual environment. 
 
+Create virtual environment:
+
 Windows: ```py -m venv <path_to_venv>```
 
 Linux/MacOS: ```python3 -m venv <path_to_venv>```
+
+Activate virtual environment:
+
+Windows: ```<path_to_venv>\Scripts\activate```
+
+Linux/MacOS: ```source <path_to_venv>/bin/activate```
+
+Deactivation of the virtual environment:
+
+Windows/Linux/MacOS: ```deactivate```
+
+More details about virtual environments can be found [here](https://docs.python.org/3/library/venv.html).
 
 ### Using requirements file
 Or you can use provided ```requirements.txt``` file: 
@@ -44,14 +62,15 @@ Windows: ```py run.py -h```
 Linux/MacOS: ```python3 run.py -h```
 
 #### Logging
-The tool uses ```vis_net.log``` to log the progress of the usage.
+The tool uses ```<path_to_project>/vis_net.log``` to log the progress of the usage and it 
+shows progress bars on terminal.
 
 ## Examples
 The examples are demonstrating the use of tool on a simple CNN model based on LeNet 5, trained and validated on MNIST 
 dataset.
 
 #### Computational demands:
-It takes around three minutes to examine one parameter using single-dimensional method (linear or quadratic path) on 
+It takes around three minutes to examine one parameter using single-dimensional methods (linear and quadratic path) on 
 a machine with Intel Core i5-6600K and NVIDIA GTX 1060 6GB with CUDA enabled.
 
 #### Execution

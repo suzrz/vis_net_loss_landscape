@@ -100,7 +100,6 @@ class Linear(Examinator1D):
 
         :param test_loader: test loader loader
         """
-
         if not paths.loss_path.exists() or not paths.acc_path.exists():
             v_loss_list = []
             acc_list = []
@@ -493,7 +492,7 @@ class Quadratic(Examinator1D):
             end_w = [end_a, end_p]
 
             start_pb = self.theta_i[layer + ".bias"].cpu()
-            mid_pb = copy.deepcopy(torch.load(os.path.join(paths.checkpoints, mid_check))[layer + ".bias"]).cpu()  # TODO AUTO MID
+            mid_pb = copy.deepcopy(torch.load(os.path.join(paths.checkpoints, mid_check))[layer + ".bias"]).cpu()
             end_pb = self.theta_f[layer + ".bias"].cpu()
 
             start_b = [start_a, start_pb]

@@ -76,9 +76,12 @@ class Linear(Examinator1D):
 
         self.theta[layer][idxs] = (self.theta_i[layer][idxs] * (1.0 - alpha)) + (
                     self.theta_f[layer][idxs] * alpha)
+        print(self.theta[layer][idxs])
 
         logger.debug(f"Modified theta:\n"
                      f"{self.theta[layer][idxs]}")
+
+        return self.theta[layer][idxs]
 
     def __calc_theta_vec(self, layer, alpha):
         """
@@ -128,6 +131,8 @@ class Linear(Examinator1D):
         :param layer: layer
         :param idxs: position of the parameter
         """
+        param_res = Path("{}_{}_{}".format(paths.prog, layer, convert_list2str(idxs)))
+        param_img = Path("{}_{}_{}".format(paths.prog_img, layer, convert_list2str(idxs)))
 
         loss_res = Path("{}_{}_{}".format(paths.svloss_path, layer, convert_list2str(idxs)))
         loss_img = Path("{}_{}_{}".format(paths.svloss_img_path, layer, convert_list2str(idxs)))
@@ -145,28 +150,35 @@ class Linear(Examinator1D):
                      f"{acc_img}\n")
         logger.debug(f"Dist file:\n"
                      f"{dist}\n")
+        logger.debug(f"Param values:\n"
+                     f"{param_res}\n")
 
-        if not loss_res.exists() or not acc_res.exists():
+        if not loss_res.exists() or not acc_res.exists() or not param_res.exists():
             logger.debug("Files with results not found - beginning interpolation.")
 
-            v_loss_list = []
-            acc_list = []
+            v_loss_list = np.array([], dtype=np.float128)
+            acc_list = np.array([], dtype=np.float128)
+            p_vals_list = np.array([], dtype=np.float128)
 
             self.model.load_state_dict(self.theta_f)
             for alpha_act in tqdm(self.alpha, desc=f"Parameter {layer}/{idxs} Level Linear", dynamic_ncols=True):
-                self.__calc_theta_single(layer + ".weight", idxs, alpha_act)
+                p = self.__calc_theta_single(layer + ".weight", idxs, alpha_act)
 
                 self.model.load_state_dict(self.theta)
 
                 logger.debug(f"Getting validation loss and accuracy for alpha = {alpha_act}")
                 val_loss, acc = net.test(self.model, test_loader, self.device)
-                acc_list.append(acc)
-                v_loss_list.append(val_loss)
+                acc_list = np.append(acc_list, acc)
+                v_loss_list = np.append(v_loss_list, val_loss)
+                p_vals_list = np.append(p_vals_list, p)
+                print(p)
+                print(p_vals_list)
 
-            logger.debug(f"Saving results to files ({loss_res}, {acc_res})")
+            logger.debug(f"Saving results to files ({loss_res}, {acc_res}, {param_res})")
+            np.savetxt(loss_res, v_loss_list, fmt="%.18e")
+            np.savetxt(acc_res, acc_list, fmt="%.18e")
+            np.savetxt(param_res, p_vals_list, fmt="%.18e")
 
-            np.savetxt(loss_res, v_loss_list)
-            np.savetxt(acc_res, acc_list)
             self.model.load_state_dict(self.theta_f)
 
         if not dist.exists():
@@ -180,8 +192,9 @@ class Linear(Examinator1D):
 
         logger.debug(f"Saving results to figures {loss_img}, {acc_img} ...")
 
-        plot.plot_metric(self.alpha, np.loadtxt(loss_res), loss_img, "loss")
-        plot.plot_metric(self.alpha, np.loadtxt(acc_res), acc_img, "acc")
+        plot.plot_1d(self.alpha, np.loadtxt(loss_res), loss_img, "loss")
+        plot.plot_1d(self.alpha, np.loadtxt(acc_res), acc_img, "acc")
+        plot.plot_1d(self.alpha, np.loadtxt(param_res), param_img, "value")
 
         self.model.load_state_dict(self.theta_f)
 
@@ -245,8 +258,8 @@ class Linear(Examinator1D):
                 fd.write("{}".format(distance))
 
         logger.debug(f"Saving results to figures {loss_img}, {acc_img} ...")
-        plot.plot_metric(self.alpha, np.loadtxt(loss_res), loss_img, "loss")
-        plot.plot_metric(self.alpha, np.loadtxt(acc_res), acc_img, "acc")
+        plot.plot_1d(self.alpha, np.loadtxt(loss_res), loss_img, "loss")
+        plot.plot_1d(self.alpha, np.loadtxt(acc_res), acc_img, "acc")
 
         self.model.load_state_dict(self.theta_f)
 
@@ -441,8 +454,8 @@ class Quadratic(Examinator1D):
             self.model.load_state_dict(self.theta_f)
 
         logger.debug(f"Saving results to figures {loss_img}, {acc_img} ...")
-        plot.plot_metric(self.alpha, np.loadtxt(loss_res), loss_img, "loss")
-        plot.plot_metric(self.alpha, np.loadtxt(acc_res), acc_img, "acc")
+        plot.plot_1d(self.alpha, np.loadtxt(loss_res), loss_img, "loss")
+        plot.plot_1d(self.alpha, np.loadtxt(acc_res), acc_img, "acc")
 
         self.model.load_state_dict(self.theta_f)
 
@@ -515,8 +528,8 @@ class Quadratic(Examinator1D):
             np.savetxt(acc_res, acc_list)
 
         logger.debug(f"Saving results to figures {loss_img}, {acc_img} ...")
-        plot.plot_metric(self.alpha, np.loadtxt(loss_res), loss_img, "loss")
-        plot.plot_metric(self.alpha, np.loadtxt(acc_res), acc_img, "acc")
+        plot.plot_1d(self.alpha, np.loadtxt(loss_res), loss_img, "loss")
+        plot.plot_1d(self.alpha, np.loadtxt(acc_res), acc_img, "acc")
 
         self.model.load_state_dict(self.theta_f)
 

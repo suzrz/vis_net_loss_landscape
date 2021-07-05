@@ -20,8 +20,8 @@ checkpoints = Path(dirname(dirname(__file__)), "model_states")
 
 dataset = Path(dirname(dirname(__file__)), "data")
 
-init_state = Path(results, "init_state.pt")
-final_state = Path(results, "final_state.pt")
+init_state = Path(checkpoints, "init_state.pt")
+final_state = Path(checkpoints, "final_state.pt")
 
 # directories for individual parameters experiments
 individual = Path(results, "individualParam")
@@ -42,6 +42,10 @@ random_dirs_img = Path(imgs, "randDirs")
 # directory for PCA directions
 pca_dirs = Path(results, "PCADirs")
 pca_dirs_img = Path(imgs, "PCADirs")
+
+# directory for parameter progress
+param_prog = Path(results, "paramProg")
+param_prog_img = Path(imgs, "paramProg")
 
 # actual loss and accuracy progress of the model
 actual_loss_path = Path(results, "actual_loss")
@@ -88,6 +92,10 @@ epochs_acc = Path(os.path.join(prelim, "epochs_acc"))
 # random directions experiment surface file
 surf = Path(os.path.join(random_dirs, "surf_file.h5"))
 
+# parameter progress base filename
+prog = Path(param_prog, "pprog")
+prog_img = Path(param_prog_img, "pprog")
+
 
 def init_dirs():
     """
@@ -95,7 +103,7 @@ def init_dirs():
     """
     logger.info("Initializing directories")
     dirs = [results, imgs, checkpoints, individual, individual_img, layers, layers_img, prelim,
-            prelim_img, random_dirs, random_dirs_img, pca_dirs, pca_dirs_img]
+            prelim_img, random_dirs, random_dirs_img, pca_dirs, pca_dirs_img, param_prog, param_prog_img]
 
     for d in dirs:
         logger.debug(f"Searching for {d}")

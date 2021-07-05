@@ -152,17 +152,17 @@ def plot_box(x, loss_only=False, acc_only=False, show=False, xlabel=None):
         plt.savefig(f"{os.path.join(paths.prelim_img, 'test_acc.pdf')}", format="pdf")
 
 
-def plot_metric(alpha, ydata, img_path, metric):
+def plot_1d(alpha, ydata, img_path, label=None):
     """
     Function plots result of experiment focused on specified metric.
 
     :param alpha: interpolation coefficient
     :param ydata: results of the experiment to be plotted
     :param img_path: path to where save the graph
-    :param metric: observed metric
+    :param label: y-axis label
     """
-    ylab = "Validation loss" if metric == "loss" else "Accuracy"
-    clr = color_loss if metric == "loss" else color_acc
+    ylab = label if label else "y"
+    clr = color_loss if label == "loss" else color_acc
 
     fig, ax = plt.subplots(figsize=(8, 6))
 

@@ -20,8 +20,8 @@ checkpoints = Path(dirname(dirname(__file__)), "model_states")
 
 dataset = Path(dirname(dirname(__file__)), "data")
 
-init_state = Path(results, "init_state.pt")
-final_state = Path(results, "final_state.pt")
+init_state = Path(checkpoints, "init_state.pt")
+final_state = Path(checkpoints, "final_state.pt")
 
 # directories for individual parameters experiments
 individual = Path(results, "individualParam")

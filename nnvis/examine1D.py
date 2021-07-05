@@ -76,7 +76,6 @@ class Linear(Examinator1D):
 
         self.theta[layer][idxs] = (self.theta_i[layer][idxs] * (1.0 - alpha)) + (
                     self.theta_f[layer][idxs] * alpha)
-        print(self.theta[layer][idxs])
 
         logger.debug(f"Modified theta:\n"
                      f"{self.theta[layer][idxs]}")
@@ -171,8 +170,6 @@ class Linear(Examinator1D):
                 acc_list = np.append(acc_list, acc)
                 v_loss_list = np.append(v_loss_list, val_loss)
                 p_vals_list = np.append(p_vals_list, p)
-                print(p)
-                print(p_vals_list)
 
             logger.debug(f"Saving results to files ({loss_res}, {acc_res}, {param_res})")
             np.savetxt(loss_res, v_loss_list, fmt="%.18e")

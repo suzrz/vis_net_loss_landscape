@@ -34,8 +34,8 @@ def parse_arguments():
                         help="Set starting point of 1D paths on parameter level (float, default = -0.5).")
     parser.add_argument("--alpha-end", type=float, action="store", default=1.5, nargs='?',
                         help="Set ending point of 1D paths on parameter level (float, default = 1.5).")
-    parser.add_argument("--alpha-steps", type=int, action="store", default=40, nargs='?',
-                        help="Set number of 1D paths steps (int, default = 40).")
+    parser.add_argument("--alpha-steps", type=int, action="store", default=20, nargs='?',
+                        help="Set number of 1D paths steps (int, default = 20).")
     parser.add_argument("--epochs", type=int, action="store", default=14, nargs='?',
                         help="Set number of training epochs (default = 14).")
     parser.add_argument("--idxs", nargs='+', type=int, default=(0, 0, 0, 0),
@@ -215,7 +215,7 @@ def run_all(args, device):
 
     # prepare x-axis and opacity dictionary for plotting all parameters of a layer
     x = np.linspace(args.alpha_start, args.alpha_end, args.alpha_steps)
-    x_model = np.linspace(0, 1, 40)
+    x_model = np.linspace(0, 1, args.alpha_steps)
     d = nnvis.map_distance(nnvis.individual)
 
     # plot parameters of each layer in one plot
@@ -242,16 +242,16 @@ def plot_available(args):
     for fil in individual_files:
         if not re.search("distance", fil):
             if re.search("loss", fil):
-                nnvis.plot_metric(alpha, np.loadtxt(Path(nnvis.individual, fil)), Path(nnvis.individual_img, fil), "loss")
+                nnvis.plot_1d(alpha, np.loadtxt(Path(nnvis.individual, fil)), Path(nnvis.individual_img, fil), "loss")
             if re.search("acc", fil):
-                nnvis.plot_metric(alpha, np.loadtxt(Path(nnvis.individual, fil)), Path(nnvis.individual_img, fil), "acc")
+                nnvis.plot_1d(alpha, np.loadtxt(Path(nnvis.individual, fil)), Path(nnvis.individual_img, fil), "acc")
 
     for fil in layer_files:
         if not re.search("distance", fil):
             if re.search("loss", fil):
-                nnvis.plot_metric(alpha, np.loadtxt(Path(nnvis.layers, fil)), Path(nnvis.layers_img, fil), "loss")
+                nnvis.plot_1d(alpha, np.loadtxt(Path(nnvis.layers, fil)), Path(nnvis.layers_img, fil), "loss")
             if re.search("acc", fil):
-                nnvis.plot_metric(alpha, np.loadtxt(Path(nnvis.layers, fil)), Path(nnvis.layers_img, fil), "acc")
+                nnvis.plot_1d(alpha, np.loadtxt(Path(nnvis.layers, fil)), Path(nnvis.layers_img, fil), "acc")
 
     d = nnvis.map_distance(nnvis.individual)
 

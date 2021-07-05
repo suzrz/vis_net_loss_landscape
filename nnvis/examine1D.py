@@ -229,8 +229,8 @@ class Linear(Examinator1D):
         if not loss_res.exists() or not acc_res.exists():
             logger.debug("Result files not found - beginning interpolation.")
 
-            v_loss_list = []
-            acc_list = []
+            v_loss_list = np.array([], dtype=np.float128)
+            acc_list = np.array([], dtype=np.float128)
 
             self.model.load_state_dict(self.theta_f)
             for alpha_act in tqdm(self.alpha, desc=f"Layer {layer} Level Linear", dynamic_ncols=True):
@@ -241,8 +241,8 @@ class Linear(Examinator1D):
                 logger.debug(f"Getting validation loss and accuracy for alpha = {alpha_act}")
 
                 vloss, acc = net.test(self.model, test_loader, self.device)
-                v_loss_list.append(vloss)
-                acc_list.append(acc)
+                v_loss_list = np.append(v_loss_list, vloss)
+                acc_list = np.append(acc_list, acc)
 
             logger.debug(f"Saving results to files ({loss_res}, {acc_res})")
             np.savetxt(loss_res, v_loss_list)
@@ -344,8 +344,8 @@ class Quadratic(Examinator1D):
         :param test_loader: test data set loader
         """
         if not paths.q_loss_path.exists() or not paths.q_acc_path.exists():
-            v_loss_list = []
-            acc_list = []
+            v_loss_list = np.array([], dtype=np.float128)
+            acc_list = np.array([], dtype=np.float128)
             layers = [name for name, _ in self.model.named_parameters()]
 
             start_a = 0
@@ -374,8 +374,8 @@ class Quadratic(Examinator1D):
                     self.model.load_state_dict(self.theta)
 
                 loss, acc = net.test(self.model, test_loader, self.device)
-                v_loss_list.append(loss)
-                acc_list.append(acc)
+                v_loss_list = np.append(v_loss_list, loss)
+                acc_list = np.append(acc_list, acc)
 
             np.savetxt(paths.q_loss_path, v_loss_list)
             np.savetxt(paths.q_acc_path, acc_list)
@@ -408,8 +408,8 @@ class Quadratic(Examinator1D):
         if not loss_res.exists() or not acc_res.exists():
             logger.debug("Files with results not found - beginning interpolation.")
 
-            v_loss_list = []
-            acc_list = []
+            v_loss_list = np.array([], dtype=np.float128)
+            acc_list = np.array([], dtype=np.float128)
 
             start_a = 0
             mid_a = 0.5
@@ -444,8 +444,8 @@ class Quadratic(Examinator1D):
 
                 logger.debug(f"Getting validation loss and accuracy for alpha = {alpha_act}")
                 val_loss, acc = net.test(self.model, test_loader, self.device)
-                acc_list.append(acc)
-                v_loss_list.append(val_loss)
+                acc_list = np.append(acc_list, acc)
+                v_loss_list = np.append(v_loss_list, val_loss)
 
             logger.debug(f"Saving results to files ({loss_res}, {acc_res})")
 
@@ -484,8 +484,8 @@ class Quadratic(Examinator1D):
         if not loss_res.exists() or not acc_res.exists():
             logger.debug("Result files not found - beginning interpolation.")
 
-            v_loss_list = []
-            acc_list = []
+            v_loss_list = np.array([], dtype=np.float128)
+            acc_list = np.array([], dtype=np.float128)
 
             start_a = 0
             mid_a = 0.5
@@ -520,8 +520,8 @@ class Quadratic(Examinator1D):
                 logger.debug(f"Getting validation loss and accuracy for alpha = {alpha_act}")
 
                 vloss, acc = net.test(self.model, test_loader, self.device)
-                v_loss_list.append(vloss)
-                acc_list.append(acc)
+                v_loss_list = np.append(v_loss_list, vloss)
+                acc_list = np.append(acc_list, acc)
 
             logger.debug(f"Saving results to files ({loss_res}, {acc_res})")
             np.savetxt(loss_res, v_loss_list)

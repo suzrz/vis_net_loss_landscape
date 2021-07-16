@@ -9,6 +9,7 @@ import re
 import logging
 import copy
 import torch
+import pickle
 import numpy as np
 import scipy.interpolate
 from tqdm import tqdm
@@ -155,9 +156,9 @@ class Linear(Examinator1D):
         if not loss_res.exists() or not acc_res.exists() or not param_res.exists():
             logger.debug("Files with results not found - beginning interpolation.")
 
-            v_loss_list = np.array([], dtype=np.float128)
-            acc_list = np.array([], dtype=np.float128)
-            p_vals_list = np.array([], dtype=np.float128)
+            v_loss_list = np.array([], dtype=np.float64)
+            acc_list = np.array([], dtype=np.float64)
+            p_vals_list = np.array([], dtype=np.float64)
 
             self.model.load_state_dict(self.theta_f)
             for alpha_act in tqdm(self.alpha, desc=f"Parameter {layer}/{idxs} Level Linear", dynamic_ncols=True):
@@ -169,7 +170,7 @@ class Linear(Examinator1D):
                 val_loss, acc = net.test(self.model, test_loader, self.device)
                 acc_list = np.append(acc_list, acc)
                 v_loss_list = np.append(v_loss_list, val_loss)
-                p_vals_list = np.append(p_vals_list, p)
+                p_vals_list = np.append(p_vals_list, p.cpu())
 
             logger.debug(f"Saving results to files ({loss_res}, {acc_res}, {param_res})")
             np.savetxt(loss_res, v_loss_list, fmt="%.18e")
@@ -187,7 +188,7 @@ class Linear(Examinator1D):
             with open(dist, 'w') as fd:
                 fd.write("{}".format(distance))
 
-        logger.debug(f"Saving results to figures {loss_img}, {acc_img} ...")
+        logger.debug(f"Saving results to figures {loss_img}, {acc_img}, {param_img} ...")
 
         plot.plot_1d(self.alpha, np.loadtxt(loss_res), loss_img, "loss")
         plot.plot_1d(self.alpha, np.loadtxt(acc_res), acc_img, "acc")
@@ -226,8 +227,8 @@ class Linear(Examinator1D):
         if not loss_res.exists() or not acc_res.exists():
             logger.debug("Result files not found - beginning interpolation.")
 
-            v_loss_list = np.array([], dtype=np.float128)
-            acc_list = np.array([], dtype=np.float128)
+            v_loss_list = np.array([], dtype=np.float64)
+            acc_list = np.array([], dtype=np.float64)
 
             self.model.load_state_dict(self.theta_f)
             for alpha_act in tqdm(self.alpha, desc=f"Layer {layer} Level Linear", dynamic_ncols=True):
@@ -261,6 +262,65 @@ class Linear(Examinator1D):
         self.model.load_state_dict(self.theta_f)
 
         return
+
+
+class LinearSpline(Linear):
+
+    def individual_param_linear_spline(self, known_points, test_loader, layer, idxs):
+        """
+        Method interpolates value of selected parameter using linear spline method.
+
+        :param known_points: 2D array [[alpha, param_value, checkpoint]]. The checkpoint information must contain
+        epoch specification and number of optimizer step (fmt: epoch_X_step_Y, where X is the epoch number and Y is
+        the step number)
+        :param test_loader: test data set loader
+        :param layer: position of parameter
+        :param idxs: position of parameter
+        """
+        param_res = Path("{}_{}_{}_spline".format(paths.prog, layer, convert_list2str(idxs)))
+        param_img = Path("{}_{}_{}_spline".format(paths.prog_img, layer, convert_list2str(idxs)))
+
+        loss_res = Path("{}_{}_{}_spline".format(paths.svloss_path, layer, convert_list2str(idxs)))
+        loss_img = Path("{}_{}_{}_spline".format(paths.svloss_img_path, layer, convert_list2str(idxs)))
+
+        acc_res = Path("{}_{}_{}_spline".format(paths.sacc_path, layer, convert_list2str(idxs)))
+        acc_img = Path("{}_{}_{}_spline".format(paths.sacc_img_path, layer, convert_list2str(idxs)))
+
+        logger.debug(f"Result files:\n"
+                     f"{loss_res}\n"
+                     f"{acc_res}\n")
+        logger.debug(f"Img files:\n"
+                     f"{loss_img}\n"
+                     f"{acc_img}\n")
+        logger.debug(f"Param values:\n"
+                     f"{param_res}\n")
+
+        if not loss_res.exists() or not acc_res.exists() or not param_res.exists():
+            logger.debug("Files with results not found - beginning interpolation.")
+
+            v_loss_list = np.array([], dtype=np.float64)
+            acc_list = np.array([], dtype=np.float64)
+            p_vals_list = np.array([], dtype=np.float64)
+
+            self.model.load_state_dict(self.theta_f)
+            act = self.theta_i
+            i = 0
+            nxt = known_points[i]
+            for alpha_act in tqdm(self.alpha, desc=f"Parameter {layer}/{idxs} Level Linear Spline", dynamic_ncols=True):
+                print(alpha_act)
+                if alpha_act == nxt[i]:
+                    with open(os.path.join(paths.checkpoints, f"checkpoint_{nxt[2]}")) as fd:
+                        act = self.model.load_from_flat_params(pickle.load(fd))
+                    print(act)
+                    i = i + 1
+                    nxt = known_points[i]
+
+                """
+                do linear interpolation between prev and actual model state (load corr. checkpoint)
+                when alpha_act == known_alpha
+                    stop interpolation 
+                    set new prev and actual model state
+                """
 
 
 class Quadratic(Examinator1D):
@@ -341,8 +401,8 @@ class Quadratic(Examinator1D):
         :param test_loader: test data set loader
         """
         if not paths.q_loss_path.exists() or not paths.q_acc_path.exists():
-            v_loss_list = np.array([], dtype=np.float128)
-            acc_list = np.array([], dtype=np.float128)
+            v_loss_list = np.array([], dtype=np.float64)
+            acc_list = np.array([], dtype=np.float64)
             layers = [name for name, _ in self.model.named_parameters()]
 
             start_a = 0
@@ -405,8 +465,8 @@ class Quadratic(Examinator1D):
         if not loss_res.exists() or not acc_res.exists():
             logger.debug("Files with results not found - beginning interpolation.")
 
-            v_loss_list = np.array([], dtype=np.float128)
-            acc_list = np.array([], dtype=np.float128)
+            v_loss_list = np.array([], dtype=np.float64)
+            acc_list = np.array([], dtype=np.float64)
 
             start_a = 0
             mid_a = 0.5
@@ -481,8 +541,8 @@ class Quadratic(Examinator1D):
         if not loss_res.exists() or not acc_res.exists():
             logger.debug("Result files not found - beginning interpolation.")
 
-            v_loss_list = np.array([], dtype=np.float128)
-            acc_list = np.array([], dtype=np.float128)
+            v_loss_list = np.array([], dtype=np.float64)
+            acc_list = np.array([], dtype=np.float64)
 
             start_a = 0
             mid_a = 0.5

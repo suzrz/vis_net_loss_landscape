@@ -46,6 +46,7 @@ class BaseNN(nn.Module):
             c += tnum
 
         self.load_state_dict(state, strict=True)
+        return self.state_dict()
 
 
 class SimpleCNN(BaseNN):

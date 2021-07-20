@@ -309,11 +309,13 @@ class LinearSpline(Linear):
             for alpha_act in tqdm(self.alpha, desc=f"Parameter {layer}/{idxs} Level Linear Spline", dynamic_ncols=True):
                 print(alpha_act)
                 if alpha_act == nxt[i]:
-                    with open(os.path.join(paths.checkpoints, f"checkpoint_{nxt[2]}")) as fd:
-                        act = self.model.load_from_flat_params(pickle.load(fd))
-                    print(act)
+                    known_checkpoint = os.path.join(paths.checkpoints, f"checkpoint_{nxt[2]}")
+                    act = self.model.load_state_dict(torch.load(known_checkpoint))
                     i = i + 1
-                    nxt = known_points[i]
+                    try:
+                        nxt = known_points[i]
+                    except IndexError:
+                        pass  # out of known points
 
                 """
                 do linear interpolation between prev and actual model state (load corr. checkpoint)

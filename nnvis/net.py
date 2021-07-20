@@ -123,11 +123,7 @@ def train(model, train_loader, optimizer, device, epoch, checkpoint_file=True):
 
             logger.debug(f"Creating checkpoint file {filename}")
 
-            optim_path["flat_w"].append(model.get_flat_params(device))
-            optim_path["loss"].append(loss)
-
-            with open(filename, "wb") as fd:
-                pickle.dump(optim_path, fd)
+            torch.save(model.state_dict(), filename)
 
     train_loss /= len(train_loader.dataset)
     logger.info(f"Training in epoch {epoch} has finished (loss = {train_loss})")
